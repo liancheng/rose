@@ -1,0 +1,66 @@
+token
+{
+    TERMINATION;
+    POUND_LP;
+    LP;
+    RP;
+    DOT;
+    ELLIPSIS;
+    COMMA_AT;
+    COMMA;
+    SINGLE_QUOTE;
+    BACK_QUOTE;
+    IDENTIFIER;
+    BOOLEAN;
+    FAIL;
+}
+
+define
+{
+    /* Skipper and delimiter */
+    whitespace          [ \n]
+    comment             ;.*
+    atomsphere          {whitespace}|{comment}
+    intertoken_space    {atomsphere}+
+    delimiter           {whitespace}|[()";]
+ 
+    /* Identifier (symbol) */
+    letter              [a-zA-Z]
+    special_initial     [!$%&*/:<=>?^_~]
+    initial             {letter}|{special_initial}
+    digit               [0-9]
+    special_subsequent  [\-+.@]
+    subsequent          {initial}|{digit}|{special_subsequent}
+    peculiar_identifier [\-+]|"..."
+    identifier          {initial}{subsequent}*|{peculiar_identifier}
+
+    boolean             #t|#f
+}
+
+mode MAIN :
+{
+    /* Skippers */
+    {intertoken_space}          {}
+
+    /* Punctuations */
+    "#("                        => TKN_POUND_LP(Lexeme);
+    "("                         => TKN_LP(Lexeme);
+    ")"                         => TKN_RP(Lexeme);
+    "."                         => TKN_DOT(Lexeme);
+    "..."                       => TKN_ELLIPSIS(Lexeme);
+
+    /* Abbreviations */
+    ,@                          => TKN_COMMA_AT(Lexeme);
+    ,                           => TKN_COMMA(Lexeme);
+    "'"                         => TKN_SINGLE_QUOTE(Lexeme);
+    `                           => TKN_BACK_QUOTE(Lexeme);
+
+    /* Symbols */
+    {identifier}/{delimiter}    => TKN_IDENTIFIER(Lexeme);
+
+    /* Booleans */
+    {boolean}/{delimiter}       => TKN_BOOLEAN(Lexeme);
+
+    <<EOF>>                     => TKN_TERMINATION(LexemeNull);
+    <<FAIL>>                    => TKN_FAIL(Lexeme);
+}
