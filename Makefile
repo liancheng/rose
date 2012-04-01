@@ -13,7 +13,8 @@ sexp.o: sexp.cpp lexer/r5rs_lexer.cpp
 		-o sexp.o\
 		-I.\
 		-I$(QUEX_PATH)\
-		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED
+		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED\
+		-g
 
 lexer/r5rs_lexer.o: lexer/r5rs_lexer.cpp
 	clang++\
@@ -22,7 +23,8 @@ lexer/r5rs_lexer.o: lexer/r5rs_lexer.cpp
 		-I./lexer\
 		-I.\
 		-I$(QUEX_PATH)\
-		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED
+		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED\
+		-g
 
 lexer/r5rs_lexer.cpp: r5rs.qx
 	quex\
@@ -31,7 +33,6 @@ lexer/r5rs_lexer.cpp: r5rs.qx
 		--language C++\
 		--token-prefix TKN_\
 		--output-directory lexer\
-		--token-policy queue\
 
 clean:
 	rm -f sexp.o sexp
