@@ -23,7 +23,7 @@ define
     atomsphere          {whitespace}|{comment}
     intertoken_space    {atomsphere}+
     delimiter           {whitespace}|[()";]
- 
+
     /* Identifier (symbol) */
     letter              [a-zA-Z]
     special_initial     [!$%&*/:<=>?^_~]
