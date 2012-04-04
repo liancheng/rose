@@ -5,16 +5,20 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 
-static struct option long_options[] = {
-    {"input", required_argument, 0, 'i'},
-};
+struct config {
+    std::string input_file;
+}
+config;
 
-int main(int argc, char* argv[])
+void handle_argv(int argc, char* argv[])
 {
-    std::string input;
+    static struct option long_options[] = {
+        {"input", required_argument, NULL, 'i'},
+    };
 
     while (true) {
         int option_index = 0;
@@ -30,7 +34,7 @@ int main(int argc, char* argv[])
 
         switch (opt) {
             case 'i':
-                input = optarg;
+                config.input_file = optarg;
                 break;
 
             default:
@@ -38,12 +42,17 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (input.empty()) {
+    if (config.input_file.empty()) {
         fprintf(stderr, "no input file.\n");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
+}
 
-    quex::r5rs_lexer qlex(input.c_str());
+int main(int argc, char* argv[])
+{
+    handle_argv(argc, argv);
+
+    quex::r5rs_lexer qlex(config.input_file.c_str());
     quex::Token* token = NULL;
 
     do {
