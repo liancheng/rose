@@ -31,7 +31,7 @@ lexer/r5rs_lexer.cpp: r5rs.qx
 		-i r5rs.qx\
 		-o r5rs_lexer\
 		--language C++\
-		--token-prefix TKN_\
+		--token-id-prefix TKN_\
 		--output-directory lexer\
 
 clean:
