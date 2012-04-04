@@ -37,7 +37,19 @@ define
     boolean             #t|#f
 }
 
-mode MAIN :
+start = MAIN;
+
+mode FAILURE : <inheritable: only>
+{
+    <<FAIL>> => TKN_FAIL(Lexeme);
+}
+
+mode EOF : <inheritable: only>
+{
+    <<EOF>> => TKN_TERMINATION(LexemeNull);
+}
+
+mode MAIN : FAILURE, EOF
 {
     /* Skippers */
     {intertoken_space}          {}
@@ -60,7 +72,4 @@ mode MAIN :
 
     /* Booleans */
     {boolean}/{delimiter}       => TKN_BOOLEAN(Lexeme);
-
-    <<EOF>>                     => TKN_TERMINATION(LexemeNull);
-    <<FAIL>>                    => TKN_FAIL(Lexeme);
 }
