@@ -14,6 +14,17 @@ struct config {
 }
 config;
 
+void usage()
+{
+    printf("Usage: sexp [options]\n"
+           "\n"
+           "OPTIONS:\n"
+           "  -h, --help           Show this help message.\n"
+           "  -i, --input=FILE     Read input from FILE.\n");
+
+    exit(EXIT_SUCCESS);
+}
+
 void handle_argv(int argc, char* argv[])
 {
     static struct option long_options[] = {
@@ -24,7 +35,7 @@ void handle_argv(int argc, char* argv[])
         int option_index = 0;
         int opt = getopt_long(argc,
                               argv,
-                              "i:",
+                              "hi:",
                               long_options,
                               &option_index);
 
@@ -33,6 +44,10 @@ void handle_argv(int argc, char* argv[])
         }
 
         switch (opt) {
+            case 'h':
+                usage();
+                break;
+
             case 'i':
                 config.input_file = optarg;
                 break;
