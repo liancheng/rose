@@ -1,17 +1,16 @@
 all: sexp
 
-sexp: sexp.o lexer/r5rs_lexer.o
+sexp: build/sexp.o lexer/r5rs_lexer.o
 	clang++\
-		sexp.o lexer/r5rs_lexer.o\
-		-o sexp\
-		-L/lib\
+		build/sexp.o lexer/r5rs_lexer.o\
+		-o build/sexp\
 		-lreadline\
 		-largtable2
 
-sexp.o: sexp.cpp lexer/r5rs_lexer.cpp
+build/sexp.o: sexp.cpp lexer/r5rs_lexer.cpp
 	clang++\
 		-c sexp.cpp\
-		-o sexp.o\
+		-o build/sexp.o\
 		-I.\
 		-I$(QUEX_PATH)\
 		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED\
@@ -37,7 +36,7 @@ lexer/r5rs_lexer.cpp: r5rs.qx
 		--token-policy single
 
 clean:
-	rm -f sexp.o sexp
+	rm -rf build/*
 	rm -rf lexer/*
 
 # vim:ft=make ts=8 sw=8 noet
