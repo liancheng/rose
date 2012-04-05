@@ -1,38 +1,43 @@
-all: sexp test
+all: prepare sexp test
 
-sexp: build/sexp.o lexer/r5rs_lexer.o
+prepare:
+	mkdir -p build/lexer
+
+sexp: build/sexp.o build/lexer/r5rs_lexer.o
 	clang++\
-		build/sexp.o lexer/r5rs_lexer.o\
+		build/sexp.o build/lexer/r5rs_lexer.o\
 		-o build/sexp\
 		-lreadline\
 		-largtable2
 
-build/sexp.o: sexp.cpp lexer/r5rs_lexer.cpp
+build/sexp.o: src/sexp.cpp build/lexer/r5rs_lexer.cpp
 	clang++\
-		-c sexp.cpp\
+		-c src/sexp.cpp\
 		-o build/sexp.o\
+		-Iinclude\
+		-Ibuild\
 		-I.\
 		-I$(QUEX_PATH)\
 		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED\
 		-g
 
-lexer/r5rs_lexer.o: lexer/r5rs_lexer.cpp
+build/lexer/r5rs_lexer.o: build/lexer/r5rs_lexer.cpp
 	clang++\
-		-c lexer/r5rs_lexer.cpp\
-		-o lexer/r5rs_lexer.o\
-		-I./lexer\
+		-c build/lexer/r5rs_lexer.cpp\
+		-o build/lexer/r5rs_lexer.o\
 		-I.\
+		-Iinclude\
 		-I$(QUEX_PATH)\
 		-DQUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED\
 		-g
 
-lexer/r5rs_lexer.cpp: r5rs.qx
+build/lexer/r5rs_lexer.cpp: src/r5rs.qx
 	quex\
-		-i r5rs.qx\
+		-i src/r5rs.qx\
 		-o r5rs_lexer\
 		--language C++\
 		--token-id-prefix TKN_\
-		--output-directory lexer\
+		--output-directory build/lexer\
 		--token-policy single
 
 test: build/test
@@ -45,14 +50,13 @@ build/test: build/test.o
 		-lgtest\
 		-pthread
 
-build/test.o: test.cpp
+build/test.o: test/test.cpp
 	clang++\
-		-c test.cpp\
+		-c test/test.cpp\
 		-o build/test.o\
 		-g
 
 clean:
-	rm -rf build/*
-	rm -rf lexer/*
+	rm -rf build/
 
 # vim:ft=make ts=8 sw=8 noet
