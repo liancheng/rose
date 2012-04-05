@@ -1,0 +1,19 @@
+Import('env')
+
+env.Append(LIBS=['argtable2'],
+           CPPDEFINES=['QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'])
+
+lexer_src = env.Quex(source='r5rs.qx',
+                     QUEXENGINE='r5rs_lexer',
+                     QUEXLANG='C++',
+                     QUEXTKNPREFIX='TKN_',
+                     QUEXOUTDIR=Dir('.').abspath,
+                     QUEXTKNPOLICY='single')
+
+sexp_obj = env.Object(source=env.Glob('*.cpp'))
+
+env.Depends(sexp_obj, lexer_src)
+
+sexp_bin = env.Program(target='sexp', source=[sexp_obj])
+
+# vim:ft=python
