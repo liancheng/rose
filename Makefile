@@ -7,7 +7,6 @@ sexp: build/sexp.o build/r5rs_lexer.o
 	clang++\
 		build/sexp.o build/r5rs_lexer.o\
 		-o build/sexp\
-		-lreadline\
 		-largtable2
 
 build/sexp.o: src/sexp.cpp build/r5rs_lexer.cpp

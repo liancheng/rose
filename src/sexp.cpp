@@ -2,9 +2,6 @@
 #include "sexp.h"
 
 #include <argtable2.h>
-#include <readline/history.h>
-#include <readline/readline.h>
-
 #include <cstdio>
 #include <cstdlib>
 
