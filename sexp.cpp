@@ -28,14 +28,17 @@ void usage()
 void handle_argv(int argc, char* argv[])
 {
     static struct option long_options[] = {
+        {"help",  no_argument,       NULL, 'h'},
         {"input", required_argument, NULL, 'i'},
     };
+
+    static const char* short_options = "hi:";
 
     while (true) {
         int option_index = 0;
         int opt = getopt_long(argc,
                               argv,
-                              "hi:",
+                              short_options,
                               long_options,
                               &option_index);
 
@@ -68,19 +71,19 @@ int main(int argc, char* argv[])
     handle_argv(argc, argv);
 
     quex::r5rs_lexer qlex(config.input_file.c_str());
-    quex::Token* token = NULL;
 
-    do {
-        (void)qlex.receive(&token);
+    for (quex::Token* token = qlex.token_p(); ;) {
+        int token_id = qlex.receive();
 
         printf("[%d,%d] %s <%s>\n",
                token->line_number(),
                token->column_number(),
                token->type_id_name().c_str(),
                token->text.c_str());
+
+        if (TKN_TERMINATION == token_id || TKN_FAIL == token_id)
+            break;
     }
-    while (TKN_TERMINATION != token->type_id() &&
-           TKN_FAIL != token->type_id());
 
     return EXIT_SUCCESS;
 }

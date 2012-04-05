@@ -33,7 +33,7 @@ lexer/r5rs_lexer.cpp: r5rs.qx
 		--language C++\
 		--token-id-prefix TKN_\
 		--output-directory lexer\
-		--token-policy queue
+		--token-policy single
 
 clean:
 	rm -f sexp.o sexp
