@@ -88,14 +88,17 @@ int main(int argc, char* argv[])
 
     quex::r5rs_lexer qlex((QUEX_TYPE_CHARACTER*)NULL, 0);
 
-    for (quex::Token* token = read_token_from_file(qlex, file); token;) {
+    while (true) {
+        quex::Token* token = read_token_from_file(qlex, file);
+
+        if (!token)
+            break;
+
         printf("[%d,%d] %s <%s>\n",
                token->line_number(),
                token->column_number(),
                token->type_id_name().c_str(),
                token->text.c_str());
-
-        token = read_token_from_file(qlex, file);
     }
 
     if (file != stdin) {
