@@ -1,7 +1,7 @@
 #include "sexp.h"
 #include "lexer/r5rs_lexer"
 
-#include <getopt.h>
+#include <argtable2.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 
@@ -9,68 +9,48 @@
 #include <cstdlib>
 #include <string>
 
-struct config {
-    std::string input_file;
-}
-config;
-
-void usage()
+void usage(char const* program, void* args[])
 {
-    printf("Usage: sexp [options]\n"
-           "\n"
-           "OPTIONS:\n"
-           "  -h, --help           Show this help message.\n"
-           "  -i, --input=FILE     Read input from FILE.\n");
-
-    exit(EXIT_SUCCESS);
-}
-
-void handle_argv(int argc, char* argv[])
-{
-    static struct option long_options[] = {
-        {"help",  no_argument,       NULL, 'h'},
-        {"input", required_argument, NULL, 'i'},
-    };
-
-    static const char* short_options = "hi:";
-
-    while (true) {
-        int option_index = 0;
-        int opt = getopt_long(argc,
-                              argv,
-                              short_options,
-                              long_options,
-                              &option_index);
-
-        if (-1 == opt) {
-            break;
-        }
-
-        switch (opt) {
-            case 'h':
-                usage();
-                break;
-
-            case 'i':
-                config.input_file = optarg;
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    if (config.input_file.empty()) {
-        fprintf(stderr, "no input file.\n");
-        exit(EXIT_FAILURE);
-    }
+    printf("Usage: %s", program);
+    arg_print_syntax(stdout, args, "\n\n");
+    arg_print_glossary(stdout, args, "  %-25s %s\n");
 }
 
 int main(int argc, char* argv[])
 {
-    handle_argv(argc, argv);
+    const char* program = "sexp";
 
-    quex::r5rs_lexer qlex(config.input_file.c_str());
+    void* args[] = {
+        arg_file0("i", "input", "FILE", "Read input from FILE"),
+        arg_lit0 ("h", "help",          "Print this help message and exit"),
+        arg_end(10)
+    };
+
+    struct arg_file* input = (struct arg_file*)args[0];
+    struct arg_lit*  help  = (struct arg_lit* )args[1];
+    struct arg_end*  end   = (struct arg_end* )args[2];
+
+    int arg_errors = arg_parse(argc, argv, args);
+
+    if (1 == argc || help->count > 0) {
+        usage(program, args);
+        exit(EXIT_FAILURE);
+    }
+
+    if (arg_errors > 0) {
+        arg_print_errors(stdout, end, program);
+        printf("Try `%s --help' for more information.\n", program);
+        exit(EXIT_FAILURE);
+    }
+
+    if (0 == input->count) {
+        fprintf(stderr, "no input file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    std::string input_file = input->filename[0];
+
+    quex::r5rs_lexer qlex(input_file.c_str());
 
     for (quex::Token* token = qlex.token_p(); ;) {
         int token_id = qlex.receive();

@@ -5,7 +5,8 @@ sexp: sexp.o lexer/r5rs_lexer.o
 		sexp.o lexer/r5rs_lexer.o\
 		-o sexp\
 		-L/lib\
-		-lreadline
+		-lreadline\
+		-largtable2
 
 sexp.o: sexp.cpp lexer/r5rs_lexer.cpp
 	clang++\
