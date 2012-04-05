@@ -12,48 +12,38 @@ void usage(char const* program, void* args[])
 {
     printf("Usage: %s", program);
     arg_print_syntax(stdout, args, "\n\n");
-    arg_print_glossary(stdout, args, "  %-25s %s\n");
+    arg_print_glossary(stdout, args, "  %-20s %s\n");
 }
 
-class tokenizer {
-private:
-    static const int buffer_size = 256;
+quex::Token* read_token_from_file(quex::r5rs_lexer& qlex, FILE* file)
+{
+    QUEX_TYPE_TOKEN* token = qlex.token_p();
+    QUEX_TYPE_TOKEN_ID token_id = qlex.receive();
 
-public:
-    tokenizer(FILE* source) :
-        source(source),
-        qlex((QUEX_TYPE_CHARACTER*)NULL, 0)
-    {}
+    // Try to reload the analyzer with more input.
+    if (TKN_TERMINATION == token_id) {
+        qlex.buffer_fill_region_prepare();
 
-    quex::Token* next() {
-        QUEX_TYPE_TOKEN_ID token_id = qlex.receive();
+        // Read input from stream into analyzer buffer.
+        char* begin = (char*)qlex.buffer_fill_region_begin();
+        int   size  = qlex.buffer_fill_region_size();
+        char* line  = fgets(begin, size, file);
 
-        // Try to reload the analyzer with more input.
-        if (TKN_TERMINATION == token_id) {
-            qlex.buffer_fill_region_prepare();
-
-            // Read input from stream into analyzer buffer.
-            char* line = fgets((char*)qlex.buffer_fill_region_begin(),
-                               qlex.buffer_fill_region_size(),
-                               source);
-
-            // EOF encountered.
-            if (!line) {
-                qlex.buffer_fill_region_finish(0);
-                return NULL;
-            }
-
-            int size = strlen(line);
-            qlex.buffer_fill_region_finish(size);
+        if (!line) {
+            qlex.buffer_fill_region_finish(0);
+            token = NULL;
+            goto exit;
         }
 
-        return qlex.token_p();
+        qlex.buffer_fill_region_finish(strlen(line));
+
+        // Discard the last TKN_TERMINATION token.
+        qlex.receive();
     }
 
-private:
-    FILE* source;
-    quex::r5rs_lexer qlex;
-};
+exit:
+    return token;
+}
 
 int main(int argc, char* argv[])
 {
@@ -96,14 +86,16 @@ int main(int argc, char* argv[])
         file = stdin;
     }
 
-    tokenizer t(file);
+    quex::r5rs_lexer qlex((QUEX_TYPE_CHARACTER*)NULL, 0);
 
-    for (quex::Token* token = t.next(); token; token = t.next()) {
+    for (quex::Token* token = read_token_from_file(qlex, file); token;) {
         printf("[%d,%d] %s <%s>\n",
                token->line_number(),
                token->column_number(),
                token->type_id_name().c_str(),
                token->text.c_str());
+
+        token = read_token_from_file(qlex, file);
     }
 
     if (file != stdin) {
