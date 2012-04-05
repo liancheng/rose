@@ -1,4 +1,4 @@
-all: sexp
+all: sexp test
 
 sexp: build/sexp.o lexer/r5rs_lexer.o
 	clang++\
@@ -34,6 +34,22 @@ lexer/r5rs_lexer.cpp: r5rs.qx
 		--token-id-prefix TKN_\
 		--output-directory lexer\
 		--token-policy single
+
+test: build/test
+	./build/test
+
+build/test: build/test.o
+	clang++\
+		build/test.o\
+		-o build/test\
+		-lgtest\
+		-pthread
+
+build/test.o: test.cpp
+	clang++\
+		-c test.cpp\
+		-o build/test.o\
+		-g
 
 clean:
 	rm -rf build/*
