@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <cstdlib>
 
+typedef quex::Token token;
+typedef quex::r5rs_lexer lexer;
+
 void usage(char const* program, void* args[])
 {
     printf("Usage: %s", program);
@@ -15,9 +18,10 @@ void usage(char const* program, void* args[])
     arg_print_glossary(stdout, args, "  %-20s %s\n");
 }
 
-quex::Token* read_token_from_file(quex::r5rs_lexer& qlex, FILE* file)
+token* read_token(FILE* file)
 {
-    QUEX_TYPE_TOKEN* token = qlex.token_p();
+    static lexer qlex((QUEX_TYPE_CHARACTER*)NULL, 0);
+
     QUEX_TYPE_TOKEN_ID token_id = qlex.receive();
 
     // Try to reload the analyzer with more input.
@@ -31,8 +35,7 @@ quex::Token* read_token_from_file(quex::r5rs_lexer& qlex, FILE* file)
 
         if (!line) {
             qlex.buffer_fill_region_finish(0);
-            token = NULL;
-            goto exit;
+            return NULL;
         }
 
         qlex.buffer_fill_region_finish(strlen(line));
@@ -41,8 +44,7 @@ quex::Token* read_token_from_file(quex::r5rs_lexer& qlex, FILE* file)
         qlex.receive();
     }
 
-exit:
-    return token;
+    return qlex.token_p();
 }
 
 int main(int argc, char* argv[])
@@ -86,19 +88,12 @@ int main(int argc, char* argv[])
         file = stdin;
     }
 
-    quex::r5rs_lexer qlex((QUEX_TYPE_CHARACTER*)NULL, 0);
-
-    while (true) {
-        quex::Token* token = read_token_from_file(qlex, file);
-
-        if (!token)
-            break;
-
+    while (token* t = read_token(file)) {
         printf("[%d,%d] %s <%s>\n",
-               token->line_number(),
-               token->column_number(),
-               token->type_id_name().c_str(),
-               token->text.c_str());
+               t->line_number(),
+               t->column_number(),
+               t->type_id_name().c_str(),
+               t->text.c_str());
     }
 
     if (file != stdin) {

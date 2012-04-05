@@ -1,6 +1,8 @@
 #ifndef __ROSE_SEXP_H__
 #define __ROSE_SEXP_H__
 
+#include <stdint.h>
+
 enum sexp_types {
     SEXP_BOOLEAN,
     SEXP_PAIR,
@@ -9,8 +11,10 @@ enum sexp_types {
 
 typedef struct sexp_struct* sexp;
 
+typedef void* sexp_word;
+
 struct sexp_struct {
-    char tag;
+    sexp_word tag;
 
     union {
         struct {
@@ -20,7 +24,7 @@ struct sexp_struct {
         pair;
 
         struct {
-            unsigned long length;
+            sexp_word length;
             char name[];
         }
         symbol;
@@ -48,9 +52,9 @@ struct sexp_struct {
 #define SEXP_UNDEFINED      MAKE_IMMEDIATE(4)
 
 #define SEXP_NULL_P(s)      ((s) == SEXP_NULL)
-#define SEXP_POINTER_P(s)   (((unsigned long)(s) & 0x03) == SEXP_POINTER_TAG)
-#define SEXP_I_SYMBOL_P(s)  (((unsigned long)(s) & 0x07) == SEXP_I_SYMBOL_P)
-#define SEXP_L_SYMBOL_P(s)  (((unsigned long)(s) & 0x07) == SEXP_L_SYMBOL_P)
+#define SEXP_POINTER_P(s)   (((sexp_word)(s) & 0x03) == SEXP_POINTER_TAG)
+#define SEXP_I_SYMBOL_P(s)  (((sexp_word)(s) & 0x07) == SEXP_I_SYMBOL_TAG)
+#define SEXP_L_SYMBOL_P(s)  (((sexp_word)(s) & 0x07) == SEXP_L_SYMBOL_TAG)
 #define SEXP_SYMBOL_P(s)    (SEXP_I_SYMBOL_P(s) || SEXP_L_SYMBOL_P(s))
 #define SEXP_PAIR_P(s)      (SEXP_POINTER_P(s) && ((sexp)(s))->tag == SEXP_PAIR)
 
