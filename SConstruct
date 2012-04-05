@@ -1,13 +1,16 @@
 from os import environ
 
 env = Environment(tools=['default', 'quex'],
-                  ENV=environ)
+                  ENV=environ,
+                  CPPPATH=['#include',
+                           environ['QUEX_PATH']])
 
-env.Quex(source='src/r5rs.qx',
-         QUEXENGINE='r5rs_lexer',
-         QUEXLANG='C++',
-         QUEXTKNPREFIX='TKN_',
-         QUEXTKNPOLICY='single',
-         QUEXOUTDIR='build')
+env.SConscript(dirs='src',
+               exports='env',
+               variant_dir='build/src')
+
+env.SConscript(dirs='test',
+               exports='env',
+               variant_dir='build/test')
 
 # vim:ft=python

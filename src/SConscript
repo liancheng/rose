@@ -11,9 +11,7 @@ lexer_src = env.Quex(source='r5rs.qx',
                      QUEXTKNPOLICY='single')
 
 sexp_obj = env.Object(source=env.Glob('*.cpp'))
-
 env.Depends(sexp_obj, lexer_src)
-
-sexp_bin = env.Program(target='sexp', source=[sexp_obj])
+env.Program(target='sexp', source=sexp_obj)
 
 # vim:ft=python
