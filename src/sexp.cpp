@@ -1,5 +1,5 @@
+#include "r5rs_lexer"
 #include "sexp.h"
-#include "lexer/r5rs_lexer"
 
 #include <argtable2.h>
 #include <readline/history.h>
