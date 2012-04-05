@@ -1,80 +1,130 @@
+"""
+SCons.Tool.quex
+
+Tool-specific initializaton for the Quex lexer generator.
+
+For the following options, target/source dependencies are not properly
+handled:
+
+- ``--language dot``
+- ``--derived-class``, ``--dc``
+- ``--derived-class-file``
+- ``--token-class-file``
+- ``--token-class``, ``--tc``
+- ``--codec-file``
+"""
+
+import SCons
+
 from SCons.Builder import Builder
-from SCons.Script import File
-from SCons.Script import Flatten
-from SCons.Script import Mkdir
+from SCons.Script import File, Flatten, Mkdir
+from SCons.Util import CLVar
 
 from os import path
 
-# NOTE: Do not support `--language dot'
-quex_opt = {
-    'QUEXTKNPREFIX': '--token-id-prefix',
-    'QUEXLANG':      '--language',
-    'QUEXTKNPOLICY': '--token-policy',
-    'QUEXEXT':       '--file-extension-scheme',
-    'QUEXOUTDIR':    '--output-directory',
-}
+
+class ToolQuexWarning(SCons.Warnings.Warning):
+    pass
 
 
-quex_file_ext = {
-    'pp': ('.hpp', '.cpp'),
-    'xx': ('.hxx', '.cxx'),
-    'cc': ('.hh',  '.cc'),
-}
+class QuexCompilerNotFound(ToolQuexWarning):
+    pass
 
 
 def quex_generator(source, target, env, for_signature):
+    quex_opt = {
+        'QUEXTKNPREFIX': '--token-id-prefix',
+        'QUEXLANG':      '--language',
+        'QUEXTKNPOLICY': '--token-policy',
+        'QUEXEXT':       '--file-extension-scheme',
+        'QUEXOUTDIR':    '--output-directory',
+    }
+
     Mkdir(env['QUEXOUTDIR'])
 
     cmd = ['quex']
     cmd += ['--mode-files', str(source[0])]
     cmd += ['--engine', env['QUEXENGINENS'] + env['QUEXENGINE']]
+    cmd += [env['QUEXFLAGS']]
     cmd += [[quex_opt[key], env[key]] for key in quex_opt if key in env]
 
     return ' '.join(Flatten(cmd))
 
 
 def quex_emitter(source, target, env):
-
     target_prefix = env['QUEXENGINENS'].replace('::', '_') + env['QUEXENGINE']
     target_prefix = path.join(env['QUEXOUTDIR'], target_prefix)
 
     header_ext = '.h'
     source_ext = '.c'
 
+    quex_ext_scheme = {
+        'pp': ('.hpp', '.cpp'),
+        'xx': ('.hxx', '.cxx'),
+        'cc': ('.hh',  '.cc'),
+    }
+
     if env['QUEXLANG'] == 'C++':
         if 'QUEXEXT' in env:
-            header_ext = quex_file_ext[env['QUEXEXT']][0]
-            source_ext = quex_file_ext[env['QUEXEXT']][1]
+            header_ext = quex_ext_scheme[env['QUEXEXT']][0]
+            source_ext = quex_ext_scheme[env['QUEXEXT']][1]
         else:
             header_ext = ''
             source_ext = '.cpp'
 
     target = [
-        File(''.join([target_prefix, '',               source_ext])),
-        File(''.join([target_prefix, '-configuration', header_ext])),
-        File(''.join([target_prefix, '',               header_ext])),
-        File(''.join([target_prefix, '-token',         header_ext])),
-        File(''.join([target_prefix, '-token_ids',     header_ext])),
+        target_prefix +                    source_ext,
+        target_prefix + '-configuration' + header_ext,
+        target_prefix +                    header_ext,
+        target_prefix + '-token'         + header_ext,
+        target_prefix + '-token_ids'     + header_ext,
     ]
 
     return (target, source)
 
 
+_quex_builder = Builder(generator=quex_generator,
+                        emitter=quex_emitter,
+                        src_suffix='qx')
+
+
 def generate(env):
+    """
+    Add Quex builders and construction variables to the environment.
+    """
+
+    env['Quex'] = _detect(env)
+
     env.SetDefault(QUEXLANG='C++',
-                   QUEXTKNPREFIX='QUEX_TKN_',
-                   QUEXTKNPOLICY='queue',
                    QUEXOUTDIR='.',
                    QUEXENGINENS='',
                    QUEXENGINE='Lexer',
-                   QUEXSTARTMODE='MAIN')
+                   QUEXFLAGS='')
 
-    env['BUILDERS']['Quex'] = Builder(generator=quex_generator,
-                                      emitter=quex_emitter,
-                                      src_suffix='qx')
+    env['BUILDERS']['Quex'] = _quex_builder
+
+
+def _detect(env):
+    """
+    Try to detect the Quex compiler
+    """
+
+    try:
+        return env['Quex']
+    except KeyError:
+        pass
+
+    quex = env.WhereIs('quex')
+    if quex:
+        return quex
+
+    raise SCons.Errors.StopError(QuexCompilerNotFound,
+                                 "Cound not detect Quex compiler")
+
+    return None
 
 
 def exists(env):
-    env.Detect(['quex'])
+    return _detect(env)
 
-# vim:ft=python ts=4 sw=4 et
+# vim:ft=python ts=4 sw=4 tw=70 et

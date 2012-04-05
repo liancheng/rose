@@ -2,4 +2,4 @@ build/*
 lexer/*
 tags
 *.pyc
-.sconsign.dblite
+*.sconsign.dblite
