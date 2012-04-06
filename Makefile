@@ -42,17 +42,17 @@ build/r5rs_lexer.cpp: src/r5rs.qx
 test: build/test
 	./build/test
 
-build/test: build/test.o
+build/test: build/main.o
 	clang++\
-		build/test.o\
+		build/main.o\
 		-o build/test\
 		-lgtest\
 		-pthread
 
-build/test.o: test/test.cpp
+build/main.o: test/main.cpp
 	clang++\
-		-c test/test.cpp\
-		-o build/test.o\
+		-c test/main.cpp\
+		-o build/main.o\
 		-g
 
 clean:
