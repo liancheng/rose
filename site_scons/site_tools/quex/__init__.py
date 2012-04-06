@@ -55,9 +55,11 @@ def quex_emitter(source, target, env):
     target_prefix = env['QUEXENGINENS'].replace('::', '_') + env['QUEXENGINE']
     target_prefix = path.join(env['QUEXOUTDIR'], target_prefix)
 
+    # C file extension scheme
     header_ext = '.h'
     source_ext = '.c'
 
+    # C++ file extension schemes
     quex_ext_scheme = {
         'pp': ('.hpp', '.cpp'),
         'xx': ('.hxx', '.cxx'),
@@ -72,6 +74,7 @@ def quex_emitter(source, target, env):
             header_ext = ''
             source_ext = '.cpp'
 
+    # Auto generated lexer source/header files
     target = [
         target_prefix +                    source_ext,
         target_prefix + '-configuration' + header_ext,

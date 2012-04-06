@@ -1,12 +1,19 @@
-#include "r5rs_lexer"
+#include "r5rs_lexer.h"
 #include "sexp.h"
 
 #include <argtable2.h>
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
-typedef quex::Token token;
-typedef quex::r5rs_lexer lexer;
+typedef quex_Token token;
+typedef quex_r5rs_lexer lexer;
+typedef QUEX_TYPE_TOKEN_ID token_id;
+
+lexer* get_lexer()
+{
+    static lexer qlex;
+    return &qlex;
+}
 
 void usage(char const* program, void* args[])
 {
@@ -17,31 +24,33 @@ void usage(char const* program, void* args[])
 
 token* read_token(FILE* file)
 {
-    static lexer qlex((QUEX_TYPE_CHARACTER*)NULL, 0);
+    lexer* qlex = get_lexer();
 
-    QUEX_TYPE_TOKEN_ID token_id = qlex.receive();
+    token_id id = QUEX_NAME(receive)(qlex);
 
     // Try to reload the analyzer with more input.
-    if (TKN_TERMINATION == token_id) {
-        qlex.buffer_fill_region_prepare();
+    if (TKN_TERMINATION == id) {
+        QUEX_NAME(buffer_fill_region_prepare)(qlex);
 
         // Read input from stream into analyzer buffer.
-        char* begin = (char*)qlex.buffer_fill_region_begin();
-        int   size  = qlex.buffer_fill_region_size();
+        char* begin = (char*)QUEX_NAME(buffer_fill_region_begin)(qlex);
+        int   size  = QUEX_NAME(buffer_fill_region_size)(qlex);
         char* line  = fgets(begin, size, file);
 
+        // EOF, no more input.
         if (!line) {
-            qlex.buffer_fill_region_finish(0);
+            QUEX_NAME(buffer_fill_region_finish)(qlex, 0);
             return NULL;
         }
 
-        qlex.buffer_fill_region_finish(strlen(line));
+        QUEX_NAME(buffer_fill_region_finish)(qlex, strlen(line));
 
-        // Discard the last TKN_TERMINATION token.
-        qlex.receive();
+        // Discard the last TKN_TERMINATION token,
+        // get next available token. 
+        QUEX_NAME(receive)(qlex);
     }
 
-    return qlex.token_p();
+    return QUEX_NAME(token_p)(qlex);
 }
 
 int main(int argc, char* argv[])
@@ -85,17 +94,26 @@ int main(int argc, char* argv[])
         file = stdin;
     }
 
-    while (token* t = read_token(file)) {
+    // Initialize the Quex lexer, which is a global object.
+    QUEX_NAME(construct_memory)(get_lexer(), NULL, 0, NULL, NULL, false);
+
+    token* t = NULL;
+    while (t = read_token(file)) {
+        static const int size = 256;
+        char buffer[size];
+
         printf("[%d,%d] %s <%s>\n",
-               t->line_number(),
-               t->column_number(),
-               t->type_id_name().c_str(),
-               t->text.c_str());
+               t->_line_n,
+               t->_column_n,
+               QUEX_NAME_TOKEN(map_id_to_name)(t->_id),
+               QUEX_NAME_TOKEN(pretty_char_text)(t, buffer, size));
     }
 
     if (file != stdin) {
         fclose(file);
     }
+
+    QUEX_NAME(destruct)(get_lexer());
 
     return EXIT_SUCCESS;
 }

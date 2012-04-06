@@ -3,7 +3,9 @@ Import('env')
 env = env.Clone()
 env.Append(LIBS=['gtest', 'pthread'])
 
-test_bin = env.Program(target='test', source=env.Glob('*.cpp'))
+test_bin = env.Program(target='test',
+                       source=env.Glob('*.cpp'))
+
 env.Command(target='run-test',
             source=test_bin[0],
             action=test_bin[0].abspath)
