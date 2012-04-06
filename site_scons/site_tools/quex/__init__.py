@@ -61,6 +61,7 @@ def quex_emitter(source, target, env):
 
     # C++ file extension schemes
     quex_ext_scheme = {
+        '++': ('.c++', '.h++'),
         'pp': ('.hpp', '.cpp'),
         'xx': ('.hxx', '.cxx'),
         'cc': ('.hh',  '.cc'),
