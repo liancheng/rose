@@ -17,8 +17,7 @@ handled:
 import SCons
 
 from SCons.Builder import Builder
-from SCons.Script import File, Flatten, Mkdir
-from SCons.Util import CLVar
+from SCons.Script import Flatten, Mkdir
 
 from os import path
 
@@ -33,9 +32,9 @@ class QuexCompilerNotFound(ToolQuexWarning):
 
 def quex_generator(source, target, env, for_signature):
     quex_opt = {
-        'QUEXLANG':      '--language',
-        'QUEXEXT':       '--file-extension-scheme',
-        'QUEXOUTDIR':    '--output-directory',
+        'QUEXLANG':   '--language',
+        'QUEXEXT':    '--file-extension-scheme',
+        'QUEXOUTDIR': '--output-directory',
     }
 
     Mkdir(env['QUEXOUTDIR'])
