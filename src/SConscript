@@ -7,9 +7,9 @@ env.Append(LIBS='argtable2',
 lexer_src = env.Quex(source='r5rs.qx',
                      QUEXENGINE='r5rs_lexer',
                      QUEXLANG='C',
-                     QUEXTKNPREFIX='TKN_',
                      QUEXOUTDIR=Dir('.').abspath,
-                     QUEXTKNPOLICY='single')
+                     QUEXFLAGS=['--token-id-prefix TKN_',
+                                '--token-policy single'])
 
 sexp_obj = env.Object(source=env.Glob('*.c'))
 env.Depends(sexp_obj, lexer_src)

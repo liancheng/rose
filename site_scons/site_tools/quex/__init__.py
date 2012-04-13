@@ -33,9 +33,7 @@ class QuexCompilerNotFound(ToolQuexWarning):
 
 def quex_generator(source, target, env, for_signature):
     quex_opt = {
-        'QUEXTKNPREFIX': '--token-id-prefix',
         'QUEXLANG':      '--language',
-        'QUEXTKNPOLICY': '--token-policy',
         'QUEXEXT':       '--file-extension-scheme',
         'QUEXOUTDIR':    '--output-directory',
     }
