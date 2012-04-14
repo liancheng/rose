@@ -1,6 +1,7 @@
-#include "lexer.h"
-#include "sexp.h"
+#include "rose/scanner.h"
+#include "rose/sexp.h"
 
+#include <glib.h>
 #include <argtable2.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,23 +41,20 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    FILE* file = NULL;
+    FILE* in = stdin;
 
     if (input->count > 0) {
-        file = fopen(input->filename[0], "r");
-        if (!file) {
+        in = fopen(input->filename[0], "r");
+        if (!in) {
             fprintf(stderr, "cannot open file %s\n", input->filename[0]);
             exit(EXIT_FAILURE);
         }
     }
-    else {
-        file = stdin;
-    }
 
-    lexer_init();
+    r_context* context = context_new();
 
-    token* t = NULL;
-    while ((t = read_token(file))) {
+    r_token* t = NULL;
+    while ((t = scanner_next_token(in, context))) {
         static const int size = 256;
         char buffer[size];
 
@@ -65,13 +63,15 @@ int main(int argc, char* argv[])
                t->_column_n,
                QUEX_NAME_TOKEN(map_id_to_name)(t->_id),
                QUEX_NAME_TOKEN(pretty_char_text)(t, buffer, size));
+
+        QUEX_NAME_TOKEN(destruct)(t);
     }
 
-    if (file != stdin) {
-        fclose(file);
+    if (in != stdin) {
+        fclose(in);
     }
 
-    lexer_finish();
+    context_free(context);
 
     return EXIT_SUCCESS;
 }
