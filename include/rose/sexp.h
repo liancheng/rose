@@ -39,7 +39,7 @@ r_pair;
 #define SEXP_FALSE          SEXP_MAKE_CONST(1)
 #define SEXP_TRUE           SEXP_MAKE_CONST(2)
 #define SEXP_EOF            SEXP_MAKE_CONST(3)
-#define SEXP_SPECIFIED      SEXP_MAKE_CONST(4)
+#define SEXP_UNSPECIFIED    SEXP_MAKE_CONST(4)
 #define SEXP_UNDEFINED      SEXP_MAKE_CONST(5)
 
 #define SEXP_NULL_P(s)      ((s) == SEXP_NULL)

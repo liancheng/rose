@@ -4,9 +4,17 @@
 #include <gc.h>
 #include <stdlib.h>
 
-r_sexp sexp_cons(r_sexp car, r_sexp cdr)
+static r_pair* pair_new()
 {
     r_pair* pair = (r_pair*)GC_malloc(sizeof(r_pair));
+    pair->car = SEXP_UNSPECIFIED;
+    pair->cdr = SEXP_UNSPECIFIED;
+    return pair;
+}
+
+r_sexp sexp_cons(r_sexp car, r_sexp cdr)
+{
+    r_pair* pair = pair_new();
     pair->car = car;
     pair->cdr = cdr;
     return SEXP_FROM_PAIR(pair);
@@ -28,14 +36,14 @@ r_sexp sexp_set_car_x(r_sexp pair, r_sexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->car = sexp;
-    return SEXP_SPECIFIED;
+    return SEXP_UNSPECIFIED;
 }
 
 r_sexp sexp_set_cdr_x(r_sexp pair, r_sexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->cdr = sexp;
-    return SEXP_SPECIFIED;
+    return SEXP_UNSPECIFIED;
 }
 
 static r_sexp sexp_reverse_internal(r_sexp list, r_sexp acc)
