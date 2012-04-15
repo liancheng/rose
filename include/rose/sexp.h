@@ -32,8 +32,6 @@ r_pair;
 #define SEXP_SYMBOL_TAG     0x01
 #define SEXP_PAIR_TAG       0x03
 
-#define SEXP_FAIL           (0)
-
 #define SEXP_MAKE_CONST(n)  ((r_sexp)((n << 4) + 0x0e))
 #define SEXP_NULL           SEXP_MAKE_CONST(0)
 #define SEXP_FALSE          SEXP_MAKE_CONST(1)

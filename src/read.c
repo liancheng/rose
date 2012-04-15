@@ -6,7 +6,7 @@
 r_sexp sexp_read_boolean(FILE* input, r_context* context)
 {
     if (TKN_BOOLEAN != scanner_peek_token_id(input, context))
-        return SEXP_FAIL;
+        return SEXP_UNSPECIFIED;
 
     r_token* t = scanner_next_token(input, context);
     r_sexp res = ('t' == t->text[1]) ? SEXP_TRUE : SEXP_FALSE;
@@ -18,7 +18,7 @@ r_sexp sexp_read_boolean(FILE* input, r_context* context)
 r_sexp sexp_read_symbol(FILE* input, r_context* context)
 {
     if (TKN_IDENTIFIER != scanner_peek_token_id(input, context))
-        return SEXP_FAIL;
+        return SEXP_UNSPECIFIED;
 
     r_token* t = scanner_next_token(input, context);
     r_sexp res = sexp_from_symbol((char*)(t->text), context);
@@ -31,7 +31,7 @@ r_sexp sexp_read_simple_datum(FILE* input, r_context* context)
 {
     r_sexp res = sexp_read_boolean(input, context);
 
-    if (SEXP_FAIL == res)
+    if (SEXP_UNSPECIFIED == res)
         res = sexp_read_symbol(input, context);
 
     return res;
@@ -39,14 +39,14 @@ r_sexp sexp_read_simple_datum(FILE* input, r_context* context)
 
 r_sexp sexp_read_abbrev(FILE* input, r_context* context)
 {
-    return SEXP_FAIL;
+    return SEXP_UNSPECIFIED;
 }
 
 r_sexp sexp_read_list(FILE* input, r_context* context)
 {
-    r_sexp res = SEXP_FAIL;
+    r_sexp res = SEXP_UNSPECIFIED;
 
-    if (SEXP_FAIL != (res = sexp_read_abbrev(input, context)))
+    if (SEXP_UNSPECIFIED != (res = sexp_read_abbrev(input, context)))
         goto exit;
 
     if (TKN_LP == scanner_peek_token_id(input, context))
@@ -63,9 +63,9 @@ r_sexp sexp_read_list(FILE* input, r_context* context)
     }
 
     res = SEXP_NULL;
-    r_sexp sexp = SEXP_FAIL;
+    r_sexp sexp = SEXP_UNSPECIFIED;
 
-    while (SEXP_FAIL != (sexp = sexp_read_datum(input, context)))
+    while (SEXP_UNSPECIFIED != (sexp = sexp_read_datum(input, context)))
         res = sexp_cons(sexp, res);
 
     res = sexp_reverse(res);
@@ -74,9 +74,9 @@ r_sexp sexp_read_list(FILE* input, r_context* context)
         scanner_consume_token(input, context);
 
         r_sexp last = sexp_read_datum(input, context);
-        if (SEXP_FAIL == last) {
+        if (SEXP_UNSPECIFIED == last) {
             // TODO error report
-            res = SEXP_FAIL;
+            res = SEXP_UNSPECIFIED;
             goto exit;
         }
 
@@ -87,7 +87,7 @@ r_sexp sexp_read_list(FILE* input, r_context* context)
         scanner_consume_token(input, context);
     else {
         // TODO error report
-        res = SEXP_FAIL;
+        res = SEXP_UNSPECIFIED;
     }
 
 exit:
@@ -106,7 +106,7 @@ r_sexp sexp_read_datum(FILE* input, r_context* context)
 
     r_sexp res = sexp_read_simple_datum(input, context);
 
-    if (SEXP_FAIL == res)
+    if (SEXP_UNSPECIFIED == res)
         res = sexp_read_compound_datum(input, context);
 
     return res;
