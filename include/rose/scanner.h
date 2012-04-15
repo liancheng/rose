@@ -14,5 +14,8 @@ r_token*   scanner_peek_token    (FILE*      input,
                                   r_context* context);
 r_token_id scanner_peek_token_id (FILE*      input,
                                   r_context* context);
+void       scanner_consume_token (FILE*      input,
+                                  r_context* context);
+void       scanner_free_token    (r_token*   token);
 
 #endif  //  __ROSE_SCANNER_H__

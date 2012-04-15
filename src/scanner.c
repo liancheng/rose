@@ -19,17 +19,17 @@ r_token* read_token(FILE* input, r_context* context)
         int   size  = QUEX_NAME(buffer_fill_region_size)(lex);
         char* line  = fgets(begin, size, input);
 
-        // EOF, no more input.
-        if (!line) {
-            QUEX_NAME(buffer_fill_region_finish)(lex, 0);
-            return NULL;
+        if (line) {
+            QUEX_NAME(buffer_fill_region_finish)(lex, strlen(line));
+
+            // Discard the last TKN_TERMINATION token,
+            // try to receive another token.
+            QUEX_NAME(receive)(lex);
         }
-
-        QUEX_NAME(buffer_fill_region_finish)(lex, strlen(line));
-
-        // Discard the last TKN_TERMINATION token,
-        // try to receive another token.
-        QUEX_NAME(receive)(lex);
+        else {
+            // EOF, no more input.
+            QUEX_NAME(buffer_fill_region_finish)(lex, 0);
+        }
     }
 
     // Copy the token and return it.
@@ -68,4 +68,15 @@ r_token* scanner_peek_token(FILE* input, r_context* context)
 r_token_id scanner_peek_token_id(FILE* input, r_context* context)
 {
     return scanner_peek_token(input, context)->_id;
+}
+
+void scanner_consume_token(FILE* input, r_context* context)
+{
+    scanner_free_token(scanner_next_token(input, context));
+}
+
+void scanner_free_token(r_token* token)
+{
+    QUEX_NAME_TOKEN(destruct)(token);
+    free(token);
 }
