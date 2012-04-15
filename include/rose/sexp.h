@@ -3,7 +3,6 @@
 
 #include "rose/context.h"
 
-#include <glib.h>
 #include <stdint.h>
 
 typedef enum {
@@ -18,7 +17,7 @@ typedef struct r_sexp_struct* r_sexp;
 typedef uintptr_t r_word;
 
 struct r_sexp_struct {
-    r_word tag;
+    r_word type;
 
     union {
         struct {
@@ -40,6 +39,8 @@ struct r_sexp_struct {
 #define SEXP_BOXED_TAG      0x00
 #define SEXP_SYMBOL_TAG     0x01
 
+#define SEXP_FAIL           (0)
+
 #define MAKE_IMMEDIATE(n)   ((r_sexp)((n << 4) + 0x0e))
 #define SEXP_NULL           MAKE_IMMEDIATE(0)
 #define SEXP_FALSE          MAKE_IMMEDIATE(1)
@@ -49,8 +50,12 @@ struct r_sexp_struct {
 
 #define sexp_null_p(s)      ((s) == SEXP_NULL)
 #define sexp_boxed_p(s)     (((r_word)(s) & 0x03) == SEXP_BOXED_TAG)
-#define sexp_symbol_p(s)    (((r_word)(s) & 0x07) == SEXP_SYMBOL_TAG)
+#define sexp_boolean_p(s)   ((s == SEXP_TRUE) || (s == SEXP_FALSE))
+#define sexp_symbol_p(s)    (((r_word)(s) & 0x03) == SEXP_SYMBOL_TAG)
 #define sexp_pair_p(s)      (sexp_boxed_p(s) &&\
-                             ((r_sexp)(s))->tag == SEXP_PAIR)
+                             ((r_sexp)(s))->type == SEXP_PAIR)
+
+r_sexp sexp_new  ();
+void   sexp_free (r_sexp sexp);
 
 #endif  //  __ROSE_SEXP_H__

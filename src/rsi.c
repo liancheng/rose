@@ -1,8 +1,12 @@
+#include "rose/pair.h"
+#include "rose/read.h"
 #include "rose/scanner.h"
 #include "rose/sexp.h"
+#include "rose/symbol.h"
+#include "rose/write.h"
 
-#include <glib.h>
 #include <argtable2.h>
+#include <gc.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -51,20 +55,13 @@ int main(int argc, char* argv[])
         }
     }
 
+    GC_init();
     r_context* context = context_new();
 
-    r_token* t = NULL;
-    while ((t = scanner_next_token(in, context))) {
-        static const int size = 256;
-        char buffer[size];
-
-        printf("[%d,%d] %s <%s>\n",
-               t->_line_n,
-               t->_column_n,
-               QUEX_NAME_TOKEN(map_id_to_name)(t->_id),
-               QUEX_NAME_TOKEN(pretty_char_text)(t, buffer, size));
-
-        QUEX_NAME_TOKEN(destruct)(t);
+    r_sexp res = SEXP_NULL;
+    while (SEXP_EOF != (res = sexp_read_datum(in, context))) {
+        sexp_write_datum(stdout, res, context);
+        printf("\n");
     }
 
     if (in != stdin) {

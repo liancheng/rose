@@ -1,8 +1,6 @@
 Import('env')
 
 env = env.Clone()
-env.Append(LIBS='argtable2',
-           CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED')
 
 lexer_src = env.Quex(source='r5rs.qx',
                      QUEXENGINE='lexer',
@@ -12,13 +10,11 @@ lexer_src = env.Quex(source='r5rs.qx',
                                 '--token-policy single',
                                 '--token-class token'])
 
-sexp_obj = env.Object(source=[env.Glob('*.c'),
-                              env.Glob('quex/*.c')])
+env.Append(LIBS=['argtable2', 'gc'],
+           CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED')
 
-env.Depends(target=sexp_obj,
-            dependency=lexer_src)
-
-env.Program(target='sexp',
-            source=sexp_obj)
+env.Program(target='rsi',
+            source=env.Object(source=[env.Glob('*.c'),
+                                      env.Glob('quex/*.c')]))
 
 # vim:ft=python

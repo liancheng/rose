@@ -1,5 +1,7 @@
 #include "rose/symbol.h"
 
+#include <glib.h>
+
 r_quark quark_from_symbol(char const* symbol, r_context* context)
 {
     return g_quark_from_string(symbol);
