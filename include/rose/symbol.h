@@ -4,7 +4,10 @@
 #include "rose/context.h"
 #include "rose/sexp.h"
 
-typedef r_word r_quark;
+#define SEXP_SYMBOL_P(s)    (((s) & 0x03) == SEXP_SYMBOL_TAG)
+
+typedef uintptr_t r_word;
+typedef r_word    r_quark;
 
 r_quark     quark_from_symbol        (char const* symbol,
                                       r_context*  context);

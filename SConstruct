@@ -13,9 +13,12 @@ clang = base.Clone(CC='clang', CXX='clang++')
 gcc   = base.Clone(CC='gcc',   CXX='g++')
 env   = clang;
 
-env.SConscript(dirs='src',
-               exports='env',
-               variant_dir='build/src/')
+rsi_bin = env.SConscript(dirs='src',
+                         exports='env',
+                         variant_dir='build/src/')
+
+env.Install(target='bin/',
+            source=rsi_bin)
 
 env.SConscript(dirs='test',
                exports='env',

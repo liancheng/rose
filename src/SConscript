@@ -13,8 +13,10 @@ lexer_src = env.Quex(source='r5rs.qx',
 env.Append(LIBS=['argtable2', 'gc'],
            CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED')
 
-env.Program(target='rsi',
-            source=env.Object(source=[env.Glob('*.c'),
-                                      env.Glob('quex/*.c')]))
+rsi_bin = env.Program(target='rsi',
+                      source=env.Object(source=[env.Glob('*.c'),
+                                                env.Glob('quex/*.c')]))
+
+Return('rsi_bin')
 
 # vim:ft=python

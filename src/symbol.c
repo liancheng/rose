@@ -25,6 +25,6 @@ r_sexp sexp_from_symbol(char const* symbol, r_context* context)
 
 char const* sexp_to_symbol(r_sexp sexp, r_context* context)
 {
-    g_assert(sexp_symbol_p(sexp));
-    return quark_to_symbol(((r_word)sexp) >> 2, context);
+    g_assert(SEXP_SYMBOL_P(sexp));
+    return quark_to_symbol((sexp) >> 2, context);
 }

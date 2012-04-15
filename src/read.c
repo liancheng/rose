@@ -80,7 +80,7 @@ r_sexp sexp_read_list(FILE* input, r_context* context)
             goto exit;
         }
 
-        sexp_append(res, last);
+        sexp_append_x(res, last);
     }
 
     if (TKN_RP == scanner_peek_token_id(input, context))
