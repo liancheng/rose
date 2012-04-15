@@ -1,18 +1,17 @@
 from os import environ
 
-gcc = Environment(tools=['default', 'quex'],
-                  ENV=environ,
-                  CFLAGS='-ggdb -Wall',
-                  CPPPATH=['#include/',
-                           '#build/src/',
-                           environ['QUEX_PATH']])
+base = Environment(tools=['default', 'quex'],
+                   ENV=environ,
+                   CFLAGS='-ggdb -Wall',
+                   CPPPATH=['#include/',
+                            '#build/src/',
+                            environ['QUEX_PATH']])
 
-clang = gcc.Clone(CC='clang', CXX='clang++')
+base.ParseConfig('pkg-config --cflags --libs glib-2.0')
 
-
-env = clang;
-
-env.ParseConfig('pkg-config --cflags --libs glib-2.0')
+clang = base.Clone(CC='clang', CXX='clang++')
+gcc   = base.Clone(CC='gcc',   CXX='g++')
+env   = clang;
 
 env.SConscript(dirs='src',
                exports='env',
