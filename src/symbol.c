@@ -23,6 +23,12 @@ r_sexp sexp_from_symbol(char const* symbol, r_context* context)
     return (r_sexp)((quark << 2) + SEXP_SYMBOL_TAG);
 }
 
+r_sexp sexp_from_static_symbol(char const* symbol, r_context* context)
+{
+    r_quark quark = quark_from_static_symbol(symbol, context);
+    return (r_sexp)((quark << 2) + SEXP_SYMBOL_TAG);
+}
+
 char const* sexp_to_symbol(r_sexp sexp, r_context* context)
 {
     g_assert(SEXP_SYMBOL_P(sexp));
