@@ -1,6 +1,6 @@
-token
-{
+token {
     TERMINATION;
+
     POUND_LP;
     LP;
     RP;
@@ -12,11 +12,23 @@ token
     BACK_QUOTE;
     IDENTIFIER;
     BOOLEAN;
+    STRING;
+
+    NUMBER_EXACTNESS;
+    NUMBER_SIGN;
+    NUMBER_RADIX;
+    NUMBER_DIGIT;
+    NUMBER_DIV;
+    NUMBER_DOT;
+    NUMBER_EXP;
+    NUMBER_I;
+    NUMBER_AT;
+    NUMBER_POUND;
+
     FAIL;
 }
 
-define
-{
+define {
     /* Skipper and delimiter */
     whitespace          [ \n]
     comment             ;.*
@@ -34,23 +46,21 @@ define
     peculiar_identifier [\-+]|"..."
     identifier          {initial}{subsequent}*|{peculiar_identifier}
 
-    boolean             #t|#f
+    /* Boolean */
+    boolean             #[tf]
 }
 
 start = MAIN;
 
-mode FAILURE : <inheritable: only>
-{
+mode FAILURE : <inheritable: only> {
     <<FAIL>> => TKN_FAIL(Lexeme);
 }
 
-mode EOF : <inheritable: only>
-{
+mode EOF : <inheritable: only> {
     <<EOF>> => TKN_TERMINATION(LexemeNull);
 }
 
-mode MAIN : FAILURE, EOF
-{
+mode MAIN : FAILURE, EOF {
     /* Skippers */
     {intertoken_space}          {}
 
@@ -72,4 +82,53 @@ mode MAIN : FAILURE, EOF
 
     /* Booleans */
     {boolean}/{delimiter}       => TKN_BOOLEAN(Lexeme);
+
+    /* Strings */
+    "\""                        => GOSUB(STRING);
+}
+
+mode STRING : EOF, FAILURE {
+    on_entry {
+        self_accumulator_clear();
+    }
+
+    on_exit {
+        self_accumulator_flush(TKN_STRING);
+    }
+
+    /* Escaped characters */
+    \\ {
+        self_accumulator_add_character('\\');
+    }
+
+    \\a {
+        self_accumulator_add_character('\a');
+    }
+
+    \\t {
+        self_accumulator_add_character('\t');
+    }
+
+    \\n {
+        self_accumulator_add_character('\n');
+    }
+
+    \\r {
+        self_accumulator_add_character('\r');
+    }
+
+    \\\" {
+        self_accumulator_add_character('\"');
+    }
+
+    \\\\ {
+        self_accumulator_add_character('\\');
+    }
+
+    /* Ending double quote, back to MAIN mode */
+    \" => GOUP();
+
+    . {
+        self_accumulator_add(Lexeme, LexemeEnd);
+    }
 }

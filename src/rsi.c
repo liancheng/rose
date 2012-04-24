@@ -6,7 +6,7 @@
 #include "rose/write.h"
 
 #include <argtable2.h>
-#include <gc.h>
+#include <gc/gc.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -55,14 +55,19 @@ int main(int argc, char* argv[])
         }
     }
 
-    GC_init();
+    GC_INIT();
     r_context* context = context_new();
 
-    r_sexp res = SEXP_NULL;
-    while (SEXP_EOF != (res = sexp_read_datum(in, context))) {
+    while (true) {
+        r_sexp res = sexp_read_datum(in, context);
+
+        if (SEXP_EOF_P(res) || SEXP_UNSPECIFIED_P(res))
+            break;
+
         sexp_write_datum(stdout, res, context);
         printf("\n");
     }
+
 
     if (in != stdin) {
         fclose(in);

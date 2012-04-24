@@ -8,9 +8,9 @@
 
 r_sexp sexp_read_boolean        (FILE*      input,
                                  r_context* context);
-r_sexp sexp_read_datum          (FILE*      input,
-                                 r_context* context);
 r_sexp sexp_read_symbol         (FILE*      input,
+                                 r_context* context);
+r_sexp sexp_read_string         (FILE*      input,
                                  r_context* context);
 r_sexp sexp_read_simple_datum   (FILE*      input,
                                  r_context* context);
