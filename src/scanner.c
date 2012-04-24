@@ -3,66 +3,55 @@
 
 #include <glib.h>
 
-r_token* read_token(FILE* input, r_context* context)
+static void reload_lexer(r_lexer* lex, FILE* input)
 {
-    r_lexer* lex = (r_lexer*)(context->lexer);
+    QUEX_NAME(buffer_fill_region_prepare)(lex);
 
-    // Receive next token from the input stream.
-    r_token_id id = QUEX_NAME(receive)(lex);
+    char* begin = (char*)QUEX_NAME(buffer_fill_region_begin)(lex);
+    int   size  = QUEX_NAME(buffer_fill_region_size)(lex);
+    char* line  = fgets(begin, size, input);
+    int   len   = line ? strlen(line) : 0;
 
-    // Reload the analyzer if there's no more token.
-    if (TKN_TERMINATION == id) {
-        QUEX_NAME(buffer_fill_region_prepare)(lex);
-
-        // Read input from stream into analyzer buffer.
-        char* begin = (char*)QUEX_NAME(buffer_fill_region_begin)(lex);
-        int   size  = QUEX_NAME(buffer_fill_region_size)(lex);
-        char* line  = fgets(begin, size, input);
-
-        if (line) {
-            QUEX_NAME(buffer_fill_region_finish)(lex, strlen(line));
-
-            // Discard the last TKN_TERMINATION token,
-            // try to receive another token.
-            QUEX_NAME(receive)(lex);
-        }
-        else {
-            // EOF, no more input.
-            QUEX_NAME(buffer_fill_region_finish)(lex, 0);
-        }
-    }
-
-    // Copy the token and return it.
-    r_token* t = (r_token*)malloc(sizeof(r_token));
-    QUEX_NAME_TOKEN(copy_construct)(t, QUEX_NAME(token_p)(lex));
-
-    return t;
+    QUEX_NAME(buffer_fill_region_finish)(lex, len);
 }
 
-/* Caller must free the token. */
-r_token* scanner_next_token(FILE* input, r_context* context)
-{
-    GQueue* q = (GQueue*)(context->token_queue);
-    return (g_queue_is_empty(q)) ? read_token(input, context)
-                                 : (r_token*)g_queue_pop_head(q);
-}
-
-/* Caller must *NOT* free the token. */
-r_token* scanner_peek_token(FILE* input, r_context* context)
+static r_token* read_token(FILE* input, r_context* context)
 {
     r_token* t = NULL;
-    GQueue*  q = (GQueue*)(context->token_queue);
+    QUEX_NAME(receive)(context->lexer, &t);
 
-    if (g_queue_is_empty(q)) {
-        if ((t = read_token(input, context))) {
-            g_queue_push_tail(q, t);
-        }
-    }
-    else {
-        t = (r_token*)g_queue_peek_head(q);
+    if (TKN_TERMINATION == t->_id) {
+        reload_lexer(context->lexer, input);
+        QUEX_NAME(receive)(context->lexer, &t);
     }
 
-    return t;
+    return scanner_copy_token(t);
+}
+
+r_token* scanner_copy_token(r_token* token)
+{
+    r_token* res = (r_token*)malloc(sizeof(r_token));
+    QUEX_NAME_TOKEN(copy_construct)(res, token);
+    return res;
+}
+
+// The caller is responsible for freeing the returned token.
+r_token* scanner_next_token(FILE* input, r_context* context)
+{
+    return g_queue_is_empty(context->token_queue)
+           ? read_token(input, context)
+           : (r_token*)g_queue_pop_head(context->token_queue);
+}
+
+// The caller must not free the returned token.
+r_token* scanner_peek_token(FILE* input, r_context* context)
+{
+    GQueue* q = (GQueue*)(context->token_queue);
+
+    if (g_queue_is_empty(q))
+        g_queue_push_tail(q, read_token(input, context));
+
+    return (r_token*)g_queue_peek_head(q);
 }
 
 r_token_id scanner_peek_token_id(FILE* input, r_context* context)

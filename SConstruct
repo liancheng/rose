@@ -20,8 +20,4 @@ rsi_bin = env.SConscript(dirs='src',
 env.Install(target='bin/',
             source=rsi_bin)
 
-env.SConscript(dirs='test',
-               exports='env',
-               variant_dir='build/test/')
-
 # vim:ft=python

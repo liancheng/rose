@@ -1,9 +1,13 @@
 #ifndef __ROSE_CONTEXT_H__
 #define __ROSE_CONTEXT_H__
 
-typedef struct _r_context {
-    void* lexer;
-    void* token_queue;
+#include "rose/scanner_types.h"
+
+#include <glib.h>
+
+typedef struct r_context {
+    r_lexer* lexer;
+    GQueue* token_queue;
 }
 r_context;
 

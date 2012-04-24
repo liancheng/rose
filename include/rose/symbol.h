@@ -4,7 +4,7 @@
 #include "rose/context.h"
 #include "rose/sexp.h"
 
-#define SEXP_SYMBOL_P(s)    (((s) & 0x03) == SEXP_SYMBOL_TAG)
+#define SEXP_SYMBOL_P(s)    (((s) & 0x07) == SEXP_SYMBOL_TAG)
 
 typedef uintptr_t r_word;
 typedef r_word    r_quark;

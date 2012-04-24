@@ -1,5 +1,8 @@
+#include "rose/error.h"
 #include "rose/pair.h"
+#include "rose/string.h"
 #include "rose/symbol.h"
+#include "rose/vector.h"
 #include "rose/write.h"
 
 #include <assert.h>
@@ -20,9 +23,29 @@ void sexp_write_cdr(FILE* output, r_sexp sexp, r_context* context)
 void sexp_write_pair(FILE* output, r_sexp sexp, r_context* context)
 {
     assert(SEXP_PAIR_P(sexp));
+
     fprintf(output, "(");
     sexp_write_datum(output, sexp_car(sexp), context);
     sexp_write_cdr(output, sexp_cdr(sexp), context);
+    fprintf(output, ")");
+}
+
+void sexp_write_vector(FILE* output, r_sexp sexp, r_context* context)
+{
+    assert(SEXP_VECTOR_P(sexp));
+
+    fprintf(output, "#(");
+
+    size_t length = sexp_vector_length(sexp);
+    if (length) {
+        sexp_write_datum(output, sexp_vector_ref(sexp, 0), context);
+
+        for (size_t i = 1; i < length; ++i) {
+            fprintf(output, " ");
+            sexp_write_datum(output, sexp_vector_ref(sexp, i), context);
+        }
+    }
+
     fprintf(output, ")");
 }
 
@@ -40,5 +63,13 @@ void sexp_write_datum(FILE* output, r_sexp sexp, r_context* context)
     else if (SEXP_PAIR_P(sexp)) {
         sexp_write_pair(output, sexp, context);
     }
+    else if (SEXP_NULL_P(sexp)) {
+        fprintf(output, "()");
+    }
+    else if (SEXP_STRING_P(sexp)) {
+        fprintf(output, "\"%s\"", ((r_boxed*)sexp)->as.string.data);
+    }
+    else if (SEXP_VECTOR_P(sexp)) {
+        sexp_write_vector(output, sexp, context);
+    }
 }
-
