@@ -6,8 +6,7 @@
 #include <glib.h>
 
 typedef struct r_context {
-    r_lexer* lexer;
-    GQueue* token_queue;
+    r_scanner* scanner;
 }
 r_context;
 

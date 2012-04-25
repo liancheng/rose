@@ -4,6 +4,8 @@
 #include "rose/context.h"
 #include "rose/scanner_types.h"
 
+r_scanner* scanner_new           ();
+void       scanner_free          (r_scanner* scanner);
 r_token*   scanner_next_token    (FILE*      input,
                                   r_context* context);
 r_token*   scanner_peek_token    (FILE*      input,
