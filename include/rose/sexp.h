@@ -6,16 +6,13 @@
 #include <stdlib.h>
 
 typedef enum {
-    SEXP_BOOLEAN,
-    SEXP_PAIR,
-    SEXP_SYMBOL,
     SEXP_STRING,
     SEXP_VECTOR,
     SEXP_INPUT_PORT,
     SEXP_OUTPUT_PORT,
     SEXP_ERROR,
 }
-r_sexp_types;
+r_boxed_types;
 
 typedef uintptr_t r_sexp;
 
