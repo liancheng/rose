@@ -14,17 +14,6 @@ token {
     BOOLEAN;
     STRING;
 
-    NUMBER_EXACTNESS;
-    NUMBER_SIGN;
-    NUMBER_RADIX;
-    NUMBER_DIGIT;
-    NUMBER_DIV;
-    NUMBER_DOT;
-    NUMBER_EXP;
-    NUMBER_I;
-    NUMBER_AT;
-    NUMBER_POUND;
-
     FAIL;
 }
 
@@ -97,38 +86,16 @@ mode STRING : EOF, FAILURE {
     }
 
     /* Escaped characters */
-    \\ {
-        self_accumulator_add_character('\\');
-    }
-
-    \\a {
-        self_accumulator_add_character('\a');
-    }
-
-    \\t {
-        self_accumulator_add_character('\t');
-    }
-
-    \\n {
-        self_accumulator_add_character('\n');
-    }
-
-    \\r {
-        self_accumulator_add_character('\r');
-    }
-
-    \\\" {
-        self_accumulator_add_character('\"');
-    }
-
-    \\\\ {
-        self_accumulator_add_character('\\');
-    }
+    \\   { self_accumulator_add_character('\\'); }
+    \\a  { self_accumulator_add_character('\a'); }
+    \\t  { self_accumulator_add_character('\t'); }
+    \\n  { self_accumulator_add_character('\n'); }
+    \\r  { self_accumulator_add_character('\r'); }
+    \\\" { self_accumulator_add_character('\"'); }
+    \\\\ { self_accumulator_add_character('\\'); }
 
     /* Ending double quote, back to MAIN mode */
     \" => GOUP();
 
-    . {
-        self_accumulator_add(Lexeme, LexemeEnd);
-    }
+    . { self_accumulator_add(Lexeme, LexemeEnd); }
 }

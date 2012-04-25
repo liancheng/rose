@@ -39,7 +39,6 @@ r_sexp sexp_read_string(FILE* input, r_context* context)
     if (TKN_STRING != scanner_peek_token_id(input, context))
         return SEXP_UNSPECIFIED;
 
-    // TODO handle escaped characters like '\t' & '\n', etc.
     r_token* t = scanner_next_token(input, context);
     r_sexp res = sexp_string_strdup((char*)t->text);
     scanner_free_token(t);
