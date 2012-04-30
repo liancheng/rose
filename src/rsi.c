@@ -56,16 +56,16 @@ int main(int argc, char* argv[])
     }
 
     GC_INIT();
-    r_context* context = context_new();
+    RContext* context = r_context_new();
 
-    for (scanner_init(in, context); ;) {
-        r_sexp res = sexp_read_datum(in, context);
+    for (r_scanner_init(in, context); ;) {
+        rsexp res = sexp_read_datum(in, context);
 
         if (SEXP_EOF_P(res))
             break;
 
         if (SEXP_UNSPECIFIED_P(res)) {
-            scanner_consume_token(in, context);
+            r_scanner_consume_token(in, context);
             printf("error\n");
         }
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         fclose(in);
     }
 
-    context_free(context);
+    r_context_free(context);
 
     return EXIT_SUCCESS;
 }

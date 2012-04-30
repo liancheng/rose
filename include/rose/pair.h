@@ -6,20 +6,20 @@
 #define SEXP_PAIR_P(s) (((s) & 0x03) == SEXP_PAIR_TAG)
 #define SEXP_LIST_P(s) (SEXP_TRUE == sexp_list_p(s))
 
-r_sexp sexp_cons      (r_sexp car,
-                       r_sexp cdr);
-r_sexp sexp_car       (r_sexp sexp);
-r_sexp sexp_cdr       (r_sexp sexp);
-r_sexp sexp_set_car_x (r_sexp pair,
-                       r_sexp sexp);
-r_sexp sexp_set_cdr_x (r_sexp pair,
-                       r_sexp sexp);
-r_sexp sexp_reverse   (r_sexp list);
-r_sexp sexp_append_x  (r_sexp list,
-                       r_sexp value);
-r_sexp sexp_list_p    (r_sexp sexp);
-r_sexp sexp_list      (size_t count,
-                       ...);
-size_t sexp_length    (r_sexp list);
+rsexp sexp_cons      (rsexp  car,
+                      rsexp  cdr);
+rsexp sexp_car       (rsexp  sexp);
+rsexp sexp_cdr       (rsexp  sexp);
+rsexp sexp_set_car_x (rsexp  pair,
+                      rsexp  sexp);
+rsexp sexp_set_cdr_x (rsexp  pair,
+                      rsexp  sexp);
+rsexp sexp_reverse   (rsexp  list);
+rsexp sexp_append_x  (rsexp  list,
+                      rsexp  value);
+rsexp sexp_list_p    (rsexp  sexp);
+rsexp sexp_list      (size_t count,
+                      ...);
+size_t sexp_length   (rsexp  list);
 
 #endif  //  __ROSE_PAIR_H__

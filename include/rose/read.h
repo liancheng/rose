@@ -6,19 +6,19 @@
 
 #include <stdio.h>
 
-r_sexp sexp_read_boolean        (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_symbol         (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_string         (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_simple_datum   (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_list           (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_compound_datum (FILE*      input,
-                                 r_context* context);
-r_sexp sexp_read_datum          (FILE*      input,
-                                 r_context* context);
+rsexp sexp_read_boolean        (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_symbol         (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_string         (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_simple_datum   (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_list           (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_compound_datum (FILE*     input,
+                                RContext* context);
+rsexp sexp_read_datum          (FILE*     input,
+                                RContext* context);
 
 #endif  //  __ROSE_READ_H__

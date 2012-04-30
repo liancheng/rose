@@ -5,13 +5,13 @@
 #include <gc/gc.h>
 #include <stdarg.h>
 
-#define SEXP_TO_ERROR(s) (((r_boxed*)s)->as.error)
+#define SEXP_TO_ERROR(s) (((RBoxed*)s)->as.error)
 
-r_sexp sexp_error(r_sexp message, r_sexp irritants)
+rsexp sexp_error(rsexp message, rsexp irritants)
 {
     assert(SEXP_STRING_P(message));
 
-    r_sexp res = (r_sexp)GC_NEW(r_boxed);
+    rsexp res = (rsexp)GC_NEW(RBoxed);
 
     SEXP_TYPE(res)               = SEXP_ERROR;
     SEXP_TO_ERROR(res).message   = message;
@@ -20,13 +20,13 @@ r_sexp sexp_error(r_sexp message, r_sexp irritants)
     return res;
 }
 
-r_sexp sexp_error_object_message(r_sexp error)
+rsexp sexp_error_object_message(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
     return SEXP_TO_ERROR(error).message;
 }
 
-r_sexp sexp_error_object_irritants(r_sexp error)
+rsexp sexp_error_object_irritants(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
     return SEXP_TO_ERROR(error).irritants;

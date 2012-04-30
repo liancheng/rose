@@ -5,12 +5,12 @@
 
 #include <glib.h>
 
-typedef struct r_context {
-    r_scanner* scanner;
+typedef struct RContext {
+    RScanner* scanner;
 }
-r_context;
+RContext;
 
-r_context* context_new  ();
-void       context_free (r_context* context);
+RContext* r_context_new  ();
+void      r_context_free (RContext* context);
 
 #endif  //  __ROSE_CONTEXT_H__

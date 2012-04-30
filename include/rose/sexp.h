@@ -12,58 +12,58 @@ typedef enum {
     SEXP_OUTPUT_PORT,
     SEXP_ERROR,
 }
-r_boxed_types;
+RBoxedTypes;
 
-typedef uintptr_t r_word;
-typedef uintptr_t r_sexp;
+typedef uintptr_t rword;
+typedef uintptr_t rsexp;
 
-typedef struct r_pair {
-    r_sexp car;
-    r_sexp cdr;
+typedef struct RPair {
+    rsexp car;
+    rsexp cdr;
 }
-r_pair;
+RPair;
 
-typedef struct r_string {
+typedef struct RString {
     size_t length;
     char* data;
 }
-r_string;
+RString;
 
-typedef struct r_vector {
+typedef struct RVector {
     size_t size;
-    r_sexp* data;
+    rsexp* data;
 }
-r_vector;
+RVector;
 
-typedef struct r_input_port {
+typedef struct RInputPort {
     FILE* stream;
 }
-r_input_port;
+RInputPort;
 
-typedef struct r_output_port {
+typedef struct ROutputPort {
     FILE* stream;
 }
-r_output_port;
+ROutputPort;
 
-typedef struct r_error {
-    r_sexp message;
-    r_sexp irritants;
+typedef struct RError {
+    rsexp message;
+    rsexp irritants;
 }
-r_error;
+RError;
 
-typedef struct r_boxed {
+typedef struct RBoxed {
     int type;
 
     union {
-        r_string string;
-        r_vector vector;
-        r_input_port input_port;
-        r_output_port output_port;
-        r_error error;
+        RString string;
+        RVector vector;
+        RInputPort input_port;
+        ROutputPort output_port;
+        RError error;
     }
     as;
 }
-r_boxed;
+RBoxed;
 
 /*
  * Simple tagging.  Ends in:
@@ -80,7 +80,7 @@ r_boxed;
 #define SEXP_SYMBOL_TAG         0x03
 #define SEXP_IMMEDIATE_TAG      0x07
 
-#define SEXP_MAKE_IMMEDIATE(n)  ((r_sexp)((n << 3) | SEXP_IMMEDIATE_TAG))
+#define SEXP_MAKE_IMMEDIATE(n)  ((rsexp)((n << 3) | SEXP_IMMEDIATE_TAG))
 #define SEXP_NULL               SEXP_MAKE_IMMEDIATE(0)
 #define SEXP_FALSE              SEXP_MAKE_IMMEDIATE(1)
 #define SEXP_TRUE               SEXP_MAKE_IMMEDIATE(2)
@@ -98,7 +98,7 @@ r_boxed;
 #define SEXP_EOF_P(s)           ((s) == SEXP_EOF)
 #define SEXP_UNSPECIFIED_P(s)   ((s) == SEXP_UNSPECIFIED)
 #define SEXP_UNDEFINED_P(s)     ((s) == SEXP_UNDEFINED)
-#define SEXP_TYPE(s)            (((r_boxed*)s)->type)
+#define SEXP_TYPE(s)            (((RBoxed*)s)->type)
 #define SEXP_CHECK_TYPE(s, t)   (SEXP_BOXED_P(s) && SEXP_TYPE(s) == t)
 
 #endif  //  __ROSE_SEXP_H__

@@ -3,15 +3,15 @@
 
 #include <glib.h>
 
-r_context* context_new()
+RContext* r_context_new()
 {
-    r_context* res = malloc(sizeof(r_context));
-    res->scanner = scanner_new();
+    RContext* res = malloc(sizeof(RContext));
+    res->scanner = r_scanner_new();
     return res;
 }
 
-void context_free(r_context* context)
+void r_context_free(RContext* context)
 {
-    scanner_free(context->scanner);
+    r_scanner_free(context->scanner);
     free(context);
 }

@@ -1,28 +1,28 @@
 #include "rose/context.h"
 #include "rose/scanner.h"
 
-r_scanner* scanner_new()
+RScanner* r_scanner_new()
 {
-    r_scanner* res = malloc(sizeof(r_scanner));
+    RScanner* res = malloc(sizeof(RScanner));
 
-    res->lexer = malloc(sizeof(r_lexer));
+    res->lexer = malloc(sizeof(RLexer));
     QUEX_NAME(construct_memory)(res->lexer, NULL, 0, NULL, NULL, false);
 
     return res;
 }
 
-void scanner_free(r_scanner* scanner)
+void r_scanner_free(RScanner* scanner)
 {
     QUEX_NAME(destruct)(scanner->lexer);
     free(scanner->lexer);
 
     if (!scanner->lookahead_token)
-        scanner_free_token(scanner->lookahead_token);
+        r_scanner_free_token(scanner->lookahead_token);
 
     free(scanner);
 }
 
-static void reload_lexer(FILE* input, r_lexer* lex)
+static void reload_lexer(FILE* input, RLexer* lex)
 {
     QUEX_NAME(buffer_fill_region_prepare)(lex);
 
@@ -34,7 +34,7 @@ static void reload_lexer(FILE* input, r_lexer* lex)
     QUEX_NAME(buffer_fill_region_finish)(lex, len);
 }
 
-static void debug_token(r_token* t, char const* prefix)
+static void debug_token(RToken* t, char const* prefix)
 {
     fprintf(stderr,
             "%s(%d:%d) id=%s text=[%s]\n",
@@ -45,9 +45,9 @@ static void debug_token(r_token* t, char const* prefix)
             t->text);
 }
 
-static r_token* read_token(FILE* input, r_scanner* scanner)
+static RToken* read_token(FILE* input, RScanner* scanner)
 {
-    r_token* t = NULL;
+    RToken* t = NULL;
 
     QUEX_NAME(receive)(scanner->lexer, &t);
     debug_token(t, "");
@@ -58,26 +58,26 @@ static r_token* read_token(FILE* input, r_scanner* scanner)
         debug_token(t, " ");
     }
 
-    return scanner_copy_token(t);
+    return r_scanner_copy_token(t);
 }
 
-void scanner_init(FILE* input, r_context* context)
+void r_scanner_init(FILE* input, RContext* context)
 {
     reload_lexer(input, context->scanner->lexer);
 }
 
-r_token* scanner_copy_token(r_token* token)
+RToken* r_scanner_copy_token(RToken* token)
 {
-    r_token* res = malloc(sizeof(r_token));
+    RToken* res = malloc(sizeof(RToken));
     QUEX_NAME_TOKEN(copy_construct)(res, token);
     return res;
 }
 
 // The caller is responsible for freeing the returned token.
-r_token* scanner_next_token(FILE* input, r_context* context)
+RToken* r_scanner_next_token(FILE* input, RContext* context)
 {
-    r_scanner* scanner = context->scanner;
-    r_token* res = scanner->lookahead_token;
+    RScanner* scanner = context->scanner;
+    RToken* res = scanner->lookahead_token;
 
     if (res)
         scanner->lookahead_token = NULL;
@@ -88,9 +88,9 @@ r_token* scanner_next_token(FILE* input, r_context* context)
 }
 
 // The caller must not free the returned token.
-r_token* scanner_peek_token(FILE* input, r_context* context)
+RToken* r_scanner_peek_token(FILE* input, RContext* context)
 {
-    r_scanner* scanner = context->scanner;
+    RScanner* scanner = context->scanner;
 
     if (!scanner->lookahead_token)
         scanner->lookahead_token = read_token(input, scanner);
@@ -98,17 +98,17 @@ r_token* scanner_peek_token(FILE* input, r_context* context)
     return scanner->lookahead_token;
 }
 
-r_token_id scanner_peek_token_id(FILE* input, r_context* context)
+rtokenid r_scanner_peek_token_id(FILE* input, RContext* context)
 {
-    return scanner_peek_token(input, context)->_id;
+    return r_scanner_peek_token(input, context)->_id;
 }
 
-void scanner_consume_token(FILE* input, r_context* context)
+void r_scanner_consume_token(FILE* input, RContext* context)
 {
-    scanner_free_token(scanner_next_token(input, context));
+    r_scanner_free_token(r_scanner_next_token(input, context));
 }
 
-void scanner_free_token(r_token* token)
+void r_scanner_free_token(RToken* token)
 {
     QUEX_NAME_TOKEN(destruct)(token);
     free(token);

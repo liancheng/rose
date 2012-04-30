@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-void sexp_write_cdr(FILE* output, r_sexp sexp, r_context* context)
+void sexp_write_cdr(FILE* output, rsexp sexp, RContext* context)
 {
     if (SEXP_PAIR_P(sexp)) {
         fprintf(output, " ");
@@ -20,7 +20,7 @@ void sexp_write_cdr(FILE* output, r_sexp sexp, r_context* context)
     }
 }
 
-void sexp_write_pair(FILE* output, r_sexp sexp, r_context* context)
+void sexp_write_pair(FILE* output, rsexp sexp, RContext* context)
 {
     assert(SEXP_PAIR_P(sexp));
 
@@ -30,7 +30,7 @@ void sexp_write_pair(FILE* output, r_sexp sexp, r_context* context)
     fprintf(output, ")");
 }
 
-void sexp_write_vector(FILE* output, r_sexp sexp, r_context* context)
+void sexp_write_vector(FILE* output, rsexp sexp, RContext* context)
 {
     assert(SEXP_VECTOR_P(sexp));
 
@@ -49,7 +49,7 @@ void sexp_write_vector(FILE* output, r_sexp sexp, r_context* context)
     fprintf(output, ")");
 }
 
-void sexp_write_datum(FILE* output, r_sexp sexp, r_context* context)
+void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
 {
     if (SEXP_TRUE == sexp) {
         fprintf(output, "#t");
@@ -58,7 +58,7 @@ void sexp_write_datum(FILE* output, r_sexp sexp, r_context* context)
         fprintf(output, "#f");
     }
     else if (SEXP_SYMBOL_P(sexp)) {
-        fprintf(output, "%s", sexp_to_symbol(sexp, context));
+        fprintf(output, "%s", r_sexp_to_symbol(sexp, context));
     }
     else if (SEXP_PAIR_P(sexp)) {
         sexp_write_pair(output, sexp, context);
@@ -67,7 +67,7 @@ void sexp_write_datum(FILE* output, r_sexp sexp, r_context* context)
         fprintf(output, "()");
     }
     else if (SEXP_STRING_P(sexp)) {
-        fprintf(output, "\"%s\"", ((r_boxed*)sexp)->as.string.data);
+        fprintf(output, "\"%s\"", ((RBoxed*)sexp)->as.string.data);
     }
     else if (SEXP_VECTOR_P(sexp)) {
         sexp_write_vector(output, sexp, context);

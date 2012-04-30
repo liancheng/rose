@@ -2,35 +2,35 @@
 
 #include <glib.h>
 
-r_quark quark_from_symbol(char const* symbol, r_context* context)
+rquark r_quark_from_symbol(char const* symbol, RContext* context)
 {
     return g_quark_from_string(symbol);
 }
 
-r_quark quark_from_static_symbol(char const* symbol, r_context* context)
+rquark r_quark_from_static_symbol(char const* symbol, RContext* context)
 {
     return g_quark_from_static_string(symbol);
 }
 
-char const* quark_to_symbol(r_quark quark, r_context* context)
+char const* r_quark_to_symbol(rquark quark, RContext* context)
 {
     return g_quark_to_string(quark);
 }
 
-r_sexp sexp_from_symbol(char const* symbol, r_context* context)
+rsexp r_sexp_from_symbol(char const* symbol, RContext* context)
 {
-    r_quark quark = quark_from_symbol(symbol, context);
-    return (r_sexp)((quark << 3) | SEXP_SYMBOL_TAG);
+    rquark quark = r_quark_from_symbol(symbol, context);
+    return (rsexp)((quark << 3) | SEXP_SYMBOL_TAG);
 }
 
-r_sexp sexp_from_static_symbol(char const* symbol, r_context* context)
+rsexp r_sexp_from_static_symbol(char const* symbol, RContext* context)
 {
-    r_quark quark = quark_from_static_symbol(symbol, context);
-    return (r_sexp)((quark << 3) | SEXP_SYMBOL_TAG);
+    rquark quark = r_quark_from_static_symbol(symbol, context);
+    return (rsexp)((quark << 3) | SEXP_SYMBOL_TAG);
 }
 
-char const* sexp_to_symbol(r_sexp sexp, r_context* context)
+char const* r_sexp_to_symbol(rsexp sexp, RContext* context)
 {
     g_assert(SEXP_SYMBOL_P(sexp));
-    return quark_to_symbol((sexp) >> 3, context);
+    return r_quark_to_symbol((sexp) >> 3, context);
 }

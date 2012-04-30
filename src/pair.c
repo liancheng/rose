@@ -5,44 +5,44 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#define SEXP_FROM_PAIR(p) (((r_sexp)(p) << 2) | SEXP_PAIR_TAG)
-#define SEXP_TO_PAIR(s)   ((r_pair*)((s) >> 2))
+#define SEXP_FROM_PAIR(p) (((rsexp)(p) << 2) | SEXP_PAIR_TAG)
+#define SEXP_TO_PAIR(s)   ((RPair*)((s) >> 2))
 
-r_sexp sexp_cons(r_sexp car, r_sexp cdr)
+rsexp sexp_cons(rsexp car, rsexp cdr)
 {
-    r_pair* pair = GC_NEW(r_pair);
+    RPair* pair = GC_NEW(RPair);
     pair->car = car;
     pair->cdr = cdr;
     return SEXP_FROM_PAIR(pair);
 }
 
-r_sexp sexp_car(r_sexp sexp)
+rsexp sexp_car(rsexp sexp)
 {
     assert(SEXP_PAIR_P(sexp));
     return SEXP_TO_PAIR(sexp)->car;
 }
 
-r_sexp sexp_cdr(r_sexp sexp)
+rsexp sexp_cdr(rsexp sexp)
 {
     assert(SEXP_PAIR_P(sexp));
     return SEXP_TO_PAIR(sexp)->cdr;
 }
 
-r_sexp sexp_set_car_x(r_sexp pair, r_sexp sexp)
+rsexp sexp_set_car_x(rsexp pair, rsexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->car = sexp;
     return SEXP_UNSPECIFIED;
 }
 
-r_sexp sexp_set_cdr_x(r_sexp pair, r_sexp sexp)
+rsexp sexp_set_cdr_x(rsexp pair, rsexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->cdr = sexp;
     return SEXP_UNSPECIFIED;
 }
 
-static r_sexp sexp_reverse_internal(r_sexp list, r_sexp acc)
+static rsexp sexp_reverse_internal(rsexp list, rsexp acc)
 {
     return SEXP_NULL_P(list)
            ? acc
@@ -51,20 +51,20 @@ static r_sexp sexp_reverse_internal(r_sexp list, r_sexp acc)
                    sexp_cons(sexp_car(list), acc));
 }
 
-r_sexp sexp_reverse(r_sexp list)
+rsexp sexp_reverse(rsexp list)
 {
     assert(SEXP_NULL_P(list) || SEXP_PAIR_P(list));
     return sexp_reverse_internal(list, SEXP_NULL);
 }
 
-r_sexp sexp_append_x(r_sexp list, r_sexp sexp)
+rsexp sexp_append_x(rsexp list, rsexp sexp)
 {
     if (SEXP_NULL_P(list))
         return sexp;
 
     assert(SEXP_PAIR_P(list));
 
-    r_sexp tail = list;
+    rsexp tail = list;
     while (SEXP_PAIR_P(sexp_cdr(tail)))
         tail = sexp_cdr(tail);
 
@@ -73,7 +73,7 @@ r_sexp sexp_append_x(r_sexp list, r_sexp sexp)
     return list;
 }
 
-r_sexp sexp_list_p(r_sexp sexp)
+rsexp sexp_list_p(rsexp sexp)
 {
     if (SEXP_NULL_P(sexp))
         return SEXP_TRUE;
@@ -83,21 +83,21 @@ r_sexp sexp_list_p(r_sexp sexp)
         return SEXP_FALSE;
 }
 
-r_sexp sexp_list(size_t count, ...)
+rsexp sexp_list(size_t count, ...)
 {
     va_list args;
     va_start(args, count);
 
-    r_sexp res = SEXP_NULL;
+    rsexp res = SEXP_NULL;
     for (size_t i = 0; i < count; ++i)
-        res = sexp_cons(va_arg(args, r_sexp), res);
+        res = sexp_cons(va_arg(args, rsexp), res);
 
     va_end(args);
 
     return sexp_reverse(res);
 }
 
-size_t sexp_length(r_sexp list)
+size_t sexp_length(rsexp list)
 {
     return SEXP_NULL_P(list)
            ? 0

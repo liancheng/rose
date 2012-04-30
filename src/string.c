@@ -3,12 +3,12 @@
 #include <gc/gc.h>
 #include <string.h>
 
-#define SEXP_TO_STRING(s) (((r_boxed*)s)->as.string)
+#define SEXP_TO_STRING(s) (((RBoxed*)s)->as.string)
 
-r_sexp sexp_string_strdup(char const* str)
+rsexp sexp_string_strdup(char const* str)
 {
     int length = strlen(str);
-    r_sexp res = (r_sexp)GC_NEW(r_boxed);
+    rsexp res = (rsexp)GC_NEW(RBoxed);
 
     SEXP_TYPE(res)             = SEXP_STRING;
     SEXP_TO_STRING(res).length = length;
