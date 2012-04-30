@@ -1,5 +1,6 @@
 token {
     TERMINATION;
+    FAIL;
 
     POUND_LP;
     LP;
@@ -13,8 +14,6 @@ token {
     IDENTIFIER;
     BOOLEAN;
     STRING;
-
-    FAIL;
 }
 
 define {
@@ -73,7 +72,7 @@ mode MAIN : FAILURE, EOF {
     {boolean}/{delimiter}       => TKN_BOOLEAN(Lexeme);
 
     /* Strings */
-    "\""                        => GOSUB(STRING);
+    "\""                        => GOTO(STRING);
 }
 
 mode STRING : EOF, FAILURE {
@@ -81,21 +80,20 @@ mode STRING : EOF, FAILURE {
         self_accumulator_clear();
     }
 
-    on_exit {
-        self_accumulator_flush(TKN_STRING);
-    }
-
     /* Escaped characters */
-    \\   { self_accumulator_add_character('\\'); }
     \\a  { self_accumulator_add_character('\a'); }
     \\t  { self_accumulator_add_character('\t'); }
     \\n  { self_accumulator_add_character('\n'); }
     \\r  { self_accumulator_add_character('\r'); }
     \\\" { self_accumulator_add_character('\"'); }
     \\\\ { self_accumulator_add_character('\\'); }
+    \n   { self_accumulator_add_character('\n'); }
 
     /* Ending double quote, back to MAIN mode */
-    \" => GOUP();
+    \" {
+        self_accumulator_flush(TKN_STRING);
+        self_enter_mode(&MAIN);
+    }
 
     . { self_accumulator_add(Lexeme, LexemeEnd); }
 }

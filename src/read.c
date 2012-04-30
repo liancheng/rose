@@ -109,8 +109,8 @@ r_sexp sexp_read_abbrev(FILE* input, r_context* context)
     r_sexp sexp = sexp_read_datum(input, context);
 
     res = SEXP_UNSPECIFIED_P(sexp)
-          ? SEXP_UNSPECIFIED
-          : sexp_list(2, res, sexp);
+        ? SEXP_UNSPECIFIED
+        : sexp_list(2, res, sexp);
 
     return res;
 }

@@ -4,16 +4,18 @@ env = env.Clone()
 env.Append(LIBS=['argtable2', 'gc'],
            CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED')
 
-env.Quex(source='r5rs.qx',
-         QUEXENGINE='lexer',
-         QUEXLANG='C',
-         QUEXOUTDIR=Dir('quex').abspath,
-         QUEXFLAGS=['--token-id-prefix TKN_',
-                    '--token-policy queue',
-                    '--token-class token'])
+lex_src = env.Quex(source='r5rs.qx',
+                   QUEXENGINE='lexer',
+                   QUEXLANG='C',
+                   QUEXOUTDIR=Dir('quex').abspath,
+                   QUEXFLAGS=['--token-id-prefix TKN_',
+                              '--token-policy queue',
+                              '--token-class token'])
 
 rsi_obj = env.Object(source=[Glob('*.c'), Glob('quex/*.c')])
 rsi_bin = env.Program(target='rsi', source=rsi_obj)
+
+env.Depends(target=rsi_obj, dependency=lex_src);
 
 Return('rsi_bin')
 

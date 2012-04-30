@@ -9,12 +9,11 @@
 
 r_sexp sexp_make_vector(size_t k, r_sexp fill)
 {
-    r_sexp res = (r_sexp)GC_MALLOC(sizeof(r_boxed));
-    SEXP_TYPE(res) = SEXP_VECTOR;
+    r_sexp res = (r_sexp)GC_NEW(r_boxed);
 
-    SEXP_TO_VECTOR(res).size     = k;
-    SEXP_TO_VECTOR(res).capacity = k;
-    SEXP_TO_VECTOR(res).data     = k ? GC_MALLOC(k * sizeof(r_sexp)) : NULL;
+    SEXP_TYPE(res)           = SEXP_VECTOR;
+    SEXP_TO_VECTOR(res).size = k;
+    SEXP_TO_VECTOR(res).data = k ? GC_MALLOC(k * sizeof(r_sexp)) : NULL;
 
     for (size_t i = 0; i < k; ++i)
         SEXP_TO_VECTOR(res).data[i] = fill;
@@ -48,7 +47,9 @@ r_sexp sexp_vector_set_x(r_sexp vector, int k, r_sexp obj)
 {
     assert(SEXP_VECTOR_P(vector));
     assert(SEXP_TO_VECTOR(vector).size > k);
+
     SEXP_TO_VECTOR(vector).data[k] = obj;
+
     return SEXP_UNSPECIFIED;
 }
 

@@ -10,7 +10,7 @@
 
 r_sexp sexp_cons(r_sexp car, r_sexp cdr)
 {
-    r_pair* pair = GC_MALLOC(sizeof(r_pair));
+    r_pair* pair = GC_NEW(r_pair);
     pair->car = car;
     pair->cdr = cdr;
     return SEXP_FROM_PAIR(pair);

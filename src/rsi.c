@@ -58,11 +58,16 @@ int main(int argc, char* argv[])
     GC_INIT();
     r_context* context = context_new();
 
-    while (true) {
+    for (scanner_init(in, context); ;) {
         r_sexp res = sexp_read_datum(in, context);
 
-        if (SEXP_EOF_P(res) || SEXP_UNSPECIFIED_P(res))
+        if (SEXP_EOF_P(res))
             break;
+
+        if (SEXP_UNSPECIFIED_P(res)) {
+            scanner_consume_token(in, context);
+            printf("error\n");
+        }
 
         sexp_write_datum(stdout, res, context);
         printf("\n");

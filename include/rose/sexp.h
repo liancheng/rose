@@ -14,6 +14,7 @@ typedef enum {
 }
 r_boxed_types;
 
+typedef uintptr_t r_word;
 typedef uintptr_t r_sexp;
 
 typedef struct r_pair {
@@ -29,7 +30,6 @@ typedef struct r_string {
 r_string;
 
 typedef struct r_vector {
-    size_t capacity;
     size_t size;
     r_sexp* data;
 }

@@ -9,10 +9,11 @@
 
 r_sexp sexp_error(r_sexp message, r_sexp irritants)
 {
-    r_sexp res = (r_sexp)GC_MALLOC(sizeof(r_boxed));
-    SEXP_TYPE(res) = SEXP_ERROR;
-
     assert(SEXP_STRING_P(message));
+
+    r_sexp res = (r_sexp)GC_NEW(r_boxed);
+
+    SEXP_TYPE(res)               = SEXP_ERROR;
     SEXP_TO_ERROR(res).message   = message;
     SEXP_TO_ERROR(res).irritants = irritants;
 
