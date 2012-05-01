@@ -30,13 +30,13 @@ typedef struct REnv{
 REnv;
 
 typedef struct RString {
-    size_t length;
+    rsize length;
     char* data;
 }
 RString;
 
 typedef struct RVector {
-    size_t size;
+    rsize  size;
     rsexp* data;
 }
 RVector;
