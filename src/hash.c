@@ -3,6 +3,7 @@
 
 #include <gc/gc.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define HASH_TABLE_MINIMUM_SHIFT 3
 #define UNUSED_HASH_VALUE        0
@@ -14,9 +15,10 @@
 
 struct RHashTable {
     rsize            size;
-    rsize            occupied_count;
-    rsize            node_count;
+    rsize            n_occupied;
+    rsize            n_nodes;
     ruint            mod;
+    ruint            mask;
 
     RHashFunction    hash_fn;
     REqualFunction   key_equal_fn;
@@ -75,8 +77,18 @@ static inline rint r_direct_euqal(rconstpointer lhs, rconstpointer rhs)
 
 static inline void r_hash_table_set_shift(RHashTable* hash_table, rint shift)
 {
+    ruint i;
+    ruint mask;
+
     hash_table->size = 1 << shift;
-    hash_table->mod  = prime_mod[shift];
+    hash_table->mod = prime_mod[shift];
+
+    for (i = 0; i < shift; ++i) {
+        mask <<= 1;
+        mask |= 1;
+    }
+
+    hash_table->mask = mask;
 }
 
 static inline rint find_closest_shift(rint n)
@@ -128,7 +140,8 @@ static inline rsize r_hash_table_get_node(RHashTable*   hash_table,
 
         // Linear probing
         ++step;
-        node_index = (hash_value + step) % hash_table->mod;
+        node_index += step;
+        node_index &= hash_table->mask;
         node_hash = hash_table->hashes[node_index];
     }
 
@@ -148,7 +161,7 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
 
     old_size = hash_table->size;
     r_hash_table_set_shift_from_size(hash_table,
-                                     hash_table->node_count * 2);
+                                     hash_table->n_nodes * 2);
 
     new_hashes = GC_MALLOC(sizeof(ruint) * hash_table->size);
     new_keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
@@ -168,7 +181,8 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
 
         while (!UNUSED_HASH_P(new_hashes[node_index])) {
             ++step;
-            node_index = (node_hash + step) % hash_table->mod;
+            node_index += step;
+            node_index &= hash_table->mask;
         }
 
         new_hashes[node_index] = node_hash;
@@ -186,17 +200,17 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
     hash_table->keys   = new_keys;
     hash_table->values = new_values;
 
-    hash_table->occupied_count = hash_table->node_count;
+    hash_table->n_occupied = hash_table->n_nodes;
 }
 
 static inline void r_hash_table_maybe_resize(RHashTable* hash_table)
 {
-    rsize occupied = hash_table->occupied_count;
+    rsize occupied = hash_table->n_occupied;
     rsize size     = hash_table->size;
 
-    if ((size > hash_table->node_count * 4 &&
+    if ((size > hash_table->n_nodes * 4 &&
          size > 1 << HASH_TABLE_MINIMUM_SHIFT) ||
-        size <= occupied + (occupied / 16))
+        (size <= occupied + occupied / 16))
     {
         r_hash_table_resize(hash_table);
     }
@@ -208,9 +222,12 @@ static inline void r_hash_table_put_node(RHashTable* hash_table,
                                          rpointer    key,
                                          rpointer    value)
 {
-    if (hash_table->keys == hash_table->values && key != value)
-        hash_table->values = r_memdup(hash_table->keys,
-                                      sizeof(rpointer) * hash_table->size);
+    if (hash_table->keys == hash_table->values && key != value) {
+        hash_table->values = GC_MALLOC(sizeof(rpointer) * hash_table->size);
+        memcpy(hash_table->values,
+               hash_table->keys,
+               sizeof(rpointer) * hash_table->size);
+    }
 
     ruint    old_hash  = hash_table->hashes[node_index];
     rpointer old_key   = hash_table->keys  [node_index];
@@ -224,10 +241,10 @@ static inline void r_hash_table_put_node(RHashTable* hash_table,
         hash_table->keys  [node_index] = key;
         hash_table->values[node_index] = value;
 
-        ++hash_table->node_count;
+        ++hash_table->n_nodes;
 
         if (UNUSED_HASH_P(old_hash)) {
-            ++hash_table->occupied_count;
+            ++hash_table->n_occupied;
             r_hash_table_maybe_resize(hash_table);
         }
     }
@@ -256,8 +273,8 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
 
     r_hash_table_set_shift(hash_table, HASH_TABLE_MINIMUM_SHIFT);
 
-    hash_table->occupied_count   = 0;
-    hash_table->node_count       = 0;
+    hash_table->n_occupied       = 0;
+    hash_table->n_nodes          = 0;
     hash_table->hash_fn          = hash_fn  ? hash_fn  : r_direct_hash;
     hash_table->key_equal_fn     = equal_fn ? equal_fn : r_direct_euqal;
     hash_table->key_destroy_fn   = key_destroy_fn;
@@ -312,7 +329,7 @@ static inline void r_hash_table_delete_node(RHashTable*   hash_table,
     hash_table->keys  [node_index] = NULL;
     hash_table->values[node_index] = NULL;
 
-    --hash_table->occupied_count;
+    --hash_table->n_occupied;
 
     if (hash_table->key_destroy_fn)
         hash_table->key_destroy_fn(old_key);
@@ -340,10 +357,12 @@ rboolean r_hash_table_delete(RHashTable*   hash_table,
 
 void r_hash_table_clear(RHashTable* hash_table)
 {
-    hash_table->node_count = 0;
-    hash_table->occupied_count = 0;
+    rsize i;
 
-    for (rsize i = 0; i < hash_table->size; ++i) {
+    hash_table->n_nodes = 0;
+    hash_table->n_occupied = 0;
+
+    for (i = 0; i < hash_table->size; ++i) {
         if (REAL_HASH_P(hash_table->hashes[i])) {
             if (hash_table->key_destroy_fn)
                 hash_table->key_destroy_fn(hash_table->keys[i]);
