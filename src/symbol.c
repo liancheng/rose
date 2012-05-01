@@ -1,5 +1,6 @@
 #include "context_access.h"
 #include "rose/symbol.h"
+#include "rose/vector.h"
 
 #include <assert.h>
 #include <gc/gc.h>
@@ -52,7 +53,7 @@ static rquark r_quark_from_string_internal(char const*   symbol,
     rquark quark = (rquark)r_hash_table_get(st->quark_ht, symbol);
 
     if (!quark) {
-        char* str = duplicate ? gc_strdup(symbol) : symbol;
+        char* str = duplicate ? gc_strdup(symbol) : (char*)symbol;
         quark = r_quark_new(str, st);
     }
 
@@ -66,7 +67,7 @@ static rquark r_quark_from_symbol(char const* symbol, RContext* context)
     if (!symbol)
         return 0;
 
-    st = CONTEXT_FIELD(RSymbolTable*, symbol_table, context);
+    st = CONTEXT_FIELD(symbol_table, context);
 
     return r_quark_from_string_internal(symbol, TRUE, st);
 }
@@ -78,22 +79,23 @@ static rquark r_quark_from_static_symbol(char const* symbol, RContext* context)
     if (!symbol)
         return 0;
 
-    st = CONTEXT_FIELD(RSymbolTable*, symbol_table, context);
+    st = CONTEXT_FIELD(symbol_table, context);
 
     return r_quark_from_string_internal(symbol, FALSE, st);
 }
 
 static char const* r_quark_to_symbol(rquark quark, RContext* context)
 {
-    RSymbolTable* st = CONTEXT_FIELD(RSymbolTable*, symbol_table, context);
+    RSymbolTable* st = CONTEXT_FIELD(symbol_table, context);
     return quark < st->quark_seq_id ?  st->quarks[quark] : NULL;
 }
 
 ruint r_str_hash(rconstpointer str)
 {
     ruint h = 5381;
+    char const* p;
 
-    for (char const* p = (char const*)str; *p; ++p)
+    for (p = (char const*)str; *p; ++p)
         h = (h << 5) + h + *p;
 
     return h;
@@ -133,4 +135,37 @@ char const* sexp_to_symbol(rsexp sexp, RContext* context)
 {
     assert(SEXP_SYMBOL_P(sexp));
     return r_quark_to_symbol(SEXP_TO_QUARK(sexp), context);
+}
+
+rsexp sexp_keywords(RContext* context)
+{
+    static char* keywords[] = {
+        "and",      "=>",
+        "begin",    "case",
+        "cond",     "define",
+        "delay",    "do",
+        "else",     "if",
+        "lambda",   "let",
+        "let*",     "letrec",
+        "or",       "quasiquote",
+        "quote",    "set!",
+        "unquote",  "unquote-splicing",
+    };
+
+    rsexp keyword_vec = sexp_make_vector(KEYWORD_COUNT, SEXP_UNSPECIFIED);
+    rsize i;
+
+    for (i = 0; i < KEYWORD_COUNT; ++i) {
+        rsexp symbol = sexp_from_static_symbol(keywords[i], context);
+        sexp_vector_set_x(keyword_vec, i, symbol);
+    }
+
+    return keyword_vec;
+}
+
+rsexp sexp_keyword(ruint name, RContext* context)
+{
+    assert(name < KEYWORD_COUNT);
+    rsexp vec = (rsexp)CONTEXT_FIELD(keywords, context);
+    return sexp_vector_ref(vec, name);
 }

@@ -86,10 +86,12 @@ rsexp sexp_list_p(rsexp sexp)
 rsexp sexp_list(rsize count, ...)
 {
     va_list args;
+    rsize i;
+
     va_start(args, count);
 
     rsexp res = SEXP_NULL;
-    for (rsize i = 0; i < count; ++i)
+    for (i = 0; i < count; ++i)
         res = sexp_cons(va_arg(args, rsexp), res);
 
     va_end(args);

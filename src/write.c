@@ -32,15 +32,18 @@ void sexp_write_pair(FILE* output, rsexp sexp, RContext* context)
 
 void sexp_write_vector(FILE* output, rsexp sexp, RContext* context)
 {
+    rsize i;
+    rsize length;
+
     assert(SEXP_VECTOR_P(sexp));
 
     fprintf(output, "#(");
 
-    rsize length = sexp_vector_length(sexp);
+    length = sexp_vector_length(sexp);
     if (length) {
         sexp_write_datum(output, sexp_vector_ref(sexp, 0), context);
 
-        for (rsize i = 1; i < length; ++i) {
+        for (i = 1; i < length; ++i) {
             fprintf(output, " ");
             sexp_write_datum(output, sexp_vector_ref(sexp, i), context);
         }

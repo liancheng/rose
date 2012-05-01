@@ -7,8 +7,8 @@ base = Environment(tools=['default', 'quex'],
                             '#build/src/',
                             environ['QUEX_PATH']])
 
-clang = base.Clone(CC='clang', CXX='clang++')
-gcc   = base.Clone(CC='gcc',   CXX='g++')
+clang = base.Clone(CC='clang')
+gcc   = base.Clone(CC='gcc')
 env   = clang;
 
 rsi_bin = env.SConscript(dirs='src',

@@ -7,16 +7,20 @@
 struct RContext {
     RScanner*     scanner;
     RSymbolTable* symbol_table;
+    rsexp         keywords;
+    rsexp         global_env;
 };
 
-#define DEFINE_CONTEXT_GET_FIELD(field)\
+#define DEFINE_CONTEXT_FIELD_GETTER(field)\
         rpointer r_context_get_##field(RContext* context)\
         {\
             return (rpointer)context->field;\
         }
 
-DEFINE_CONTEXT_GET_FIELD(scanner);
-DEFINE_CONTEXT_GET_FIELD(symbol_table);
+DEFINE_CONTEXT_FIELD_GETTER(scanner);
+DEFINE_CONTEXT_FIELD_GETTER(symbol_table);
+DEFINE_CONTEXT_FIELD_GETTER(keywords);
+DEFINE_CONTEXT_FIELD_GETTER(global_env);
 
 RContext* r_context_new()
 {
@@ -24,6 +28,8 @@ RContext* r_context_new()
 
     context->scanner      = r_scanner_new();
     context->symbol_table = r_symbol_table_new();
+    context->global_env   = sexp_env_new();
+    context->keywords     = sexp_keywords(context);
 
     return context;
 }

@@ -8,12 +8,13 @@
 rsexp sexp_make_vector(rsize k, rsexp fill)
 {
     rsexp res = (rsexp)GC_NEW(RBoxed);
+    rsize i;
 
     SEXP_TYPE(res)            = SEXP_VECTOR;
     SEXP_AS(res, vector).size = k;
     SEXP_AS(res, vector).data = k ? GC_MALLOC(k * sizeof(rsexp)) : NULL;
 
-    for (rsize i = 0; i < k; ++i)
+    for (i = 0; i < k; ++i)
         SEXP_AS(res, vector).data[i] = fill;
 
     return res;
@@ -22,11 +23,12 @@ rsexp sexp_make_vector(rsize k, rsexp fill)
 rsexp sexp_vector(rsize k, ...)
 {
     rsexp acc = SEXP_NULL;
-
     va_list args;
+    rsize i;
+
     va_start(args, k);
 
-    for (rsize i = 0; i < k; ++i)
+    for (i = 0; i < k; ++i)
         acc = sexp_cons(va_arg(args, rsexp), acc);
 
     va_end(args);
@@ -61,8 +63,9 @@ rsexp sexp_list_to_vector(rsexp list)
 {
     rsize length = sexp_length(list);
     rsexp res = sexp_make_vector(length, SEXP_UNSPECIFIED);
+    rsize k;
 
-    for (rsize k = 0; k < length; ++k) {
+    for (k = 0; k < length; ++k) {
         sexp_vector_set_x(res, k, sexp_car(list));
         list = sexp_cdr(list);
     }

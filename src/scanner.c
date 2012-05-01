@@ -12,6 +12,7 @@ RScanner* r_scanner_new()
 
     res->lexer = malloc(sizeof(RLexer));
     QUEX_NAME(construct_memory)(res->lexer, NULL, 0, NULL, NULL, false);
+    res->lookahead_token = NULL;
 
     return res;
 }
@@ -68,7 +69,7 @@ static RToken* read_token(FILE* input, RScanner* scanner)
 
 void r_scanner_init(FILE* input, RContext* context)
 {
-    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
+    RScanner* scanner = CONTEXT_FIELD(scanner, context);
     reload_lexer(input, scanner->lexer);
 }
 
@@ -82,7 +83,7 @@ RToken* r_scanner_copy_token(RToken* token)
 // The caller is responsible for freeing the returned token.
 RToken* r_scanner_next_token(FILE* input, RContext* context)
 {
-    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
+    RScanner* scanner = CONTEXT_FIELD(scanner, context);
     RToken* res = scanner->lookahead_token;
 
     if (res)
@@ -96,7 +97,7 @@ RToken* r_scanner_next_token(FILE* input, RContext* context)
 // The caller must not free the returned token.
 RToken* r_scanner_peek_token(FILE* input, RContext* context)
 {
-    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
+    RScanner* scanner = CONTEXT_FIELD(scanner, context);
 
     if (!scanner->lookahead_token)
         scanner->lookahead_token = read_token(input, scanner);
