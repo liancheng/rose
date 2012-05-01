@@ -58,7 +58,7 @@ void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
         fprintf(output, "#f");
     }
     else if (SEXP_SYMBOL_P(sexp)) {
-        fprintf(output, "%s", r_sexp_to_symbol(sexp, context));
+        fprintf(output, "%s", sexp_to_symbol(sexp, context));
     }
     else if (SEXP_PAIR_P(sexp)) {
         sexp_write_pair(output, sexp, context);

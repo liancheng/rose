@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define TRUE  1
 #define FALSE 0
+#define TRUE  (!FALSE)
 
 typedef int          rint;
 typedef unsigned int ruint;

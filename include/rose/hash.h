@@ -5,10 +5,10 @@
 
 typedef struct RHashTable RHashTable;
 
-typedef ruint (*RHashFunction)    (rconstpointer data);
-typedef rint  (*REqualFunction)   (rconstpointer lhs,
-                                   rconstpointer rhs);
-typedef void  (*RDestroyCallback) (rconstpointer data);
+typedef ruint    (*RHashFunction)    (rconstpointer data);
+typedef rboolean (*REqualFunction)   (rconstpointer lhs,
+                                      rconstpointer rhs);
+typedef void     (*RDestroyCallback) (rconstpointer data);
 
 RHashTable* r_hash_table_new      (RHashFunction    hash_fn,
                                    REqualFunction   equal_fn);

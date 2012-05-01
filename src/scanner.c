@@ -1,4 +1,4 @@
-#include "rose/context.h"
+#include "context_access.h"
 #include "rose/scanner.h"
 
 struct RScanner {
@@ -68,7 +68,7 @@ static RToken* read_token(FILE* input, RScanner* scanner)
 
 void r_scanner_init(FILE* input, RContext* context)
 {
-    RScanner* scanner = r_context_get_scanner(context);
+    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
     reload_lexer(input, scanner->lexer);
 }
 
@@ -82,7 +82,7 @@ RToken* r_scanner_copy_token(RToken* token)
 // The caller is responsible for freeing the returned token.
 RToken* r_scanner_next_token(FILE* input, RContext* context)
 {
-    RScanner* scanner = r_context_get_scanner(context);
+    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
     RToken* res = scanner->lookahead_token;
 
     if (res)
@@ -96,7 +96,7 @@ RToken* r_scanner_next_token(FILE* input, RContext* context)
 // The caller must not free the returned token.
 RToken* r_scanner_peek_token(FILE* input, RContext* context)
 {
-    RScanner* scanner = r_context_get_scanner(context);
+    RScanner* scanner = CONTEXT_FIELD(RScanner*, scanner, context);
 
     if (!scanner->lookahead_token)
         scanner->lookahead_token = read_token(input, scanner);

@@ -40,7 +40,7 @@ rsexp sexp_read_string(FILE* input, RContext* context)
         return SEXP_UNSPECIFIED;
 
     RToken* t = r_scanner_next_token(input, context);
-    rsexp res = sexp_string_strdup((char*)t->text);
+    rsexp res = sexp_string_new((char*)t->text);
     r_scanner_free_token(t);
 
     return res;
@@ -54,7 +54,7 @@ rsexp sexp_read_symbol(FILE* input, RContext* context)
         return SEXP_UNSPECIFIED;
 
     RToken* t = r_scanner_next_token(input, context);
-    rsexp res = r_sexp_from_symbol((char*)(t->text), context);
+    rsexp res = sexp_from_symbol((char*)(t->text), context);
     r_scanner_free_token(t);
 
     return res;
@@ -82,22 +82,22 @@ rsexp sexp_read_abbrev(FILE* input, RContext* context)
 
     switch (id) {
         case TKN_SINGLE_QUOTE: {
-            res = r_sexp_from_static_symbol("quote", context);
+            res = sexp_from_static_symbol("quote", context);
             break;
         }
 
         case TKN_BACK_QUOTE: {
-            res = r_sexp_from_static_symbol("quasiquote", context);
+            res = sexp_from_static_symbol("quasiquote", context);
             break;
         }
 
         case TKN_COMMA: {
-            res = r_sexp_from_static_symbol("unquote", context);
+            res = sexp_from_static_symbol("unquote", context);
             break;
         }
 
         case TKN_COMMA_AT: {
-            res = r_sexp_from_static_symbol("unquote-splicing", context);
+            res = sexp_from_static_symbol("unquote-splicing", context);
             break;
         }
 

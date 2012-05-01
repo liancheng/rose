@@ -7,8 +7,6 @@ base = Environment(tools=['default', 'quex'],
                             '#build/src/',
                             environ['QUEX_PATH']])
 
-base.ParseConfig('pkg-config --cflags --libs glib-2.0')
-
 clang = base.Clone(CC='clang', CXX='clang++')
 gcc   = base.Clone(CC='gcc',   CXX='g++')
 env   = clang;

@@ -3,7 +3,7 @@
 #include <gc/gc.h>
 #include <string.h>
 
-rsexp sexp_string_strdup(char const* str)
+rsexp sexp_string_new(char const* str)
 {
     int length = strlen(str);
     rsexp res = (rsexp)GC_NEW(RBoxed);
