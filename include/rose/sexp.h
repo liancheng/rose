@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 typedef enum {
-    SEXP_ENVIRONMENT,
+    SEXP_ENV,
     SEXP_STRING,
     SEXP_VECTOR,
     SEXP_INPUT_PORT,
@@ -23,11 +23,11 @@ typedef struct RPair {
 }
 RPair;
 
-typedef struct REnvironment {
+typedef struct REnv{
     rsexp       parent;
     RHashTable* bindings;
 }
-REnvironment;
+REnv;
 
 typedef struct RString {
     size_t length;
@@ -61,11 +61,12 @@ typedef struct RBoxed {
     int type;
 
     union {
-        RString string;
-        RVector vector;
-        RInputPort input_port;
+        REnv        env;
+        RString     string;
+        RVector     vector;
+        RInputPort  input_port;
         ROutputPort output_port;
-        RError error;
+        RError      error;
     }
     as;
 }
@@ -106,5 +107,6 @@ RBoxed;
 #define SEXP_UNDEFINED_P(s)     ((s) == SEXP_UNDEFINED)
 #define SEXP_TYPE(s)            (((RBoxed*)s)->type)
 #define SEXP_CHECK_TYPE(s, t)   (SEXP_BOXED_P(s) && SEXP_TYPE(s) == t)
+#define SEXP_AS(s, t)           (((RBoxed*)s)->as.t)
 
 #endif  //  __ROSE_SEXP_H__

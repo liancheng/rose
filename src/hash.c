@@ -150,13 +150,13 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
     r_hash_table_set_shift_from_size(hash_table,
                                      hash_table->node_count * 2);
 
-    new_hashes = R_NEW0(ruint,    hash_table->size);
-    new_keys   = R_NEW0(rpointer, hash_table->size);
+    new_hashes = GC_MALLOC(sizeof(ruint) * hash_table->size);
+    new_keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
 
     if (hash_table->keys == hash_table->values)
         new_values = new_keys;
     else
-        new_values = R_NEW0(rpointer, hash_table->size);
+        new_values = GC_MALLOC(sizeof(rpointer) * hash_table->size);
 
     for (i = 0; i < old_size; ++i) {
         ruint node_hash = hash_table->hashes[i];
@@ -177,10 +177,10 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
     }
 
     if (hash_table->values != hash_table->keys)
-        free(hash_table->values);
+        GC_FREE(hash_table->values);
 
-    free(hash_table->keys);
-    free(hash_table->hashes);
+    GC_FREE(hash_table->keys);
+    GC_FREE(hash_table->hashes);
 
     hash_table->hashes = new_hashes;
     hash_table->keys   = new_keys;
@@ -252,7 +252,7 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
                                   RDestroyCallback key_destroy_fn,
                                   RDestroyCallback value_destroy_fn)
 {
-    RHashTable* hash_table = R_NEW(RHashTable, 1);
+    RHashTable* hash_table = GC_NEW(RHashTable);
 
     r_hash_table_set_shift(hash_table, HASH_TABLE_MINIMUM_SHIFT);
 
@@ -263,8 +263,8 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
     hash_table->key_destroy_fn   = key_destroy_fn;
     hash_table->value_destroy_fn = value_destroy_fn;
 
-    hash_table->hashes = R_NEW0(ruint,    hash_table->size);
-    hash_table->keys   = R_NEW0(rpointer, hash_table->size);
+    hash_table->hashes = GC_MALLOC(sizeof(ruint) * hash_table->size);
+    hash_table->keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
     hash_table->values = hash_table->keys;
 
     return hash_table;
@@ -273,7 +273,7 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
 void r_hash_table_free(RHashTable* hash_table)
 {
     r_hash_table_clear(hash_table);
-    free(hash_table);
+    GC_FREE(hash_table);
 }
 
 rpointer r_hash_table_get(RHashTable*   hash_table,

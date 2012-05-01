@@ -13,9 +13,9 @@ rsexp sexp_error(rsexp message, rsexp irritants)
 
     rsexp res = (rsexp)GC_NEW(RBoxed);
 
-    SEXP_TYPE(res)               = SEXP_ERROR;
-    SEXP_TO_ERROR(res).message   = message;
-    SEXP_TO_ERROR(res).irritants = irritants;
+    SEXP_TYPE(res)                = SEXP_ERROR;
+    SEXP_AS(res, error).message   = message;
+    SEXP_AS(res, error).irritants = irritants;
 
     return res;
 }
@@ -23,11 +23,11 @@ rsexp sexp_error(rsexp message, rsexp irritants)
 rsexp sexp_error_object_message(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
-    return SEXP_TO_ERROR(error).message;
+    return SEXP_AS(error, error).message;
 }
 
 rsexp sexp_error_object_irritants(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
-    return SEXP_TO_ERROR(error).irritants;
+    return SEXP_AS(error, error).irritants;
 }

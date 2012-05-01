@@ -1,3 +1,4 @@
+#include "rose/env.h"
 #include "rose/pair.h"
 #include "rose/read.h"
 #include "rose/scanner.h"
