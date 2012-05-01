@@ -1,7 +1,7 @@
 Import('env')
 
 env = env.Clone()
-env.Append(LIBS=['argtable2', 'gc'],
+env.Append(LIBS='gc',
            CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED')
 
 lex_src = env.Quex(source='r5rs.qx',

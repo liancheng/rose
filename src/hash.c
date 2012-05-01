@@ -280,7 +280,7 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
     hash_table->key_destroy_fn   = key_destroy_fn;
     hash_table->value_destroy_fn = value_destroy_fn;
 
-    hash_table->hashes = GC_MALLOC(sizeof(ruint) * hash_table->size);
+    hash_table->hashes = GC_MALLOC(sizeof(ruint)    * hash_table->size);
     hash_table->keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
     hash_table->values = hash_table->keys;
 

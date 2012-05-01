@@ -40,28 +40,15 @@ static void reload_lexer(FILE* input, RLexer* lex)
     QUEX_NAME(buffer_fill_region_finish)(lex, len);
 }
 
-static void debug_token(RToken* t, char const* prefix)
-{
-    fprintf(stderr,
-            "%s(%d:%d) id=%s text=[%s]\n",
-            prefix,
-            t->_line_n,
-            t->_column_n,
-            QUEX_NAME_TOKEN(map_id_to_name)(t->_id),
-            t->text);
-}
-
 static RToken* read_token(FILE* input, RScanner* scanner)
 {
     RToken* t = NULL;
 
     QUEX_NAME(receive)(scanner->lexer, &t);
-    debug_token(t, "");
 
     if (TKN_TERMINATION == t->_id) {
         reload_lexer(input, scanner->lexer);
         QUEX_NAME(receive)(scanner->lexer, &t);
-        debug_token(t, " ");
     }
 
     return r_scanner_copy_token(t);
