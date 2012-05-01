@@ -36,11 +36,11 @@ void sexp_write_vector(FILE* output, rsexp sexp, RContext* context)
 
     fprintf(output, "#(");
 
-    size_t length = sexp_vector_length(sexp);
+    rsize length = sexp_vector_length(sexp);
     if (length) {
         sexp_write_datum(output, sexp_vector_ref(sexp, 0), context);
 
-        for (size_t i = 1; i < length; ++i) {
+        for (rsize i = 1; i < length; ++i) {
             fprintf(output, " ");
             sexp_write_datum(output, sexp_vector_ref(sexp, i), context);
         }

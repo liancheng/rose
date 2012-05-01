@@ -1,8 +1,8 @@
 #include "rose/pair.h"
+#include "rose/types.h"
 
 #include <assert.h>
 #include <gc/gc.h>
-#include <stdlib.h>
 #include <stdarg.h>
 
 #define SEXP_FROM_PAIR(p) (((rsexp)(p) << 2) | SEXP_PAIR_TAG)
@@ -83,13 +83,13 @@ rsexp sexp_list_p(rsexp sexp)
         return SEXP_FALSE;
 }
 
-rsexp sexp_list(size_t count, ...)
+rsexp sexp_list(rsize count, ...)
 {
     va_list args;
     va_start(args, count);
 
     rsexp res = SEXP_NULL;
-    for (size_t i = 0; i < count; ++i)
+    for (rsize i = 0; i < count; ++i)
         res = sexp_cons(va_arg(args, rsexp), res);
 
     va_end(args);
@@ -97,7 +97,7 @@ rsexp sexp_list(size_t count, ...)
     return sexp_reverse(res);
 }
 
-size_t sexp_length(rsexp list)
+rsize sexp_length(rsexp list)
 {
     return SEXP_NULL_P(list)
            ? 0

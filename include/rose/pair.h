@@ -18,8 +18,8 @@ rsexp sexp_reverse   (rsexp  list);
 rsexp sexp_append_x  (rsexp  list,
                       rsexp  value);
 rsexp sexp_list_p    (rsexp  sexp);
-rsexp sexp_list      (size_t count,
+rsexp sexp_list      (rsize  count,
                       ...);
-size_t sexp_length   (rsexp  list);
+rsize sexp_length    (rsexp  list);
 
 #endif  //  __ROSE_PAIR_H__

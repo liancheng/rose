@@ -8,7 +8,7 @@ Type Names
 
 Simple typedef types
 
-    Use lowercase names with the ``r`` prefix, no ``_`` between words.  For example::
+    Should be lowercase with prefix ``r``, no ``_`` between words.  For example::
 
         rword
         rsexp
@@ -17,7 +17,7 @@ Simple typedef types
 
 Compound structure types
 
-    Use ``CamelCase`` names with the ``R`` prefix.  For example::
+    Should be ``CamelCase`` names with the prefix ``R``.  For example::
 
         RContext
         RError
@@ -27,7 +27,7 @@ Compound structure types
 Variable Names
 --------------
 
-Use lowercase names, words should be separated by ``_``.  For example::
+Should be lowercase, words should be separated by ``_``.  For example::
 
     global_env
     hash_value
@@ -40,6 +40,8 @@ Use lowercase names, words should be separated by ``_``.  For example::
 Function Names
 --------------
 
+S-Expression functions
+
 Operations on compund structured types
 
     Use lowercase names, prefixed with ``r_``, and words should be separated by ``_``.  For example::
@@ -50,5 +52,7 @@ Macro Names
 -----------
 
 Uppercase names with ``_`` as word separator.
+
+S-Expression macros
 
 .. vim: ft=rst ts=4 sw=4 et wrap

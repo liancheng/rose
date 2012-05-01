@@ -3,14 +3,10 @@
 
 #include "rose/scanner_types.h"
 
-#include <glib.h>
+typedef struct RContext RContext;
 
-typedef struct RContext {
-    RScanner* scanner;
-}
-RContext;
-
-RContext* r_context_new  ();
-void      r_context_free (RContext* context);
+RContext* r_context_new         ();
+void      r_context_free        (RContext* context);
+RScanner* r_context_get_scanner (RContext* context);
 
 #endif  //  __ROSE_CONTEXT_H__

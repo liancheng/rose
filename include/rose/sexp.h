@@ -1,11 +1,12 @@
 #ifndef __ROSE_SEXP_H__
 #define __ROSE_SEXP_H__
 
-#include <stdint.h>
+#include "rose/hash.h"
+
 #include <stdio.h>
-#include <stdlib.h>
 
 typedef enum {
+    SEXP_ENVIRONMENT,
     SEXP_STRING,
     SEXP_VECTOR,
     SEXP_INPUT_PORT,
@@ -14,14 +15,19 @@ typedef enum {
 }
 RBoxedTypes;
 
-typedef uintptr_t rword;
-typedef uintptr_t rsexp;
+typedef rword rsexp;
 
 typedef struct RPair {
     rsexp car;
     rsexp cdr;
 }
 RPair;
+
+typedef struct REnvironment {
+    rsexp       parent;
+    RHashTable* bindings;
+}
+REnvironment;
 
 typedef struct RString {
     size_t length;
@@ -88,9 +94,9 @@ RBoxed;
 #define SEXP_UNSPECIFIED        SEXP_MAKE_IMMEDIATE(4)
 #define SEXP_UNDEFINED          SEXP_MAKE_IMMEDIATE(5)
 
-#define SEXP_MAKE_SMALL_FIXNUM(n)   ((n << 3) | SEXP_SMALL_FIXNUM_TAG)
-#define SEXP_ZERO                   SEXP_MAKE_S_FIXNUM(1)
-#define SEXP_ONE                    SEXP_MAKE_S_FIXNUM(1)
+#define SEXP_MAKE_S_FIXNUM(n)   ((n << 3) | SEXP_SMALL_FIXNUM_TAG)
+#define SEXP_ZERO               SEXP_MAKE_S_FIXNUM(1)
+#define SEXP_ONE                SEXP_MAKE_S_FIXNUM(1)
 
 #define SEXP_NULL_P(s)          ((s) == SEXP_NULL)
 #define SEXP_BOXED_P(s)         (((s) & 0x03) == SEXP_BOXED_TAG)
