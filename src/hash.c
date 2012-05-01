@@ -163,7 +163,7 @@ static inline void r_hash_table_resize(RHashTable* hash_table)
     r_hash_table_set_shift_from_size(hash_table,
                                      hash_table->n_nodes * 2);
 
-    new_hashes = GC_MALLOC(sizeof(ruint) * hash_table->size);
+    new_hashes = GC_MALLOC_ATOMIC(sizeof(ruint) * hash_table->size);
     new_keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
 
     if (hash_table->keys == hash_table->values)
@@ -280,7 +280,7 @@ RHashTable* r_hash_table_new_full(RHashFunction    hash_fn,
     hash_table->key_destroy_fn   = key_destroy_fn;
     hash_table->value_destroy_fn = value_destroy_fn;
 
-    hash_table->hashes = GC_MALLOC(sizeof(ruint)    * hash_table->size);
+    hash_table->hashes = GC_MALLOC_ATOMIC(sizeof(ruint) * hash_table->size);
     hash_table->keys   = GC_MALLOC(sizeof(rpointer) * hash_table->size);
     hash_table->values = hash_table->keys;
 
