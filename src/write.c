@@ -70,7 +70,7 @@ void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
         fprintf(output, "()");
     }
     else if (SEXP_STRING_P(sexp)) {
-        fprintf(output, "\"%s\"", ((RBoxed*)sexp)->as.string.data);
+        fprintf(output, "\"%s\"", SEXP_AS(sexp, string).data);
     }
     else if (SEXP_VECTOR_P(sexp)) {
         sexp_write_vector(output, sexp, context);

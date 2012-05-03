@@ -1,7 +1,7 @@
 #ifndef __ROSE_SYMBOL_H__
 #define __ROSE_SYMBOL_H__
 
-#include "rose/context.h"
+#include "context_access.h"
 #include "rose/sexp.h"
 
 #define SEXP_SYMBOL_P(s)    (((s) & 0x07) == SEXP_SYMBOL_TAG)
@@ -22,6 +22,9 @@ enum {
 
     KEYWORD_COUNT,
 };
+
+#define KEYWORD(name, context)\
+        sexp_vector_ref((rsexp)CONTEXT_FIELD(keywords, context), name)
 
 RSymbolTable* r_symbol_table_new      ();
 rsexp         sexp_from_symbol        (char const* symbol,

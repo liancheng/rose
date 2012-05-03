@@ -1,3 +1,4 @@
+#include "context_access.h"
 #include "rose/pair.h"
 #include "rose/read.h"
 #include "rose/scanner.h"
@@ -81,28 +82,12 @@ rsexp sexp_read_abbrev(FILE* input, RContext* context)
     rtokenid id = r_scanner_peek_token_id(input, context);
 
     switch (id) {
-        case TKN_SINGLE_QUOTE: {
-            res = sexp_from_static_symbol("quote", context);
-            break;
-        }
+        case TKN_SINGLE_QUOTE: res = KEYWORD(QUOTE,            context); break;
+        case TKN_BACK_QUOTE:   res = KEYWORD(QUASIQUOTE,       context); break;
+        case TKN_COMMA:        res = KEYWORD(UNQUOTE,          context); break;
+        case TKN_COMMA_AT:     res = KEYWORD(UNQUOTE_SPLICING, context); break;
 
-        case TKN_BACK_QUOTE: {
-            res = sexp_from_static_symbol("quasiquote", context);
-            break;
-        }
-
-        case TKN_COMMA: {
-            res = sexp_from_static_symbol("unquote", context);
-            break;
-        }
-
-        case TKN_COMMA_AT: {
-            res = sexp_from_static_symbol("unquote-splicing", context);
-            break;
-        }
-
-        default:
-            return res;
+        default: return res;
     }
 
     r_scanner_consume_token(input, context);
