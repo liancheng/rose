@@ -68,7 +68,7 @@ typedef struct RBoxed {
         ROutputPort output_port;
         RError      error;
     }
-    as;
+    value;
 }
 RBoxed;
 
@@ -107,6 +107,6 @@ RBoxed;
 #define SEXP_UNDEFINED_P(s)     ((s) == SEXP_UNDEFINED)
 #define SEXP_TYPE(s)            (((RBoxed*)s)->type)
 #define SEXP_CHECK_TYPE(s, t)   (SEXP_BOXED_P(s) && SEXP_TYPE(s) == t)
-#define SEXP_AS(s, t)           (((RBoxed*)s)->as.t)
+#define SEXP_AS(s, t)           (((RBoxed*)s)->value.t)
 
 #endif  //  __ROSE_SEXP_H__
