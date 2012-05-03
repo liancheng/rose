@@ -5,7 +5,7 @@
 #include <gc/gc.h>
 #include <stdarg.h>
 
-#define SEXP_TO_ERROR(s) (((RBoxed*)s)->as.error)
+#define SEXP_TO_ERROR(s) (((RBoxed*)s)->value.error)
 
 rsexp sexp_error(rsexp message, rsexp irritants)
 {

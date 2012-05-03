@@ -14,6 +14,6 @@ DECLARE_CONTEXT_FIELD_GETTER(global_env);
 
 #undef DECLARE_CONTEXT_FIELD_GETTER
 
-#define CONTEXT_FIELD(field, context) r_context_get_##field(context);
+#define CONTEXT_FIELD(field, context) r_context_get_##field(context)
 
 #endif  //  __ROSE_CONTEXT_ACCESS_H__
