@@ -23,7 +23,7 @@ typedef struct RPair {
 }
 RPair;
 
-typedef struct REnv{
+typedef struct REnv {
     rsexp       parent;
     RHashTable* bindings;
 }

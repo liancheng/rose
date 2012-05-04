@@ -9,8 +9,8 @@ token {
     ELLIPSIS;
     COMMA_AT;
     COMMA;
-    SINGLE_QUOTE;
-    BACK_QUOTE;
+    QUOTE;
+    BACKTICK;
     IDENTIFIER;
     BOOLEAN;
     STRING;
@@ -62,8 +62,8 @@ mode MAIN : FAILURE, EOF {
     /* Abbreviations */
     ,@                          => TKN_COMMA_AT(Lexeme);
     ,                           => TKN_COMMA(Lexeme);
-    "'"                         => TKN_SINGLE_QUOTE(Lexeme);
-    `                           => TKN_BACK_QUOTE(Lexeme);
+    "'"                         => TKN_QUOTE(Lexeme);
+    `                           => TKN_BACKTICK(Lexeme);
 
     /* Symbols */
     {identifier}/{delimiter}    => TKN_IDENTIFIER(Lexeme);

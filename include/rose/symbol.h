@@ -23,18 +23,15 @@ enum {
     KEYWORD_COUNT,
 };
 
-#define KEYWORD(name, context)\
-        sexp_vector_ref((rsexp)CONTEXT_FIELD(keywords, context), name)
-
-RSymbolTable* r_symbol_table_new      ();
-rsexp         sexp_from_symbol        (char const* symbol,
-                                       RContext*   context);
-rsexp         sexp_from_static_symbol (char const* symbol,
-                                       RContext*   context);
-char const*   sexp_to_symbol          (rsexp       sexp,
-                                       RContext*   context);
-rsexp         sexp_keywords           ();
-rsexp         sexp_keyword            (ruint       name,
-                                       RContext*   context);
+RSymbolTable* r_symbol_table_new ();
+rsexp         r_symbol_new       (char const* symbol,
+                                  RContext*   context);
+rsexp         r_static_symbol    (char const* symbol,
+                                  RContext*   context);
+char const*   r_symbol_name      (rsexp       sexp,
+                                  RContext*   context);
+rsexp         r_keywords_init    ();
+rsexp         r_keyword          (ruint       name,
+                                  RContext*   context);
 
 #endif  //  __ROSE_SYMBOL_H__

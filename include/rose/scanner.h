@@ -1,8 +1,15 @@
 #ifndef __ROSE_SCANNER_H__
 #define __ROSE_SCANNER_H__
 
+#include "quex/lexer.h"
 #include "rose/context.h"
-#include "rose/scanner_types.h"
+
+typedef quex_lexer          RLexer;
+typedef quex_token          RToken;
+typedef QUEX_TYPE_TOKEN_ID  rtokenid;
+typedef QUEX_TYPE_CHARACTER rchar;
+
+typedef struct RScanner RScanner;
 
 RScanner* r_scanner_new           ();
 void      r_scanner_free          (RScanner* scanner);

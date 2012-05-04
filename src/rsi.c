@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     context = r_context_new();
 
     for (r_scanner_init(in, context); ;) {
-        rsexp res = sexp_read_datum(in, context);
+        rsexp res = r_read_datum(in, context);
 
         if (SEXP_EOF_P(res))
             break;
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
             printf("error\n");
         }
 
-        sexp_write_datum(stdout, res, context);
+        r_write_datum(stdout, res, context);
         printf("\n");
     }
 

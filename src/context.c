@@ -28,8 +28,8 @@ RContext* r_context_new()
 
     context->scanner      = r_scanner_new();
     context->symbol_table = r_symbol_table_new();
-    context->global_env   = sexp_env_new();
-    context->keywords     = sexp_keywords(context);
+    context->global_env   = r_env_new();
+    context->keywords     = r_keywords_init(context);
 
     return context;
 }

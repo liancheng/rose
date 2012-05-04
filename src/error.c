@@ -7,7 +7,7 @@
 
 #define SEXP_TO_ERROR(s) (((RBoxed*)s)->value.error)
 
-rsexp sexp_error(rsexp message, rsexp irritants)
+rsexp r_error(rsexp message, rsexp irritants)
 {
     assert(SEXP_STRING_P(message));
 
@@ -20,13 +20,13 @@ rsexp sexp_error(rsexp message, rsexp irritants)
     return res;
 }
 
-rsexp sexp_error_object_message(rsexp error)
+rsexp r_error_object_message(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
     return SEXP_AS(error, error).message;
 }
 
-rsexp sexp_error_object_irritants(rsexp error)
+rsexp r_error_object_irritants(rsexp error)
 {
     assert(SEXP_ERROR_P(error));
     return SEXP_AS(error, error).irritants;

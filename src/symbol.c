@@ -119,25 +119,25 @@ RSymbolTable* r_symbol_table_new()
     return res;
 }
 
-rsexp sexp_from_symbol(char const* symbol, RContext* context)
+rsexp r_symbol_new(char const* symbol, RContext* context)
 {
     rquark quark = r_quark_from_symbol(symbol, context);
     return SEXP_FROM_QUARK(quark);
 }
 
-rsexp sexp_from_static_symbol(char const* symbol, RContext* context)
+rsexp r_static_symbol(char const* symbol, RContext* context)
 {
     rquark quark = r_quark_from_static_symbol(symbol, context);
     return SEXP_FROM_QUARK(quark);
 }
 
-char const* sexp_to_symbol(rsexp sexp, RContext* context)
+char const* r_symbol_name(rsexp sexp, RContext* context)
 {
     assert(SEXP_SYMBOL_P(sexp));
     return r_quark_to_symbol(SEXP_TO_QUARK(sexp), context);
 }
 
-rsexp sexp_keywords(RContext* context)
+rsexp r_keywords_init(RContext* context)
 {
     static char* keywords[] = {
         "and",      "=>",
@@ -152,20 +152,23 @@ rsexp sexp_keywords(RContext* context)
         "unquote",  "unquote-splicing",
     };
 
-    rsexp keyword_vec = sexp_make_vector(KEYWORD_COUNT, SEXP_UNSPECIFIED);
+    rsexp vec;
+    rsexp symbol;
     rsize i;
 
+    vec = r_vector_new(KEYWORD_COUNT);
+
     for (i = 0; i < KEYWORD_COUNT; ++i) {
-        rsexp symbol = sexp_from_static_symbol(keywords[i], context);
-        sexp_vector_set_x(keyword_vec, i, symbol);
+        symbol = r_static_symbol(keywords[i], context);
+        r_vector_set_x(vec, i, symbol);
     }
 
-    return keyword_vec;
+    return vec;
 }
 
-rsexp sexp_keyword(ruint name, RContext* context)
+rsexp r_keyword(ruint name, RContext* context)
 {
     assert(name < KEYWORD_COUNT);
     rsexp vec = (rsexp)CONTEXT_FIELD(keywords, context);
-    return sexp_vector_ref(vec, name);
+    return r_vector_ref(vec, name);
 }

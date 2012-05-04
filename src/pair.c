@@ -8,82 +8,80 @@
 #define SEXP_FROM_PAIR(p) (((rsexp)(p) << 2) | SEXP_PAIR_TAG)
 #define SEXP_TO_PAIR(s)   ((RPair*)((s) >> 2))
 
-rsexp sexp_cons(rsexp car, rsexp cdr)
+rsexp r_cons(rsexp car, rsexp cdr)
 {
-    RPair* pair = GC_NEW(RPair);
+    RPair* pair;
+
+    pair      = GC_NEW(RPair);
     pair->car = car;
     pair->cdr = cdr;
+
     return SEXP_FROM_PAIR(pair);
 }
 
-rsexp sexp_car(rsexp sexp)
+rsexp r_car(rsexp sexp)
 {
     assert(SEXP_PAIR_P(sexp));
     return SEXP_TO_PAIR(sexp)->car;
 }
 
-rsexp sexp_cdr(rsexp sexp)
+rsexp r_cdr(rsexp sexp)
 {
     assert(SEXP_PAIR_P(sexp));
     return SEXP_TO_PAIR(sexp)->cdr;
 }
 
-rsexp sexp_set_car_x(rsexp pair, rsexp sexp)
+rsexp r_set_car_x(rsexp pair, rsexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->car = sexp;
     return SEXP_UNSPECIFIED;
 }
 
-rsexp sexp_set_cdr_x(rsexp pair, rsexp sexp)
+rsexp r_set_cdr_x(rsexp pair, rsexp sexp)
 {
     assert(SEXP_PAIR_P(pair));
     SEXP_TO_PAIR(pair)->cdr = sexp;
     return SEXP_UNSPECIFIED;
 }
 
-static rsexp sexp_reverse_internal(rsexp list, rsexp acc)
+static rsexp r_reverse_internal(rsexp list, rsexp acc)
 {
     return SEXP_NULL_P(list)
            ? acc
-           : sexp_reverse_internal(
-                   sexp_cdr(list),
-                   sexp_cons(sexp_car(list), acc));
+           : r_reverse_internal(r_cdr(list),
+                                r_cons(r_car(list), acc));
 }
 
-rsexp sexp_reverse(rsexp list)
+rsexp r_reverse(rsexp list)
 {
     assert(SEXP_NULL_P(list) || SEXP_PAIR_P(list));
-    return sexp_reverse_internal(list, SEXP_NULL);
+    return r_reverse_internal(list, SEXP_NULL);
 }
 
-rsexp sexp_append_x(rsexp list, rsexp sexp)
+rsexp r_append_x(rsexp list, rsexp sexp)
 {
+    rsexp tail;
+
     if (SEXP_NULL_P(list))
         return sexp;
 
     assert(SEXP_PAIR_P(list));
 
-    rsexp tail = list;
-    while (SEXP_PAIR_P(sexp_cdr(tail)))
-        tail = sexp_cdr(tail);
+    for (tail = list; SEXP_PAIR_P(r_cdr(tail)); )
+        tail = r_cdr(tail);
 
-    sexp_set_cdr_x(tail, sexp);
+    r_set_cdr_x(tail, sexp);
 
     return list;
 }
 
-rsexp sexp_list_p(rsexp sexp)
+rboolean r_list_p(rsexp sexp)
 {
-    if (SEXP_NULL_P(sexp))
-        return SEXP_TRUE;
-    else if (SEXP_PAIR_P(sexp))
-        return sexp_list_p(sexp_cdr(sexp));
-    else
-        return SEXP_FALSE;
+    return SEXP_NULL_P(sexp) || (SEXP_PAIR_P(sexp) && r_list_p(r_cdr(sexp)));
 }
 
-rsexp sexp_list(rsize count, ...)
+rsexp r_list(rsize count, ...)
 {
     va_list args;
     rsize i;
@@ -92,16 +90,14 @@ rsexp sexp_list(rsize count, ...)
 
     rsexp res = SEXP_NULL;
     for (i = 0; i < count; ++i)
-        res = sexp_cons(va_arg(args, rsexp), res);
+        res = r_cons(va_arg(args, rsexp), res);
 
     va_end(args);
 
-    return sexp_reverse(res);
+    return r_reverse(res);
 }
 
-rsize sexp_length(rsexp list)
+rsize r_length(rsexp list)
 {
-    return SEXP_NULL_P(list)
-           ? 0
-           : 1 + sexp_length(sexp_cdr(list));
+    return SEXP_NULL_P(list) ? 0 : 1 + r_length(r_cdr(list));
 }

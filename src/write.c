@@ -7,30 +7,30 @@
 
 #include <assert.h>
 
-void sexp_write_cdr(FILE* output, rsexp sexp, RContext* context)
+void r_write_cdr(FILE* output, rsexp sexp, RContext* context)
 {
     if (SEXP_PAIR_P(sexp)) {
         fprintf(output, " ");
-        sexp_write_datum(output, sexp_car(sexp), context);
-        sexp_write_cdr(output, sexp_cdr(sexp), context);
+        r_write_datum(output, r_car(sexp), context);
+        r_write_cdr(output, r_cdr(sexp), context);
     }
     else if (!SEXP_NULL_P(sexp)) {
         fprintf(output, " . ");
-        sexp_write_datum(output, sexp, context);
+        r_write_datum(output, sexp, context);
     }
 }
 
-void sexp_write_pair(FILE* output, rsexp sexp, RContext* context)
+void r_write_pair(FILE* output, rsexp sexp, RContext* context)
 {
     assert(SEXP_PAIR_P(sexp));
 
     fprintf(output, "(");
-    sexp_write_datum(output, sexp_car(sexp), context);
-    sexp_write_cdr(output, sexp_cdr(sexp), context);
+    r_write_datum(output, r_car(sexp), context);
+    r_write_cdr(output, r_cdr(sexp), context);
     fprintf(output, ")");
 }
 
-void sexp_write_vector(FILE* output, rsexp sexp, RContext* context)
+void r_write_vector(FILE* output, rsexp sexp, RContext* context)
 {
     rsize i;
     rsize length;
@@ -39,20 +39,21 @@ void sexp_write_vector(FILE* output, rsexp sexp, RContext* context)
 
     fprintf(output, "#(");
 
-    length = sexp_vector_length(sexp);
+    length = r_vector_length(sexp);
+
     if (length) {
-        sexp_write_datum(output, sexp_vector_ref(sexp, 0), context);
+        r_write_datum(output, r_vector_ref(sexp, 0), context);
 
         for (i = 1; i < length; ++i) {
             fprintf(output, " ");
-            sexp_write_datum(output, sexp_vector_ref(sexp, i), context);
+            r_write_datum(output, r_vector_ref(sexp, i), context);
         }
     }
 
     fprintf(output, ")");
 }
 
-void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
+void r_write_datum(FILE* output, rsexp sexp, RContext* context)
 {
     if (SEXP_TRUE == sexp) {
         fprintf(output, "#t");
@@ -61,10 +62,10 @@ void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
         fprintf(output, "#f");
     }
     else if (SEXP_SYMBOL_P(sexp)) {
-        fprintf(output, "%s", sexp_to_symbol(sexp, context));
+        fprintf(output, "%s", r_symbol_name(sexp, context));
     }
     else if (SEXP_PAIR_P(sexp)) {
-        sexp_write_pair(output, sexp, context);
+        r_write_pair(output, sexp, context);
     }
     else if (SEXP_NULL_P(sexp)) {
         fprintf(output, "()");
@@ -73,6 +74,6 @@ void sexp_write_datum(FILE* output, rsexp sexp, RContext* context)
         fprintf(output, "\"%s\"", SEXP_AS(sexp, string).data);
     }
     else if (SEXP_VECTOR_P(sexp)) {
-        sexp_write_vector(output, sexp, context);
+        r_write_vector(output, sexp, context);
     }
 }
