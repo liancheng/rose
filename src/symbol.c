@@ -1,4 +1,6 @@
 #include "context_access.h"
+
+#include "rose/hash.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
@@ -6,10 +8,9 @@
 #include <gc/gc.h>
 #include <string.h>
 
-#define QUARK_INITIAL_COUNT     128
-#define QUARK_BLOCK_SIZE        1024
-#define SEXP_FROM_QUARK(quark)  ((rsexp)((quark << 3) | SEXP_SYMBOL_TAG))
-#define SEXP_TO_QUARK(sexp)     (sexp >> 3)
+#define QUARK_BLOCK_SIZE     1024
+#define QUARK_TO_SEXP(quark) ((rsexp)((quark << 3) | R_SEXP_SYMBOL_TAG))
+#define SEXP_TO_QUARK(sexp)  (sexp >> 3)
 
 typedef rword rquark;
 
@@ -108,13 +109,17 @@ rboolean r_str_equal(rconstpointer lhs, rconstpointer rhs)
 
 RSymbolTable* r_symbol_table_new()
 {
-    RSymbolTable* res = GC_NEW(RSymbolTable);
+    RSymbolTable* res;
+    rsize size;
+
+    res  = GC_NEW(RSymbolTable);
+    size = sizeof(rquark) * QUARK_BLOCK_SIZE;
 
     res->quark_ht     = r_hash_table_new(r_str_hash, r_str_equal);
-    res->quarks       = GC_MALLOC_ATOMIC(sizeof(rquark) * QUARK_INITIAL_COUNT);
+    res->quarks       = GC_MALLOC_ATOMIC(size);
     res->quark_seq_id = 1;
 
-    memset(res->quarks, 0, sizeof(rquark) * QUARK_INITIAL_COUNT);
+    memset(res->quarks, 0, size);
 
     return res;
 }
@@ -122,18 +127,18 @@ RSymbolTable* r_symbol_table_new()
 rsexp r_symbol_new(char const* symbol, RContext* context)
 {
     rquark quark = r_quark_from_symbol(symbol, context);
-    return SEXP_FROM_QUARK(quark);
+    return QUARK_TO_SEXP(quark);
 }
 
 rsexp r_static_symbol(char const* symbol, RContext* context)
 {
     rquark quark = r_quark_from_static_symbol(symbol, context);
-    return SEXP_FROM_QUARK(quark);
+    return QUARK_TO_SEXP(quark);
 }
 
 char const* r_symbol_name(rsexp sexp, RContext* context)
 {
-    assert(SEXP_SYMBOL_P(sexp));
+    assert(R_SYMBOL_P(sexp));
     return r_quark_to_symbol(SEXP_TO_QUARK(sexp), context);
 }
 
@@ -156,9 +161,9 @@ rsexp r_keywords_init(RContext* context)
     rsexp symbol;
     rsize i;
 
-    vec = r_vector_new(KEYWORD_COUNT);
+    vec = r_vector_new(N_KEYWORD);
 
-    for (i = 0; i < KEYWORD_COUNT; ++i) {
+    for (i = 0; i < N_KEYWORD; ++i) {
         symbol = r_static_symbol(keywords[i], context);
         r_vector_set_x(vec, i, symbol);
     }
@@ -168,7 +173,12 @@ rsexp r_keywords_init(RContext* context)
 
 rsexp r_keyword(ruint name, RContext* context)
 {
-    assert(name < KEYWORD_COUNT);
+    assert(name < N_KEYWORD);
     rsexp vec = (rsexp)CONTEXT_FIELD(keywords, context);
     return r_vector_ref(vec, name);
+}
+
+void r_write_symbol(FILE* output, rsexp sexp, RContext* context)
+{
+    fprintf(output, "%s", r_symbol_name(sexp, context));
 }

@@ -21,17 +21,17 @@ int main(int argc, char* argv[])
     context = r_context_new();
 
     for (r_scanner_init(in, context); ;) {
-        rsexp res = r_read_datum(in, context);
+        rsexp res = r_read(in, context);
 
-        if (SEXP_EOF_P(res))
+        if (R_EOF_P(res))
             break;
 
-        if (SEXP_UNSPECIFIED_P(res)) {
+        if (R_UNSPECIFIED_P(res)) {
             r_scanner_consume_token(in, context);
             printf("error\n");
         }
 
-        r_write_datum(stdout, res, context);
+        r_write(stdout, res, context);
         printf("\n");
     }
 
