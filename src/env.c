@@ -1,7 +1,8 @@
 #include "boxed.h"
 
 #include "rose/env.h"
-#include "rose/hash.h"
+#include "hash.h"
+
 #include "rose/pair.h"
 
 #include <assert.h>
@@ -41,7 +42,7 @@ rsexp r_env_extend(rsexp parent, rsexp vars, rsexp vals)
 {
     rsexp env = r_env_new();
 
-    while (!R_NULL_P(vars)) {
+    while (!r_null_p(vars)) {
         r_env_define(env, r_car(vars), r_car(vals));
         vars = r_cdr(vars);
         vals = r_cdr(vals);

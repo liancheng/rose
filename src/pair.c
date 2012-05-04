@@ -23,33 +23,33 @@ rsexp r_cons(rsexp car, rsexp cdr)
 
 rsexp r_car(rsexp sexp)
 {
-    assert(R_PAIR_P(sexp));
+    assert(r_pair_p(sexp));
     return SEXP_TO_PAIR(sexp)->car;
 }
 
 rsexp r_cdr(rsexp sexp)
 {
-    assert(R_PAIR_P(sexp));
+    assert(r_pair_p(sexp));
     return SEXP_TO_PAIR(sexp)->cdr;
 }
 
 rsexp r_set_car_x(rsexp pair, rsexp sexp)
 {
-    assert(R_PAIR_P(pair));
+    assert(r_pair_p(pair));
     SEXP_TO_PAIR(pair)->car = sexp;
     return R_SEXP_UNSPECIFIED;
 }
 
 rsexp r_set_cdr_x(rsexp pair, rsexp sexp)
 {
-    assert(R_PAIR_P(pair));
+    assert(r_pair_p(pair));
     SEXP_TO_PAIR(pair)->cdr = sexp;
     return R_SEXP_UNSPECIFIED;
 }
 
 static rsexp r_reverse_internal(rsexp list, rsexp acc)
 {
-    return R_NULL_P(list)
+    return r_null_p(list)
            ? acc
            : r_reverse_internal(r_cdr(list),
                                 r_cons(r_car(list), acc));
@@ -57,7 +57,7 @@ static rsexp r_reverse_internal(rsexp list, rsexp acc)
 
 rsexp r_reverse(rsexp list)
 {
-    assert(R_NULL_P(list) || R_PAIR_P(list));
+    assert(r_null_p(list) || r_pair_p(list));
     return r_reverse_internal(list, R_SEXP_NULL);
 }
 
@@ -65,12 +65,12 @@ rsexp r_append_x(rsexp list, rsexp sexp)
 {
     rsexp tail;
 
-    if (R_NULL_P(list))
+    if (r_null_p(list))
         return sexp;
 
-    assert(R_PAIR_P(list));
+    assert(r_pair_p(list));
 
-    for (tail = list; R_PAIR_P(r_cdr(tail)); )
+    for (tail = list; r_pair_p(r_cdr(tail)); )
         tail = r_cdr(tail);
 
     r_set_cdr_x(tail, sexp);
@@ -80,7 +80,7 @@ rsexp r_append_x(rsexp list, rsexp sexp)
 
 rboolean r_list_p(rsexp sexp)
 {
-    return R_NULL_P(sexp) || (R_PAIR_P(sexp) && r_list_p(r_cdr(sexp)));
+    return r_null_p(sexp) || (r_pair_p(sexp) && r_list_p(r_cdr(sexp)));
 }
 
 rsexp r_list(rsize count, ...)
@@ -101,25 +101,25 @@ rsexp r_list(rsize count, ...)
 
 rsize r_length(rsexp list)
 {
-    return R_NULL_P(list) ? 0 : 1 + r_length(r_cdr(list));
+    return r_null_p(list) ? 0 : 1 + r_length(r_cdr(list));
 }
 
-static void r_write_pair_cdr(FILE* output, rsexp sexp, RContext* context)
+static void r_write_pair_cdr(FILE* output, rsexp sexp, rsexp context)
 {
-    if (R_PAIR_P(sexp)) {
+    if (r_pair_p(sexp)) {
         fprintf(output, " ");
         r_write(output, r_car(sexp), context);
         r_write_pair_cdr(output, r_cdr(sexp), context);
     }
-    else if (!R_NULL_P(sexp)) {
+    else if (!r_null_p(sexp)) {
         fprintf(output, " . ");
         r_write(output, sexp, context);
     }
 }
 
-void r_write_pair(FILE* output, rsexp sexp, RContext* context)
+void r_write_pair(FILE* output, rsexp sexp, rsexp context)
 {
-    assert(R_PAIR_P(sexp));
+    assert(r_pair_p(sexp));
 
     fprintf(output, "(");
     r_write(output, r_car(sexp), context);
@@ -127,15 +127,15 @@ void r_write_pair(FILE* output, rsexp sexp, RContext* context)
     fprintf(output, ")");
 }
 
-void r_write_null(FILE* output, rsexp sexp, RContext* context)
+void r_write_null(FILE* output, rsexp sexp, rsexp context)
 {
     fprintf(output, "()");
 }
 
 rboolean r_pair_equal_p(rsexp lhs, rsexp rhs)
 {
-    return R_PAIR_P(lhs) &&
-           R_PAIR_P(rhs) &&
+    return r_pair_p(lhs) &&
+           r_pair_p(rhs) &&
            r_equal_p(r_car(lhs), r_car(rhs)) &&
            r_equal_p(r_cdr(lhs), r_cdr(rhs));
 }

@@ -9,8 +9,9 @@ typedef enum {
     SEXP_VECTOR,
     SEXP_PORT,
     SEXP_ERROR,
+    SEXP_OPAQUE,
 }
-RBoxedTypes;
+RTypes;
 
 typedef rword rsexp;
 
@@ -38,10 +39,10 @@ typedef rword rsexp;
 #define R_SEXP_UNSPECIFIED          R_SEXP_MAKE_IMMEDIATE(4)
 #define R_SEXP_UNDEFINED            R_SEXP_MAKE_IMMEDIATE(5)
 
-#define R_NULL_P(s)                 ((s) == R_SEXP_NULL)
-#define R_BOOLEAN_P(s)              ((s) == R_SEXP_TRUE || (s) == R_SEXP_FALSE)
-#define R_EOF_P(s)                  ((s) == R_SEXP_EOF)
-#define R_UNSPECIFIED_P(s)          ((s) == R_SEXP_UNSPECIFIED)
-#define R_UNDEFINED_P(s)            ((s) == R_SEXP_UNDEFINED)
+#define r_null_p(s)                 ((s) == R_SEXP_NULL)
+#define r_boolean_p(s)              ((s) == R_SEXP_TRUE || (s) == R_SEXP_FALSE)
+#define r_eof_p(s)                  ((s) == R_SEXP_EOF)
+#define r_unspecified_p(s)          ((s) == R_SEXP_UNSPECIFIED)
+#define r_undefined_p(s)            ((s) == R_SEXP_UNDEFINED)
 
 #endif  //  __ROSE_SEXP_H__

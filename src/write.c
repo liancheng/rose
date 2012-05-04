@@ -9,7 +9,7 @@
 
 #include <assert.h>
 
-void r_write(FILE* output, rsexp sexp, RContext* context)
+void r_write(FILE* output, rsexp sexp, rsexp context)
 {
     if (R_SEXP_TRUE == sexp) {
         fprintf(output, "#t");
@@ -17,13 +17,13 @@ void r_write(FILE* output, rsexp sexp, RContext* context)
     else if (R_SEXP_FALSE == sexp) {
         fprintf(output, "#f");
     }
-    else if (R_SYMBOL_P(sexp)) {
+    else if (r_symbol_p(sexp)) {
         r_write_symbol(output, sexp, context);
     }
-    else if (R_PAIR_P(sexp)) {
+    else if (r_pair_p(sexp)) {
         r_write_pair(output, sexp, context);
     }
-    else if (R_NULL_P(sexp)) {
+    else if (r_null_p(sexp)) {
         r_write_null(output, sexp, context);
     }
     else if (r_string_p(sexp)) {

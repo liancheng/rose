@@ -28,7 +28,7 @@ rsexp r_string_new(char const* str)
     return res;
 }
 
-void r_write_string(FILE* output, rsexp sexp, RContext* context)
+void r_write_string(FILE* output, rsexp sexp, rsexp context)
 {
     fprintf(output, "\"%s\"", R_BOXED_VALUE(sexp).string.data);
 }

@@ -1,41 +1,30 @@
+#include "boxed.h"
+#include "keyword.h"
+#include "opaque.h"
+#include "scanner.h"
+
 #include "rose/context.h"
 #include "rose/env.h"
-#include "rose/memory.h"
-#include "rose/scanner.h"
 #include "rose/symbol.h"
 
-struct RContext {
-    RScanner*     scanner;
-    RSymbolTable* symbol_table;
-    rsexp         keywords;
-    rsexp         global_env;
-};
-
-#define DEFINE_CONTEXT_FIELD_GETTER(field)\
-        rpointer r_context_get_##field(RContext* context)\
-        {\
-            return (rpointer)context->field;\
-        }
-
-DEFINE_CONTEXT_FIELD_GETTER(scanner);
-DEFINE_CONTEXT_FIELD_GETTER(symbol_table);
-DEFINE_CONTEXT_FIELD_GETTER(keywords);
-DEFINE_CONTEXT_FIELD_GETTER(global_env);
-
-RContext* r_context_new()
+rsexp r_context_new()
 {
-    RContext* context = R_NEW(RContext, 1);
+    rsexp context      = r_vector_new(CTX_N_FIELD);
+    rsexp scanner      = r_opaque_new(r_scanner_new());
+    rsexp symbol_table = r_opaque_new(r_symbol_table_new());
+    rsexp env          = r_env_new();
+    rsexp keywords     = r_keywords_init(context);
 
-    context->scanner      = r_scanner_new();
-    context->symbol_table = r_symbol_table_new();
-    context->global_env   = r_env_new();
-    context->keywords     = r_keywords_init(context);
+    r_vector_set_x(context, CTX_SCANNER,      scanner);
+    r_vector_set_x(context, CTX_SYMBOL_TABLE, symbol_table);
+    r_vector_set_x(context, CTX_KEYWORDS,     keywords);
+    r_vector_set_x(context, CTX_ENV,          env);
 
     return context;
 }
 
-void r_context_free(RContext* context)
+rsexp r_context_field(rsexp context, rint name)
 {
-    r_scanner_free(context->scanner);
-    free(context);
+    assert(name > 0 && name < CTX_N_FIELD);
+    return r_vector_ref(context, name);
 }

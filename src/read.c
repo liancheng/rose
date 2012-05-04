@@ -1,7 +1,8 @@
-#include "context_access.h"
+#include "keyword.h"
+#include "scanner.h"
+
 #include "rose/pair.h"
 #include "rose/read.h"
-#include "rose/scanner.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
@@ -19,20 +20,20 @@
         }\
         while (0)
 
-rsexp r_read_boolean        (FILE*     input,
-                             RContext* context);
-rsexp r_read_symbol         (FILE*     input,
-                             RContext* context);
-rsexp r_read_string         (FILE*     input,
-                             RContext* context);
-rsexp r_read_simple_datum   (FILE*     input,
-                             RContext* context);
-rsexp r_read_list           (FILE*     input,
-                             RContext* context);
-rsexp r_read_compound_datum (FILE*     input,
-                             RContext* context);
+rsexp r_read_boolean        (FILE* input,
+                             rsexp context);
+rsexp r_read_symbol         (FILE* input,
+                             rsexp context);
+rsexp r_read_string         (FILE* input,
+                             rsexp context);
+rsexp r_read_simple_datum   (FILE* input,
+                             rsexp context);
+rsexp r_read_list           (FILE* input,
+                             rsexp context);
+rsexp r_read_compound_datum (FILE* input,
+                             rsexp context);
 
-rsexp r_read_boolean(FILE* input, RContext* context)
+rsexp r_read_boolean(FILE* input, rsexp context)
 {
     RETURN_ON_EOF_OR_FAIL(input, context);
 
@@ -46,7 +47,7 @@ rsexp r_read_boolean(FILE* input, RContext* context)
     return res;
 }
 
-rsexp r_read_string(FILE* input, RContext* context)
+rsexp r_read_string(FILE* input, rsexp context)
 {
     RETURN_ON_EOF_OR_FAIL(input, context);
 
@@ -60,7 +61,7 @@ rsexp r_read_string(FILE* input, RContext* context)
     return res;
 }
 
-rsexp r_read_symbol(FILE* input, RContext* context)
+rsexp r_read_symbol(FILE* input, rsexp context)
 {
     RETURN_ON_EOF_OR_FAIL(input, context);
 
@@ -74,20 +75,20 @@ rsexp r_read_symbol(FILE* input, RContext* context)
     return res;
 }
 
-rsexp r_read_simple_datum(FILE* input, RContext* context)
+rsexp r_read_simple_datum(FILE* input, rsexp context)
 {
     rsexp res = r_read_boolean(input, context);
 
-    if (R_UNSPECIFIED_P(res))
+    if (r_unspecified_p(res))
         res = r_read_string(input, context);
 
-    if (R_UNSPECIFIED_P(res))
+    if (r_unspecified_p(res))
         res = r_read_symbol(input, context);
 
     return res;
 }
 
-rsexp r_read_abbrev(FILE* input, RContext* context)
+rsexp r_read_abbrev(FILE* input, rsexp context)
 {
     rsexp res;
     rsexp sexp;
@@ -105,19 +106,19 @@ rsexp r_read_abbrev(FILE* input, RContext* context)
         case TKN_COMMA_AT: res = r_keyword(UNQUOTE_SPLICING, context); break;
     }
 
-    if (R_UNSPECIFIED_P(res))
+    if (r_unspecified_p(res))
         return res;
 
     r_scanner_consume_token(input, context);
     sexp = r_read(input, context);
 
-    if (!R_UNSPECIFIED_P(res))
+    if (!r_unspecified_p(res))
         res = r_list(2, res, sexp);
 
     return res;
 }
 
-rsexp r_read_list(FILE* input, RContext* context)
+rsexp r_read_list(FILE* input, rsexp context)
 {
     rsexp res;
     rsexp sexp;
@@ -126,7 +127,7 @@ rsexp r_read_list(FILE* input, RContext* context)
     // Handle abbreviations (quote, unquote, unquote-splicing & quasiquote).
     res = r_read_abbrev(input, context);
 
-    if (!R_UNSPECIFIED_P(res))
+    if (!r_unspecified_p(res))
         return res;
 
     // Consume the `('.
@@ -140,7 +141,7 @@ rsexp r_read_list(FILE* input, RContext* context)
     // Initialize the list to '().  Read data until `.' or `)', cons the list
     // in reverse order and then revert it.
     for (res = R_SEXP_NULL;
-         !R_UNSPECIFIED_P(sexp = r_read(input, context));
+         !r_unspecified_p(sexp = r_read(input, context));
          res = r_cons(sexp, res))
         ;
 
@@ -153,7 +154,7 @@ rsexp r_read_list(FILE* input, RContext* context)
         r_scanner_consume_token(input, context);
 
         last = r_read(input, context);
-        if (R_UNSPECIFIED_P(last))
+        if (r_unspecified_p(last))
             return R_SEXP_UNSPECIFIED;
 
         r_append_x(res, last);
@@ -170,7 +171,7 @@ rsexp r_read_list(FILE* input, RContext* context)
     return res;
 }
 
-rsexp r_read_vector(FILE* input, RContext* context)
+rsexp r_read_vector(FILE* input, rsexp context)
 {
     rsexp acc;
     rsexp sexp;
@@ -185,7 +186,7 @@ rsexp r_read_vector(FILE* input, RContext* context)
 
     // Read vector element into a list.
     for (acc = R_SEXP_NULL;
-         !R_UNSPECIFIED_P(sexp = r_read(input, context));
+         !r_unspecified_p(sexp = r_read(input, context));
          acc = r_cons(sexp, acc))
         ;
 
@@ -201,21 +202,21 @@ rsexp r_read_vector(FILE* input, RContext* context)
     return r_list_to_vector(r_reverse(acc));
 }
 
-rsexp r_read_compound_datum(FILE* input, RContext* context)
+rsexp r_read_compound_datum(FILE* input, rsexp context)
 {
     rsexp res = r_read_list(input, context);
 
-    if (R_UNSPECIFIED_P(res))
+    if (r_unspecified_p(res))
         res = r_read_vector(input, context);
 
     return res;
 }
 
-rsexp r_read(FILE* input, RContext* context)
+rsexp r_read(FILE* input, rsexp context)
 {
     rsexp res = r_read_simple_datum(input, context);
 
-    if (R_UNSPECIFIED_P(res))
+    if (r_unspecified_p(res))
         res = r_read_compound_datum(input, context);
 
     return res;

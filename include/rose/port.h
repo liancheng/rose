@@ -1,6 +1,10 @@
 #ifndef __ROSE_PORT_H__
 #define __ROSE_PORT_H__
 
+#include "rose/sexp.h"
+
+#include <stdio.h>
+
 typedef struct RPort {
     FILE*    stream;
     char*    name;

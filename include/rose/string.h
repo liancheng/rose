@@ -16,6 +16,6 @@ rboolean r_string_p     (rsexp       sexp);
 rsexp    r_string_new   (char const* str);
 void     r_write_string (FILE*       output,
                          rsexp       sexp,
-                         RContext*   context);
+                         rsexp       context);
 
 #endif  //  __ROSE_STRING_H__

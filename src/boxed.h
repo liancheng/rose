@@ -1,5 +1,5 @@
-#ifndef __ROSE_BOXED_H__
-#define __ROSE_BOXED_H__
+#ifndef __ROSE_DETAIL_BOXED_H__
+#define __ROSE_DETAIL_BOXED_H__
 
 #include "rose/env.h"
 #include "rose/error.h"
@@ -9,24 +9,24 @@
 #include "rose/vector.h"
 
 typedef struct RBoxed {
-    int type;
+    rint type;
 
     union {
-        REnv    env;
-        RString string;
-        RVector vector;
-        RPort   port;
-        RError  error;
+        REnv     env;
+        RString  string;
+        RVector  vector;
+        RPort    port;
+        RError   error;
+        rpointer opaque;
     }
     value;
 }
 RBoxed;
 
-rint r_boxed_get_type (rsexp sexp);
-void r_boxed_set_type (rsexp sexp,
-                       rint  type);
-
-#define R_BOXED_P(s)        (((s) & 0x03) == SEXP_BOXED_TAG)
+#define R_BOXED_P(s)        (((s) & 0x03) == R_SEXP_BOXED_TAG)
 #define R_BOXED_VALUE(sexp) ((RBoxed*)sexp)->value
 
-#endif  //  __ROSE_BOXED_H__
+rint     r_boxed_get_type   (rsexp    sexp);
+void     r_boxed_set_type   (rsexp    sexp,
+                             rint     type);
+#endif  //  __ROSE_DETAIL_BOXED_H__

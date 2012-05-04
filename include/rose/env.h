@@ -1,7 +1,8 @@
 #ifndef __ROSE_ENV_H__
 #define __ROSE_ENV_H__
 
-#include "rose/hash.h"
+#include "hash.h"
+
 #include "rose/sexp.h"
 
 typedef struct REnv {

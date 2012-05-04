@@ -123,7 +123,7 @@ rboolean r_vector_equal_p(rsexp lhs, rsexp rhs)
     return TRUE;
 }
 
-void r_write_vector(FILE* output, rsexp sexp, RContext* context)
+void r_write_vector(FILE* output, rsexp sexp, rsexp context)
 {
     rsize i;
     rsize length;

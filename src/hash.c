@@ -1,5 +1,4 @@
-#include "rose/hash.h"
-#include "rose/memory.h"
+#include "hash.h"
 
 #include <gc/gc.h>
 #include <stdlib.h>

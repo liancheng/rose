@@ -16,7 +16,7 @@ rboolean r_eq_p(rsexp lhs, rsexp rhs)
 
 rboolean r_equal_p(rsexp lhs, rsexp rhs)
 {
-    return (R_PAIR_P(lhs) && r_pair_equal_p(lhs, rhs)) ||
+    return (r_pair_p(lhs) && r_pair_equal_p(lhs, rhs)) ||
            (r_vector_p(lhs) && r_vector_equal_p(lhs, rhs)) ||
            r_eqv_p(lhs, rhs);
 }

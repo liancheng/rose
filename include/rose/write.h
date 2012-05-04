@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 
-void r_write (FILE*     output,
-              rsexp     sexp,
-              RContext* context);
+void r_write (FILE* output,
+              rsexp sexp,
+              rsexp context);
 
 #endif  //  __ROSE_WRITE_H__

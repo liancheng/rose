@@ -1,6 +1,7 @@
-#include "context_access.h"
+#include "hash.h"
+#include "keyword.h"
+#include "opaque.h"
 
-#include "rose/hash.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
@@ -47,9 +48,9 @@ static rquark r_quark_new(char* symbol, RSymbolTable* st)
     return quark;
 }
 
-static rquark r_quark_from_string_internal(char const*   symbol,
-                                           rboolean      duplicate,
-                                           RSymbolTable* st)
+static rquark string_to_quark_internal(char const*   symbol,
+                                       rboolean      duplicate,
+                                       RSymbolTable* st)
 {
     rquark quark = (rquark)r_hash_table_get(st->quark_ht, symbol);
 
@@ -61,34 +62,31 @@ static rquark r_quark_from_string_internal(char const*   symbol,
     return quark;
 }
 
-static rquark r_quark_from_symbol(char const* symbol, RContext* context)
+static RSymbolTable* get_symbol_table(rsexp context)
 {
-    RSymbolTable* st;
+    return r_opaque_get(r_context_field(context, CTX_SYMBOL_TABLE));
+}
 
+static rquark quark_from_symbol(char const* symbol, rsexp context)
+{
     if (!symbol)
         return 0;
 
-    st = CONTEXT_FIELD(symbol_table, context);
-
-    return r_quark_from_string_internal(symbol, TRUE, st);
+    return string_to_quark_internal(symbol, TRUE, get_symbol_table(context));
 }
 
-static rquark r_quark_from_static_symbol(char const* symbol, RContext* context)
+static rquark static_symbol_to_quark(char const* symbol, rsexp context)
 {
-    RSymbolTable* st;
-
     if (!symbol)
         return 0;
 
-    st = CONTEXT_FIELD(symbol_table, context);
-
-    return r_quark_from_string_internal(symbol, FALSE, st);
+    return string_to_quark_internal(symbol, FALSE, get_symbol_table(context));
 }
 
-static char const* r_quark_to_symbol(rquark quark, RContext* context)
+static char const* r_quark_to_symbol(rquark quark, rsexp context)
 {
-    RSymbolTable* st = CONTEXT_FIELD(symbol_table, context);
-    return quark < st->quark_seq_id ?  st->quarks[quark] : NULL;
+    RSymbolTable* st = get_symbol_table(context);
+    return quark < st->quark_seq_id ? st->quarks[quark] : NULL;
 }
 
 ruint r_str_hash(rconstpointer str)
@@ -124,25 +122,25 @@ RSymbolTable* r_symbol_table_new()
     return res;
 }
 
-rsexp r_symbol_new(char const* symbol, RContext* context)
+rsexp r_symbol_new(char const* symbol, rsexp context)
 {
-    rquark quark = r_quark_from_symbol(symbol, context);
+    rquark quark = quark_from_symbol(symbol, context);
     return QUARK_TO_SEXP(quark);
 }
 
-rsexp r_static_symbol(char const* symbol, RContext* context)
+rsexp r_symbol_new_static(char const* symbol, rsexp context)
 {
-    rquark quark = r_quark_from_static_symbol(symbol, context);
+    rquark quark = static_symbol_to_quark(symbol, context);
     return QUARK_TO_SEXP(quark);
 }
 
-char const* r_symbol_name(rsexp sexp, RContext* context)
+char const* r_symbol_name(rsexp sexp, rsexp context)
 {
-    assert(R_SYMBOL_P(sexp));
+    assert(r_symbol_p(sexp));
     return r_quark_to_symbol(SEXP_TO_QUARK(sexp), context);
 }
 
-rsexp r_keywords_init(RContext* context)
+rsexp r_keywords_init(rsexp context)
 {
     static char* keywords[] = {
         "and",      "=>",
@@ -164,21 +162,21 @@ rsexp r_keywords_init(RContext* context)
     vec = r_vector_new(N_KEYWORD);
 
     for (i = 0; i < N_KEYWORD; ++i) {
-        symbol = r_static_symbol(keywords[i], context);
+        symbol = r_symbol_new_static(keywords[i], context);
         r_vector_set_x(vec, i, symbol);
     }
 
     return vec;
 }
 
-rsexp r_keyword(ruint name, RContext* context)
+rsexp r_keyword(ruint name, rsexp context)
 {
     assert(name < N_KEYWORD);
-    rsexp vec = (rsexp)CONTEXT_FIELD(keywords, context);
+    rsexp vec = r_context_field(CTX_KEYWORDS, context);
     return r_vector_ref(vec, name);
 }
 
-void r_write_symbol(FILE* output, rsexp sexp, RContext* context)
+void r_write_symbol(FILE* output, rsexp sexp, rsexp context)
 {
     fprintf(output, "%s", r_symbol_name(sexp, context));
 }
