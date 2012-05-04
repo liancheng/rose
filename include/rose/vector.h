@@ -5,8 +5,6 @@
 
 #include <stdlib.h>
 
-#define SEXP_VECTOR_P(s) SEXP_CHECK_TYPE(s, SEXP_VECTOR)
-
 rsexp r_vector_new     (rsize k);
 rsexp r_make_vector    (rsize k,
                         rsexp fill);

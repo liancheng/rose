@@ -9,10 +9,10 @@ rsexp r_vector_new(rsize k)
 {
     rsexp res;
 
-    res                       = (rsexp)GC_NEW(RBoxed);
-    SEXP_TYPE(res)            = SEXP_VECTOR;
-    SEXP_AS(res, vector).size = k;
-    SEXP_AS(res, vector).data = k ? GC_MALLOC(k * sizeof(rsexp)) : NULL;
+    res                      = (rsexp)GC_NEW(RBoxed);
+    SEXP_TYPE(res)           = SEXP_VECTOR;
+    SEXP_TO_VECTOR(res).size = k;
+    SEXP_TO_VECTOR(res).data = k ? GC_MALLOC(k * sizeof(rsexp)) : NULL;
 
     return res;
 }
@@ -24,7 +24,7 @@ rsexp r_make_vector(rsize k, rsexp fill)
     rsize  i;
 
     res  = r_vector_new(k);
-    data = SEXP_AS(res, vector).data;
+    data = SEXP_TO_VECTOR(res).data;
 
     for (i = 0; i < k; ++i)
         data[i] = fill;
@@ -42,7 +42,7 @@ rsexp r_vector(rsize k, ...)
     va_start(args, k);
 
     res  = r_vector_new(k);
-    data = SEXP_AS(res, vector).data;
+    data = SEXP_TO_VECTOR(res).data;
 
     for (i = 0; i < k; ++i)
         data[i] = va_arg(args, rsexp);
@@ -55,16 +55,16 @@ rsexp r_vector(rsize k, ...)
 rsexp r_vector_ref(rsexp vector, rsize k)
 {
     assert(SEXP_VECTOR_P(vector));
-    assert(SEXP_AS(vector, vector).size > k);
-    return SEXP_AS(vector, vector).data[k];
+    assert(SEXP_TO_VECTOR(vector).size > k);
+    return SEXP_TO_VECTOR(vector).data[k];
 }
 
 rsexp r_vector_set_x(rsexp vector, rsize k, rsexp obj)
 {
     assert(SEXP_VECTOR_P(vector));
-    assert(SEXP_AS(vector, vector).size > k);
+    assert(SEXP_TO_VECTOR(vector).size > k);
 
-    SEXP_AS(vector, vector).data[k] = obj;
+    SEXP_TO_VECTOR(vector).data[k] = obj;
 
     return SEXP_UNSPECIFIED;
 }
@@ -72,7 +72,7 @@ rsexp r_vector_set_x(rsexp vector, rsize k, rsexp obj)
 rsize r_vector_length(rsexp vector)
 {
     assert(SEXP_VECTOR_P(vector));
-    return SEXP_AS(vector, vector).size;
+    return SEXP_TO_VECTOR(vector).size;
 }
 
 rsexp r_list_to_vector(rsexp list)

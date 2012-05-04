@@ -9,8 +9,7 @@ typedef enum {
     SEXP_ENV,
     SEXP_STRING,
     SEXP_VECTOR,
-    SEXP_INPUT_PORT,
-    SEXP_OUTPUT_PORT,
+    SEXP_PORT,
     SEXP_ERROR,
 }
 RBoxedTypes;
@@ -41,15 +40,13 @@ typedef struct RVector {
 }
 RVector;
 
-typedef struct RInputPort {
-    FILE* stream;
+typedef struct RPort {
+    FILE*    stream;
+    char*    name;
+    rboolean is_open;
+    rboolean close_on_destroy;
 }
-RInputPort;
-
-typedef struct ROutputPort {
-    FILE* stream;
-}
-ROutputPort;
+RPort;
 
 typedef struct RError {
     rsexp message;
@@ -61,12 +58,11 @@ typedef struct RBoxed {
     int type;
 
     union {
-        REnv        env;
-        RString     string;
-        RVector     vector;
-        RInputPort  input_port;
-        ROutputPort output_port;
-        RError      error;
+        REnv    env;
+        RString string;
+        RVector vector;
+        RPort   port;
+        RError  error;
     }
     value;
 }
@@ -100,13 +96,26 @@ RBoxed;
 #define SEXP_ONE                SEXP_MAKE_S_FIXNUM(1)
 
 #define SEXP_NULL_P(s)          ((s) == SEXP_NULL)
+#define SEXP_PAIR_P(s)          (((s) & 0x03) == SEXP_PAIR_TAG)
 #define SEXP_BOXED_P(s)         (((s) & 0x03) == SEXP_BOXED_TAG)
 #define SEXP_BOOLEAN_P(s)       ((s) == SEXP_TRUE || (s) == SEXP_FALSE)
 #define SEXP_EOF_P(s)           ((s) == SEXP_EOF)
 #define SEXP_UNSPECIFIED_P(s)   ((s) == SEXP_UNSPECIFIED)
 #define SEXP_UNDEFINED_P(s)     ((s) == SEXP_UNDEFINED)
+
 #define SEXP_TYPE(s)            (((RBoxed*)s)->type)
 #define SEXP_CHECK_TYPE(s, t)   (SEXP_BOXED_P(s) && SEXP_TYPE(s) == t)
+#define SEXP_ENV_P(s)           SEXP_CHECK_TYPE(s, SEXP_ENV)
+#define SEXP_STRING_P(s)        SEXP_CHECK_TYPE(s, SEXP_STRING)
+#define SEXP_VECTOR_P(s)        SEXP_CHECK_TYPE(s, SEXP_VECTOR)
+#define SEXP_ERROR_P(s)         SEXP_CHECK_TYPE(s, SEXP_ERROR)
+#define SEXP_PORT_P(s)          SEXP_CHECK_TYPE(s, SEXP_PORT)
+
 #define SEXP_AS(s, t)           (((RBoxed*)s)->value.t)
+#define SEXP_TO_ENV(s)          (SEXP_AS(s, env))
+#define SEXP_TO_STRING(s)       (SEXP_AS(s, string))
+#define SEXP_TO_VECTOR(s)       (SEXP_AS(s, vector))
+#define SEXP_TO_ERROR(s)        (SEXP_AS(s, error))
+#define SEXP_TO_PORT(s)         (SEXP_AS(s, port))
 
 #endif  //  __ROSE_SEXP_H__

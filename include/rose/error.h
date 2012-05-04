@@ -5,11 +5,13 @@
 
 #include <stdarg.h>
 
-#define SEXP_ERROR_P(s) SEXP_CHECK_TYPE(s, SEXP_ERROR)
-
-rsexp r_error                  (rsexp message,
-                                rsexp irritants);
-rsexp r_error_object_message   (rsexp error);
-rsexp r_error_object_irritants (rsexp error);
+rsexp r_error                 (rsexp message,
+                               rsexp irritants);
+rsexp r_error_message         (rsexp error);
+rsexp r_error_irritants       (rsexp error);
+void  r_error_set_message_x   (rsexp error,
+                               rsexp message);
+void  r_error_set_irritants_x (rsexp error,
+                               rsexp irritants);
 
 #endif  //  __ROSE_ERROR_H__

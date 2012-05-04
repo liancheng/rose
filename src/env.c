@@ -7,21 +7,21 @@
 
 static inline void r_env_set_parent(rsexp env, rsexp parent)
 {
-    SEXP_AS(env, env).parent = parent;
+    SEXP_TO_ENV(env).parent = parent;
 }
 
 static inline rsexp r_env_get_parent(rsexp env)
 {
-    return SEXP_AS(env, env).parent;
+    return SEXP_TO_ENV(env).parent;
 }
 
 rsexp r_env_new()
 {
     rsexp res = (rsexp)GC_NEW(RBoxed);
 
-    SEXP_TYPE(res)             = SEXP_ENV;
-    SEXP_AS(res, env).parent   = SEXP_NULL;
-    SEXP_AS(res, env).bindings = r_hash_table_new(NULL, NULL);
+    SEXP_TYPE(res)            = SEXP_ENV;
+    SEXP_TO_ENV(res).parent   = SEXP_NULL;
+    SEXP_TO_ENV(res).bindings = r_hash_table_new(NULL, NULL);
 
     return res;
 }
@@ -43,20 +43,20 @@ rsexp r_env_extend(rsexp parent, rsexp vars, rsexp vals)
 rsexp r_env_lookup(rsexp env, rsexp var)
 {
     assert(SEXP_CHECK_TYPE(env, SEXP_ENV));
-    RHashTable* bindings = SEXP_AS(env, env).bindings;
+    RHashTable* bindings = SEXP_TO_ENV(env).bindings;
     return (rsexp)r_hash_table_get(bindings, (rconstpointer)var);
 }
 
 void r_env_define(rsexp env, rsexp var, rsexp val)
 {
     assert(SEXP_CHECK_TYPE(env, SEXP_ENV));
-    RHashTable* bindings = SEXP_AS(env, env).bindings;
+    RHashTable* bindings = SEXP_TO_ENV(env).bindings;
     r_hash_table_put(bindings, (rpointer)var, (rpointer)val);
 }
 
 void r_env_set(rsexp env, rsexp var, rsexp val)
 {
     assert(SEXP_CHECK_TYPE(env, SEXP_ENV));
-    RHashTable* bindings = SEXP_AS(env, env).bindings;
+    RHashTable* bindings = SEXP_TO_ENV(env).bindings;
     r_hash_table_put(bindings, (rpointer)var, (rpointer)val);
 }

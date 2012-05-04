@@ -3,8 +3,6 @@
 
 #include "rose/sexp.h"
 
-#define SEXP_PAIR_P(s) (((s) & 0x03) == SEXP_PAIR_TAG)
-
 rsexp    r_cons      (rsexp car,
                       rsexp cdr);
 rsexp    r_car       (rsexp sexp);
