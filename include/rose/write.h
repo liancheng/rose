@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-void r_write (FILE* output,
+void r_write (rsexp output,
               rsexp sexp,
               rsexp context);
 

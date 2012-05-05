@@ -9,22 +9,43 @@
 
 rsexp r_context_new()
 {
-    rsexp context      = r_vector_new(CTX_N_FIELD);
-    rsexp scanner      = r_opaque_new(r_scanner_new());
-    rsexp symbol_table = r_opaque_new(r_symbol_table_new());
-    rsexp env          = r_env_new();
-    rsexp keywords     = r_keywords_init(context);
+    rsexp context = r_vector_new(CTX_N_FIELD);
 
-    r_vector_set_x(context, CTX_SCANNER,      scanner);
-    r_vector_set_x(context, CTX_SYMBOL_TABLE, symbol_table);
-    r_vector_set_x(context, CTX_KEYWORDS,     keywords);
-    r_vector_set_x(context, CTX_ENV,          env);
+    r_vector_set(context,
+                 CTX_SCANNER,
+                 r_opaque_new(r_scanner_new()));
+
+    r_vector_set(context,
+                 CTX_SYMBOL_TABLE,
+                 r_opaque_new(r_symbol_table_new()));
+
+    r_vector_set(context,
+                 CTX_KEYWORDS,
+                 r_keywords_init(context));
+
+    r_vector_set(context,
+                 CTX_ENV,
+                 r_env_new());
+
+    r_vector_set(context,
+                 CTX_CURRENT_INPUT_PORT,
+                 R_SEXP_NULL);
+
+    r_vector_set(context,
+                 CTX_CURRENT_OUTPUT_PORT,
+                 R_SEXP_NULL);
 
     return context;
 }
 
-rsexp r_context_field(rsexp context, rint name)
+rsexp r_context_get(rsexp context, ruint key)
 {
-    assert(name > 0 && name < CTX_N_FIELD);
-    return r_vector_ref(context, name);
+    assert(key < CTX_N_FIELD);
+    return r_vector_ref(context, key);
+}
+
+rsexp r_context_set(rsexp context, ruint key, rsexp value)
+{
+    assert(key < CTX_N_FIELD);
+    return r_vector_set(context, key, value);
 }

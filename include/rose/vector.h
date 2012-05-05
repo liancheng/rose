@@ -23,13 +23,15 @@ rboolean r_vector_equal_p (rsexp lhs,
                            rsexp rhs);
 rsexp    r_vector_ref     (rsexp vector,
                            rsize k);
-rsexp    r_vector_set_x   (rsexp vector,
+rsexp    r_vector_set     (rsexp vector,
                            rsize k,
                            rsexp obj);
 rsize    r_vector_length  (rsexp vector);
 rsexp    r_list_to_vector (rsexp list);
-void     r_write_vector   (FILE* output,
+void     r_write_vector   (rsexp output,
                            rsexp sexp,
+                           rsexp context);
+rsexp    r_read_vector    (rsexp input,
                            rsexp context);
 
 #endif  //  __ROSE_VECTOR_H__

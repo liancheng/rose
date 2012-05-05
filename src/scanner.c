@@ -1,7 +1,7 @@
 #include "opaque.h"
 #include "scanner.h"
 
-#include <gc/gc.h>
+#include "rose/port.h"
 
 struct RScanner {
     RLexer* lexer;
@@ -38,19 +38,19 @@ static void r_scanner_free(void* obj, void* client_data)
     free(scanner);
 }
 
-static void reload_lexer(FILE* input, RLexer* lex)
+static void reload_lexer(rsexp input, RLexer* lex)
 {
     QUEX_NAME(buffer_fill_region_prepare)(lex);
 
     char* begin = (char*)QUEX_NAME(buffer_fill_region_begin)(lex);
     int   size  = QUEX_NAME(buffer_fill_region_size)(lex);
-    char* line  = fgets(begin, size, input);
+    char* line  = r_pgets(begin, size, input);
     int   len   = line ? strlen(line) : 0;
 
     QUEX_NAME(buffer_fill_region_finish)(lex, len);
 }
 
-static RToken* read_token(FILE* input, RScanner* scanner)
+static RToken* read_token(rsexp input, RScanner* scanner)
 {
     RToken* t = NULL;
 
@@ -66,10 +66,10 @@ static RToken* read_token(FILE* input, RScanner* scanner)
 
 static RScanner* get_scanner(rsexp context)
 {
-    return r_opaque_get(r_context_field(context, CTX_SCANNER));
+    return r_opaque_get(r_context_get(context, CTX_SCANNER));
 }
 
-void r_scanner_init(FILE* input, rsexp context)
+void r_scanner_init(rsexp input, rsexp context)
 {
     RScanner* scanner = get_scanner(context);
     reload_lexer(input, scanner->lexer);
@@ -83,7 +83,7 @@ RToken* r_scanner_copy_token(RToken* token)
 }
 
 // The caller is responsible for freeing the returned token.
-RToken* r_scanner_next_token(FILE* input, rsexp context)
+RToken* r_scanner_next_token(rsexp input, rsexp context)
 {
     RScanner* scanner = get_scanner(context);
     RToken* res = scanner->lookahead_token;
@@ -97,7 +97,7 @@ RToken* r_scanner_next_token(FILE* input, rsexp context)
 }
 
 // The caller must not free the returned token.
-RToken* r_scanner_peek_token(FILE* input, rsexp context)
+RToken* r_scanner_peek_token(rsexp input, rsexp context)
 {
     RScanner* scanner = get_scanner(context);
 
@@ -107,12 +107,12 @@ RToken* r_scanner_peek_token(FILE* input, rsexp context)
     return scanner->lookahead_token;
 }
 
-rtokenid r_scanner_peek_token_id(FILE* input, rsexp context)
+rtokenid r_scanner_peek_token_id(rsexp input, rsexp context)
 {
     return r_scanner_peek_token(input, context)->_id;
 }
 
-void r_scanner_consume_token(FILE* input, rsexp context)
+void r_scanner_consume_token(rsexp input, rsexp context)
 {
     r_scanner_free_token(r_scanner_next_token(input, context));
 }

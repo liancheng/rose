@@ -1,11 +1,12 @@
 #include "boxed.h"
+#include "scanner.h"
 
 #include "rose/eq.h"
 #include "rose/pair.h"
+#include "rose/read.h"
 #include "rose/vector.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <stdarg.h>
 
 #define SEXP_TO_VECTOR(s) R_BOXED_VALUE(s).vector
@@ -17,13 +18,10 @@ rboolean r_vector_p(rsexp sexp)
 
 rsexp r_vector_new(rsize k)
 {
-    rsexp res;
+    R_SEXP_NEW(res, SEXP_VECTOR);
 
-    res = (rsexp)GC_NEW(RBoxed);
     SEXP_TO_VECTOR(res).size = k;
     SEXP_TO_VECTOR(res).data = k ? GC_MALLOC(k * sizeof(rsexp)) : NULL;
-
-    r_boxed_set_type(res, SEXP_VECTOR);
 
     return res;
 }
@@ -70,7 +68,7 @@ rsexp r_vector_ref(rsexp vector, rsize k)
     return SEXP_TO_VECTOR(vector).data[k];
 }
 
-rsexp r_vector_set_x(rsexp vector, rsize k, rsexp obj)
+rsexp r_vector_set(rsexp vector, rsize k, rsexp obj)
 {
     assert(r_vector_p(vector));
     assert(SEXP_TO_VECTOR(vector).size > k);
@@ -93,7 +91,7 @@ rsexp r_list_to_vector(rsexp list)
     rsize k;
 
     for (k = 0; k < length; ++k) {
-        r_vector_set_x(res, k, r_car(list));
+        r_vector_set(res, k, r_car(list));
         list = r_cdr(list);
     }
 
@@ -123,14 +121,14 @@ rboolean r_vector_equal_p(rsexp lhs, rsexp rhs)
     return TRUE;
 }
 
-void r_write_vector(FILE* output, rsexp sexp, rsexp context)
+void r_write_vector(rsexp output, rsexp sexp, rsexp context)
 {
     rsize i;
     rsize length;
 
     assert(r_vector_p(sexp));
 
-    fprintf(output, "#(");
+    r_pprintf(output, "#(");
 
     length = r_vector_length(sexp);
 
@@ -138,10 +136,41 @@ void r_write_vector(FILE* output, rsexp sexp, rsexp context)
         r_write(output, r_vector_ref(sexp, 0), context);
 
         for (i = 1; i < length; ++i) {
-            fprintf(output, " ");
+            r_pprintf(output, " ");
             r_write(output, r_vector_ref(sexp, i), context);
         }
     }
 
-    fprintf(output, ")");
+    r_pprintf(output, ")");
+}
+
+rsexp r_read_vector(rsexp input, rsexp context)
+{
+    rsexp acc;
+    rsexp sexp;
+
+    // Consume the `#('.
+    RETURN_ON_EOF_OR_FAIL(input, context);
+
+    if (TKN_POUND_LP == r_scanner_peek_token_id(input, context))
+        r_scanner_consume_token(input, context);
+    else
+        return R_SEXP_UNSPECIFIED;
+
+    // Read vector element into a list.
+    for (acc = R_SEXP_NULL;
+         !r_unspecified_p(sexp = r_read(input, context));
+         acc = r_cons(sexp, acc))
+        ;
+
+    // Consume the `)'.
+    RETURN_ON_EOF_OR_FAIL(input, context);
+
+    if (TKN_RP == r_scanner_peek_token_id(input, context))
+        r_scanner_consume_token(input, context);
+    else
+        return R_SEXP_UNSPECIFIED;
+
+    // Convert the list to a vector.
+    return r_list_to_vector(r_reverse(acc));
 }

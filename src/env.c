@@ -1,12 +1,10 @@
 #include "boxed.h"
-
-#include "rose/env.h"
 #include "hash.h"
 
+#include "rose/env.h"
 #include "rose/pair.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 
 #define SEXP_TO_ENV(s) R_BOXED_VALUE(s).env
 
@@ -27,13 +25,10 @@ rboolean r_env_p(rsexp sexp)
 
 rsexp r_env_new()
 {
-    rsexp res;
+    R_SEXP_NEW(res, SEXP_ENV);
 
-    res = (rsexp)GC_NEW(RBoxed);
-    SEXP_TO_ENV(res).parent = R_SEXP_NULL;
+    SEXP_TO_ENV(res).parent   = R_SEXP_NULL;
     SEXP_TO_ENV(res).bindings = r_hash_table_new(NULL, NULL);
-
-    r_boxed_set_type(res, SEXP_ENV);
 
     return res;
 }

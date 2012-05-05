@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-rsexp r_read (FILE* input,
+rsexp r_read (rsexp input,
               rsexp context);
 
 #endif  //  __ROSE_READ_H__

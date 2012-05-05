@@ -8,12 +8,17 @@ typedef enum {
     CTX_SYMBOL_TABLE,
     CTX_ENV,
     CTX_KEYWORDS,
+    CTX_CURRENT_INPUT_PORT,
+    CTX_CURRENT_OUTPUT_PORT,
     CTX_N_FIELD
 }
 RContextField;
 
-rsexp r_context_new   ();
-rsexp r_context_field (rsexp context,
-                       rint  name);
+rsexp r_context_new ();
+rsexp r_context_get (rsexp context,
+                     ruint key);
+rsexp r_context_set (rsexp context,
+                     ruint key,
+                     rsexp value);
 
 #endif  //  __ROSE_CONTEXT_H__

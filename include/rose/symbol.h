@@ -16,8 +16,10 @@ rsexp         r_symbol_new_static (char const* symbol,
                                    rsexp       context);
 char const*   r_symbol_name       (rsexp       sexp,
                                    rsexp       context);
-void          r_write_symbol      (FILE*       output,
+void          r_write_symbol      (rsexp       output,
                                    rsexp       sexp,
+                                   rsexp       context);
+rsexp         r_read_symbol       (rsexp       input,
                                    rsexp       context);
 
 #endif  //  __ROSE_SYMBOL_H__

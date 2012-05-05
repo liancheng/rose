@@ -3,6 +3,8 @@
 
 #include "rose/types.h"
 
+#include <gc/gc.h>
+
 typedef enum {
     SEXP_ENV,
     SEXP_STRING,
@@ -39,10 +41,14 @@ typedef rword rsexp;
 #define R_SEXP_UNSPECIFIED          R_SEXP_MAKE_IMMEDIATE(4)
 #define R_SEXP_UNDEFINED            R_SEXP_MAKE_IMMEDIATE(5)
 
-#define r_null_p(s)                 ((s) == R_SEXP_NULL)
-#define r_boolean_p(s)              ((s) == R_SEXP_TRUE || (s) == R_SEXP_FALSE)
-#define r_eof_p(s)                  ((s) == R_SEXP_EOF)
-#define r_unspecified_p(s)          ((s) == R_SEXP_UNSPECIFIED)
-#define r_undefined_p(s)            ((s) == R_SEXP_UNDEFINED)
+#define r_null_p(sexp)              ((sexp) == R_SEXP_NULL)
+#define r_boolean_p(sexp)           ((sexp) == R_SEXP_TRUE || (sexp) == R_SEXP_FALSE)
+#define r_eof_p(sexp)               ((sexp) == R_SEXP_EOF)
+#define r_unspecified_p(sexp)       ((sexp) == R_SEXP_UNSPECIFIED)
+#define r_undefined_p(sexp)         ((sexp) == R_SEXP_UNDEFINED)
+
+#define R_SEXP_NEW(sexp, type)\
+        rsexp sexp = (rsexp)GC_NEW(RBoxed);\
+        r_boxed_set_type(sexp, type)
 
 #endif  //  __ROSE_SEXP_H__

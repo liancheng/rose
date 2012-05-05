@@ -1,12 +1,13 @@
 #include "hash.h"
 #include "keyword.h"
 #include "opaque.h"
+#include "scanner.h"
 
+#include "rose/port.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <string.h>
 
 #define QUARK_BLOCK_SIZE     1024
@@ -64,7 +65,7 @@ static rquark string_to_quark_internal(char const*   symbol,
 
 static RSymbolTable* get_symbol_table(rsexp context)
 {
-    return r_opaque_get(r_context_field(context, CTX_SYMBOL_TABLE));
+    return r_opaque_get(r_context_get(context, CTX_SYMBOL_TABLE));
 }
 
 static rquark quark_from_symbol(char const* symbol, rsexp context)
@@ -163,7 +164,7 @@ rsexp r_keywords_init(rsexp context)
 
     for (i = 0; i < N_KEYWORD; ++i) {
         symbol = r_symbol_new_static(keywords[i], context);
-        r_vector_set_x(vec, i, symbol);
+        r_vector_set(vec, i, symbol);
     }
 
     return vec;
@@ -172,11 +173,25 @@ rsexp r_keywords_init(rsexp context)
 rsexp r_keyword(ruint name, rsexp context)
 {
     assert(name < N_KEYWORD);
-    rsexp vec = r_context_field(CTX_KEYWORDS, context);
+    rsexp vec = r_context_get(context, CTX_KEYWORDS);
     return r_vector_ref(vec, name);
 }
 
-void r_write_symbol(FILE* output, rsexp sexp, rsexp context)
+void r_write_symbol(rsexp output, rsexp sexp, rsexp context)
 {
-    fprintf(output, "%s", r_symbol_name(sexp, context));
+    r_pprintf(output, "%s", r_symbol_name(sexp, context));
+}
+
+rsexp r_read_symbol(rsexp input, rsexp context)
+{
+    RETURN_ON_EOF_OR_FAIL(input, context);
+
+    if (TKN_IDENTIFIER != r_scanner_peek_token_id(input, context))
+        return R_SEXP_UNSPECIFIED;
+
+    RToken* t = r_scanner_next_token(input, context);
+    rsexp res = r_symbol_new((char*)(t->text), context);
+    r_scanner_free_token(t);
+
+    return res;
 }

@@ -14,8 +14,10 @@ RString;
 
 rboolean r_string_p     (rsexp       sexp);
 rsexp    r_string_new   (char const* str);
-void     r_write_string (FILE*       output,
+void     r_write_string (rsexp       output,
                          rsexp       sexp,
+                         rsexp       context);
+rsexp    r_read_string  (rsexp       input,
                          rsexp       context);
 
 #endif  //  __ROSE_STRING_H__

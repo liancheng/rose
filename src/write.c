@@ -1,6 +1,5 @@
 #include "boxed.h"
 
-#include "rose/error.h"
 #include "rose/pair.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
@@ -9,13 +8,13 @@
 
 #include <assert.h>
 
-void r_write(FILE* output, rsexp sexp, rsexp context)
+void r_write(rsexp output, rsexp sexp, rsexp context)
 {
     if (R_SEXP_TRUE == sexp) {
-        fprintf(output, "#t");
+        r_pprintf(output, "#t");
     }
     else if (R_SEXP_FALSE == sexp) {
-        fprintf(output, "#f");
+        r_pprintf(output, "#f");
     }
     else if (r_symbol_p(sexp)) {
         r_write_symbol(output, sexp, context);
