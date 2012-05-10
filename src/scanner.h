@@ -12,25 +12,25 @@ typedef QUEX_TYPE_CHARACTER rchar;
 typedef struct RScanner RScanner;
 
 RScanner* r_scanner_new           ();
-void      r_scanner_init          (rsexp   input,
+void      r_scanner_init          (rsexp   port,
                                    rsexp   context);
-RToken*   r_scanner_next_token    (rsexp   input,
+RToken*   r_scanner_next_token    (rsexp   port,
                                    rsexp   context);
-RToken*   r_scanner_peek_token    (rsexp   input,
+RToken*   r_scanner_peek_token    (rsexp   port,
                                    rsexp   context);
-rtokenid  r_scanner_peek_token_id (rsexp   input,
+rtokenid  r_scanner_peek_id       (rsexp   port,
                                    rsexp   context);
-void      r_scanner_consume_token (rsexp   input,
+void      r_scanner_consume_token (rsexp   port,
                                    rsexp   context);
 RToken*   r_scanner_copy_token    (RToken* token);
 void      r_scanner_free_token    (RToken* token);
 
-#define RETURN_ON_EOF_OR_FAIL(input, context)\
+#define RETURN_ON_EOF_OR_FAIL(port, context)\
         do {\
-            if (TKN_TERMINATION == r_scanner_peek_token_id(input, context)) {\
+            if (TKN_TERMINATION == r_scanner_peek_id (port, context)) {\
                 return R_SEXP_EOF;\
             }\
-            else if (TKN_FAIL == r_scanner_peek_token_id(input, context)) {\
+            else if (TKN_FAIL == r_scanner_peek_id (port, context)) {\
                 return R_SEXP_UNSPECIFIED;\
             }\
         }\

@@ -2,14 +2,14 @@
 
 #include <assert.h>
 
-rint r_boxed_get_type(rsexp sexp)
+RBoxedType r_boxed_get_type (rsexp obj)
 {
-    assert(R_BOXED_P(sexp));
-    return ((RBoxed*)sexp)->type;
+    assert (r_boxed_p (obj));
+    return ((RBoxed*) obj)->type;
 }
 
-void r_boxed_set_type(rsexp sexp, rint type)
+void r_boxed_set_type (rsexp obj, RBoxedType type)
 {
-    assert(R_BOXED_P(sexp));
-    ((RBoxed*)sexp)->type = type;
+    assert (r_boxed_p (obj));
+    ((RBoxed*) obj)->type = type;
 }

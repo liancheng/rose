@@ -2,7 +2,9 @@ token {
     TERMINATION;
     FAIL;
 
-    POUND_LP;
+    HASH_LP;
+    HASH_U8_LP;
+    HASH_SEMICOLON;
     LP;
     RP;
     DOT;
@@ -18,82 +20,116 @@ token {
 
 define {
     /* Skipper and delimiter */
-    whitespace          [ \n]
-    comment             ;.*
-    atomsphere          {whitespace}|{comment}
-    intertoken_space    {atomsphere}+
-    delimiter           {whitespace}|[()";]
+    intraline_whitespace        [ \t]
+    whitespace                  {intraline_whitespace}
+                                |[\n\r]
+    comment                     ;.*
+    atomsphere                  {whitespace}
+                                |{comment}
+    intertoken_space            {atomsphere}+
+    delimiter                   {whitespace}
+                                |[()";]
 
     /* Identifier (symbol) */
-    letter              [a-zA-Z]
-    special_initial     [!$%&*/:<=>?^_~]
-    initial             {letter}|{special_initial}
-    digit               [0-9]
-    special_subsequent  [\-+.@]
-    subsequent          {initial}|{digit}|{special_subsequent}
-    peculiar_identifier [\-+]|"..."
-    identifier          {initial}{subsequent}*|{peculiar_identifier}
+    letter                      [a-zA-Z]
+    special_initial             [!$%&*/:<=>?^_~]
+    digit                       [0-9]
+    hex_digit                   {digit}
+                                |[a-fA-F]
+    hex_scalar_value            {hex_digit}+
+    inline_hex_escape           "\\x"{hex_scalar_value};
+    initial                     {letter}
+                                |{special_initial}
+                                |{inline_hex_escape}
+    digit                       [0-9]
+    explicit_sign               [\-+]
+    special_subsequent          {explicit_sign}
+                                |[.@]
+    subsequent                  {initial}
+                                |{digit}
+                                |{special_subsequent}
+    symbol_element              [^|\\]
+    sign_subsequent             {initial}
+                                |{explicit_sign}
+                                |@
+    dot_subsequent              {sign_subsequent}
+                                |"."
+    non_digit                   {dot_subsequent}
+                                |{explicit_sign}
+    peculiar_identifier         {explicit_sign}
+                                |{explicit_sign}{sign_subsequent}{subsequent}*
+                                |{explicit_sign}"."{dot_subsequent}{subsequent}*
+                                |"."{non_digit}{subsequent}*
+    identifier                  {initial}{subsequent}*
+                                |"|"{symbol_element}*"|"
+                                |{peculiar_identifier}
 
     /* Boolean */
-    boolean             #[tf]
+    boolean                     #[tf]
 }
 
 start = MAIN;
 
 mode FAILURE : <inheritable: only> {
-    <<FAIL>> => TKN_FAIL(Lexeme);
+    <<FAIL>> => TKN_FAIL (Lexeme);
 }
 
 mode EOF : <inheritable: only> {
-    <<EOF>> => TKN_TERMINATION(LexemeNull);
+    <<EOF>> => TKN_TERMINATION (LexemeNull);
 }
 
-mode MAIN : FAILURE, EOF {
+mode MAIN :
+    FAILURE, EOF
+    <skip_range: "#|" "|#">
+{
     /* Skippers */
     {intertoken_space}          {}
 
     /* Punctuations */
-    "#("                        => TKN_POUND_LP(Lexeme);
-    "("                         => TKN_LP(Lexeme);
-    ")"                         => TKN_RP(Lexeme);
-    "."                         => TKN_DOT(Lexeme);
-    "..."                       => TKN_ELLIPSIS(Lexeme);
+    "#;"                        => TKN_HASH_SEMICOLON (Lexeme);
+    "#("                        => TKN_HASH_LP (Lexeme);
+    "#u8("                      => TKN_HASH_U8_LP (Lexeme);
+    "("                         => TKN_LP (Lexeme);
+    ")"                         => TKN_RP (Lexeme);
+    "."                         => TKN_DOT (Lexeme);
+    "..."                       => TKN_ELLIPSIS (Lexeme);
 
     /* Abbreviations */
-    ,@                          => TKN_COMMA_AT(Lexeme);
-    ,                           => TKN_COMMA(Lexeme);
-    "'"                         => TKN_QUOTE(Lexeme);
-    `                           => TKN_BACKTICK(Lexeme);
+    ,@                          => TKN_COMMA_AT (Lexeme);
+    ,                           => TKN_COMMA (Lexeme);
+    "'"                         => TKN_QUOTE (Lexeme);
+    `                           => TKN_BACKTICK (Lexeme);
 
     /* Symbols */
-    {identifier}/{delimiter}    => TKN_IDENTIFIER(Lexeme);
+    {identifier}/{delimiter}    => TKN_IDENTIFIER (Lexeme);
 
     /* Booleans */
-    {boolean}/{delimiter}       => TKN_BOOLEAN(Lexeme);
+    {boolean}/{delimiter}       => TKN_BOOLEAN (Lexeme);
 
     /* Strings */
-    "\""                        => GOTO(STRING);
+    "\""                        => GOTO (STRING);
 }
 
-mode STRING : EOF, FAILURE {
+mode STRING : EOF, FAILURE
+{
     on_entry {
-        self_accumulator_clear();
+        self_accumulator_clear ();
     }
 
     /* Escaped characters */
-    \\a  { self_accumulator_add_character('\a'); }
-    \\t  { self_accumulator_add_character('\t'); }
-    \\n  { self_accumulator_add_character('\n'); }
-    \\r  { self_accumulator_add_character('\r'); }
-    \\\" { self_accumulator_add_character('\"'); }
-    \\\\ { self_accumulator_add_character('\\'); }
-    \n   { self_accumulator_add_character('\n'); }
+    \\a  { self_accumulator_add_character ('\a'); }
+    \\t  { self_accumulator_add_character ('\t'); }
+    \\n  { self_accumulator_add_character ('\n'); }
+    \\r  { self_accumulator_add_character ('\r'); }
+    \\\" { self_accumulator_add_character ('\"'); }
+    \\\\ { self_accumulator_add_character ('\\'); }
+    \n   { self_accumulator_add_character ('\n'); }
 
     /* Ending double quote, back to MAIN mode */
     \" {
-        self_accumulator_flush(TKN_STRING);
-        self_enter_mode(&MAIN);
+        self_accumulator_flush (TKN_STRING);
+        self_enter_mode (&MAIN);
     }
 
-    . { self_accumulator_add(Lexeme, LexemeEnd); }
+    . { self_accumulator_add (Lexeme, LexemeEnd); }
 }

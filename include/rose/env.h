@@ -1,8 +1,7 @@
 #ifndef __ROSE_ENV_H__
 #define __ROSE_ENV_H__
 
-#include "hash.h"
-
+#include "rose/hash.h"
 #include "rose/sexp.h"
 
 typedef struct REnv {
@@ -11,7 +10,7 @@ typedef struct REnv {
 }
 REnv;
 
-rboolean r_env_p      (rsexp sexp);
+rboolean r_env_p      (rsexp obj);
 rsexp    r_env_new    ();
 rsexp    r_env_extend (rsexp parent,
                        rsexp vars,
@@ -21,7 +20,7 @@ rsexp    r_env_lookup (rsexp env,
 void     r_env_define (rsexp env,
                        rsexp var,
                        rsexp val);
-void     r_env_set    (rsexp env,
+void     r_env_set_x  (rsexp env,
                        rsexp var,
                        rsexp val);
 

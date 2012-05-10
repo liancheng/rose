@@ -23,10 +23,11 @@ typedef struct RBoxed {
 }
 RBoxed;
 
-#define R_BOXED_P(s)        (((s) & 0x03) == R_SEXP_BOXED_TAG)
-#define R_BOXED_VALUE(sexp) ((RBoxed*)sexp)->value
+#define r_boxed_p(s)        (((s) & 0x03) == R_SEXP_BOXED_TAG)
+#define R_BOXED_VALUE(obj)  ((RBoxed*)obj)->value
 
-rint     r_boxed_get_type   (rsexp    sexp);
-void     r_boxed_set_type   (rsexp    sexp,
-                             rint     type);
+RBoxedType r_boxed_get_type (rsexp      obj);
+void       r_boxed_set_type (rsexp      obj,
+                             RBoxedType type);
+
 #endif  //  __ROSE_DETAIL_BOXED_H__

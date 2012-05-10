@@ -1,8 +1,8 @@
 a
 #t
 #f
-"#f"
-"hello world"
+
+hello world
 (quote a)
 (quasiquote a)
 (unquote a)

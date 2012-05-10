@@ -3,8 +3,6 @@
 
 #include "rose/types.h"
 
-#include <gc/gc.h>
-
 typedef enum {
     SEXP_ENV,
     SEXP_STRING,
@@ -13,7 +11,7 @@ typedef enum {
     SEXP_ERROR,
     SEXP_OPAQUE,
 }
-RTypes;
+RBoxedType;
 
 typedef rword rsexp;
 
@@ -33,22 +31,24 @@ typedef rword rsexp;
 #define R_SEXP_SYMBOL_TAG           0x03
 #define R_SEXP_IMMEDIATE_TAG        0x07
 
-#define R_SEXP_MAKE_IMMEDIATE(n)    ((rsexp)((n << 3) | R_SEXP_IMMEDIATE_TAG))
-#define R_SEXP_NULL                 R_SEXP_MAKE_IMMEDIATE(0)
-#define R_SEXP_FALSE                R_SEXP_MAKE_IMMEDIATE(1)
-#define R_SEXP_TRUE                 R_SEXP_MAKE_IMMEDIATE(2)
-#define R_SEXP_EOF                  R_SEXP_MAKE_IMMEDIATE(3)
-#define R_SEXP_UNSPECIFIED          R_SEXP_MAKE_IMMEDIATE(4)
-#define R_SEXP_UNDEFINED            R_SEXP_MAKE_IMMEDIATE(5)
+#define R_SEXP_MAKE_IMMEDIATE(n)    ((rsexp) ((n << 3) | R_SEXP_IMMEDIATE_TAG))
+#define R_SEXP_NULL                 R_SEXP_MAKE_IMMEDIATE (0)
+#define R_SEXP_FALSE                R_SEXP_MAKE_IMMEDIATE (1)
+#define R_SEXP_TRUE                 R_SEXP_MAKE_IMMEDIATE (2)
+#define R_SEXP_EOF                  R_SEXP_MAKE_IMMEDIATE (3)
+#define R_SEXP_UNSPECIFIED          R_SEXP_MAKE_IMMEDIATE (4)
+#define R_SEXP_UNDEFINED            R_SEXP_MAKE_IMMEDIATE (5)
 
-#define r_null_p(sexp)              ((sexp) == R_SEXP_NULL)
-#define r_boolean_p(sexp)           ((sexp) == R_SEXP_TRUE || (sexp) == R_SEXP_FALSE)
-#define r_eof_p(sexp)               ((sexp) == R_SEXP_EOF)
-#define r_unspecified_p(sexp)       ((sexp) == R_SEXP_UNSPECIFIED)
-#define r_undefined_p(sexp)         ((sexp) == R_SEXP_UNDEFINED)
+#define r_null_p(obj)           ((obj) == R_SEXP_NULL)
+#define r_boolean_p(obj)        ((obj) == R_SEXP_TRUE || (obj) == R_SEXP_FALSE)
+#define r_eof_object_p(obj)     ((obj) == R_SEXP_EOF)
+#define r_unspecified_p(obj)    ((obj) == R_SEXP_UNSPECIFIED)
+#define r_undefined_p(obj)      ((obj) == R_SEXP_UNDEFINED)
 
-#define R_SEXP_NEW(sexp, type)\
-        rsexp sexp = (rsexp)GC_NEW(RBoxed);\
-        r_boxed_set_type(sexp, type)
+#include <gc/gc.h>
+
+#define R_SEXP_NEW(obj, type)\
+        rsexp obj = (rsexp) GC_NEW (RBoxed);\
+        r_boxed_set_type (obj, type)
 
 #endif  //  __ROSE_SEXP_H__

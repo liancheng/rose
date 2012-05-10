@@ -1,92 +1,122 @@
 #include "boxed.h"
 
 #include "rose/port.h"
+#include "rose/string.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 
-static void file_port_finalize(void* obj, void* client_data)
+#define SEXP_TO_PORT(obj)   R_BOXED_VALUE (obj).port
+#define PORT_TO_FILE(port)  ((FILE*) (SEXP_TO_PORT (port).stream))
+
+static void finalize_port (void* obj, void* client_data)
 {
-    r_file_port_close((rsexp)obj);
+    r_close_port ((rsexp)obj);
 }
 
-static rsexp file_port_new(FILE*       file,
-                           char const* name,
-                           rboolean    close_on_destroy)
+static rsexp file_port_new (FILE*       file,
+                            char const* name,
+                            rint        mode,
+                            rboolean    close_on_destroy)
 {
-    R_SEXP_NEW(port, SEXP_PORT);
+    R_SEXP_NEW (port, SEXP_PORT);
 
-    R_BOXED_VALUE(port).port.native_stream = file;
-    R_BOXED_VALUE(port).port.name = name;
+    SEXP_TO_PORT (port).stream  = file;
+    SEXP_TO_PORT (port).name    = r_string_new (name);
+    SEXP_TO_PORT (port).mode    = mode;
 
     if (close_on_destroy)
-        GC_REGISTER_FINALIZER(
-                (void*)port, file_port_finalize, NULL, NULL, NULL);
+        GC_REGISTER_FINALIZER ((void*)port, finalize_port, NULL, NULL, NULL);
 
     return port;
 }
 
-rboolean r_port_p(rsexp sexp)
+rboolean r_port_p (rsexp obj)
 {
-    return R_BOXED_P(sexp) &&
-           r_boxed_get_type(sexp) == SEXP_PORT;
+    return r_boxed_p (obj) &&
+           r_boxed_get_type (obj) == SEXP_PORT;
 }
 
-rsexp r_file_input_port_new(FILE*       file,
-                            char const* name,
-                            rboolean    close_on_destroy)
+rboolean r_input_port_p (rsexp obj)
 {
-    return file_port_new(file, name, close_on_destroy);
+    return r_port_p (obj) &&
+           SEXP_TO_PORT (obj).mode == INPUT_PORT;
 }
 
-rsexp r_file_output_port_new(FILE*       file,
-                             char const* name,
-                             rboolean    close_on_destroy)
+rboolean r_output_port_p (rsexp obj)
 {
-    return file_port_new(file, name, close_on_destroy);
+    return r_port_p (obj) &&
+           SEXP_TO_PORT (obj).mode == OUTPUT_PORT;
 }
 
-void r_file_port_close(rsexp port)
+static rsexp open_file (char const* filename, rint mode)
 {
-    fclose(R_BOXED_VALUE(port).port.native_stream);
+    FILE* file;
+    char* mode_str;
+
+    mode_str = (INPUT_PORT == mode) ? "r" : "w";
+    file = fopen (filename, mode_str);
+
+    if (!file)
+        return r_error (r_string_new ("cannot open file"),
+                        r_string_new (filename));
+
+    return file_port_new (file, filename, mode, TRUE);
 }
 
-void r_set_current_input_port(rsexp port, rsexp context)
+rsexp r_open_input_file (char const* filename)
 {
-    r_context_set(context, CTX_CURRENT_INPUT_PORT, port);
+    return open_file (filename, INPUT_PORT);
 }
 
-rsexp r_get_current_input_port(rsexp context)
+rsexp r_open_output_file (char const* filename)
 {
-    return r_context_get(context, CTX_CURRENT_INPUT_PORT);
+    return open_file (filename, OUTPUT_PORT);
 }
 
-void r_set_current_output_port(rsexp port, rsexp context)
+rsexp r_stdin_port ()
 {
-    r_context_set(context, CTX_CURRENT_OUTPUT_PORT, port);
+    return file_port_new (stdin, "(standard-input)", INPUT_PORT, FALSE);
 }
 
-rsexp r_get_current_output_port(rsexp context)
+rsexp r_stdout_port ()
 {
-    return r_context_get(context, CTX_CURRENT_OUTPUT_PORT);
+    return file_port_new (stdout, "(standard-output)", OUTPUT_PORT, FALSE);
 }
 
-rint r_pprintf(rsexp port, char const* format, ...)
+void r_close_port (rsexp port)
+{
+    fclose (PORT_TO_FILE (port));
+}
+
+rint r_port_printf (rsexp port, char const* format, ...)
 {
     va_list args;
-    rint    ret;
-    FILE*   out;
+    rint ret;
 
-    va_start(args, format);
-    out = R_BOXED_VALUE(port).port.native_stream;
-    ret = vfprintf(out, format, args);
-    va_end(args);
+    va_start (args, format);
+    ret = vfprintf (PORT_TO_FILE (port), format, args);
+    va_end (args);
 
     return ret;
 }
 
-char* r_pgets(char* dest, rint size, rsexp port)
+char* r_port_gets (rsexp port, char* dest, rint size)
 {
-    FILE* out = R_BOXED_VALUE(port).port.native_stream;
-    return fgets(dest, size, out);
+    return fgets (dest, size, PORT_TO_FILE (port));
+}
+
+rint r_port_puts (rsexp port, char const* str)
+{
+    return fputs (str, PORT_TO_FILE (port));
+}
+
+void r_write_port (rsexp port, rsexp obj, rsexp context)
+{
+    r_port_printf (port, "#<port %s>", SEXP_TO_PORT (obj).name);
+}
+
+void r_display_port (rsexp port, rsexp obj, rsexp context)
+{
+    r_write_port (port, obj, context);
 }

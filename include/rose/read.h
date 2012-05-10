@@ -3,9 +3,11 @@
 
 #include "rose/sexp.h"
 
-#include <stdio.h>
+#define READ_EXPECT TRUE
+#define READ_TRY    FALSE
 
-rsexp r_read (rsexp input,
-              rsexp context);
+rsexp r_read (rsexp    port,
+              rboolean expect,
+              rsexp    context);
 
 #endif  //  __ROSE_READ_H__
