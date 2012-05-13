@@ -107,29 +107,26 @@ mode MAIN :
     {boolean}/{delimiter}       => TKN_BOOLEAN (Lexeme);
 
     /* Strings */
-    "\""                        => GOTO (STRING);
+    "\""                        => GOSUB (STRING);
 }
 
 mode STRING : EOF, FAILURE
 {
-    on_entry {
-        self_accumulator_clear ();
-    }
+    on_entry    { self_accumulator_clear (); }
+    on_exit     {
+                  self_accumulator_add_character ('\0');
+                  self_accumulator_flush (TKN_STRING);
+                }
 
-    /* Escaped characters */
-    \\a  { self_accumulator_add_character ('\a'); }
-    \\t  { self_accumulator_add_character ('\t'); }
-    \\n  { self_accumulator_add_character ('\n'); }
-    \\r  { self_accumulator_add_character ('\r'); }
-    \\\" { self_accumulator_add_character ('\"'); }
-    \\\\ { self_accumulator_add_character ('\\'); }
-    \n   { self_accumulator_add_character ('\n'); }
+    \\a         { self_accumulator_add_character ('\a'); }
+    \\t         { self_accumulator_add_character ('\t'); }
+    \\n         { self_accumulator_add_character ('\n'); }
+    \\r         { self_accumulator_add_character ('\r'); }
+    \\\"        { self_accumulator_add_character ('\"'); }
+    \\\\        { self_accumulator_add_character ('\\'); }
+    \n          { self_accumulator_add_character ('\n'); }
 
-    /* Ending double quote, back to MAIN mode */
-    \" {
-        self_accumulator_flush (TKN_STRING);
-        self_enter_mode (&MAIN);
-    }
+    \"          => GOUP ();
 
-    . { self_accumulator_add (Lexeme, LexemeEnd); }
+    .           { self_accumulator_add (Lexeme, LexemeEnd); }
 }
