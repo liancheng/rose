@@ -120,3 +120,8 @@ void r_display_port (rsexp port, rsexp obj, rsexp context)
 {
     r_write_port (port, obj, context);
 }
+
+void r_newline (rsexp port)
+{
+    r_port_puts (port, "\n");
+}

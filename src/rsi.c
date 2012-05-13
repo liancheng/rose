@@ -36,29 +36,29 @@ rsexp set_output_port (int argc, char* argv[], rsexp context)
 int main (int argc, char* argv[])
 {
     rsexp context;
-    rsexp i_port;
-    rsexp o_port;
+    rsexp in;
+    rsexp out;
 
     GC_INIT ();
 
     context = r_context_new ();
-    i_port  = set_input_port (argc, argv, context);
-    o_port  = set_output_port (argc, argv, context);
+    in = set_input_port (argc, argv, context);
+    out = set_output_port (argc, argv, context);
 
     // TODO I/O port error handling
 
     while (TRUE) {
-        rsexp res = r_read (i_port, READ_EXPECT, context);
+        rsexp res = r_read (in, READ_EXPECT, context);
 
         if (r_eof_object_p (res))
             break;
 
-        r_display (o_port, res, context);
-        r_port_puts (o_port, "\n");
+        r_write (out, res, context);
+        r_newline (out);
     }
 
-    r_close_input_port (i_port);
-    r_close_output_port (o_port);
+    r_close_input_port (in);
+    r_close_output_port (out);
 
     return EXIT_SUCCESS;
 }

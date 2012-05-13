@@ -34,6 +34,7 @@ char*    r_port_gets         (rsexp       port,
                               rint        size);
 rint     r_port_puts         (rsexp       port,
                               char const* str);
+void     r_newline           (rsexp       port);
 
 #define r_close_input_port(port)\
         r_close_port (port)

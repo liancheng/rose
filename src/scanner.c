@@ -17,7 +17,7 @@ RScanner* r_scanner_new ()
     RScanner* scanner = GC_NEW (RScanner);
 
     scanner->lexer = malloc (sizeof (RLexer));
-    QUEX_NAME (construct_memory) (scanner->lexer, NULL, 0, NULL, NULL, false);
+    QUEX_NAME (construct_memory) (scanner->lexer, NULL, 0, NULL, NULL, FALSE);
     scanner->lookahead_token = NULL;
 
     GC_REGISTER_FINALIZER (scanner, scanner_free, NULL, NULL, NULL);
