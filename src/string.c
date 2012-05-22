@@ -1,11 +1,11 @@
-#include "boxed.h"
+#include "cell.h"
 #include "scanner.h"
 
 #include "rose/string.h"
 
 #include <string.h>
 
-#define SEXP_TO_STRING(obj) R_BOXED_VALUE (obj).string
+#define SEXP_TO_STRING(obj) R_CELL_VALUE (obj).string
 
 char* r_strdup (char const* str)
 {
@@ -16,8 +16,8 @@ char* r_strdup (char const* str)
 
 rboolean r_string_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           r_boxed_get_type (obj) == SEXP_STRING;
+    return r_cell_p (obj) &&
+           r_cell_get_type (obj) == SEXP_STRING;
 }
 
 rsexp r_string_new (char const* str)
@@ -51,8 +51,17 @@ rsexp r_read_string (rsexp input, rsexp context)
 
 void r_write_string (rsexp port, rsexp obj, rsexp context)
 {
-    // TODO character escaping
-    r_port_printf (port, "\"%s\"", SEXP_TO_STRING (obj).data);
+    char* p;
+
+    r_write_char (port, '"');
+
+    for (p = SEXP_TO_STRING (obj).data; *p; ++p)
+        if ('"' == *p)
+            r_port_puts (port, "\\\"");
+        else
+            r_write_char (port, *p);
+
+    r_write_char (port, '"');
 }
 
 void r_display_string (rsexp port, rsexp obj, rsexp context)

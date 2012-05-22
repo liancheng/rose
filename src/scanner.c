@@ -38,29 +38,44 @@ static void scanner_free (rpointer obj, rpointer client_data)
     free (scanner);
 }
 
-static void reload_lexer (rsexp port, RLexer* lex)
+static rint reload_lexer (rsexp port, RLexer* lex)
 {
     QUEX_NAME (buffer_fill_region_prepare) (lex);
 
     char* begin = (char*) QUEX_NAME (buffer_fill_region_begin) (lex);
-    int   size  = QUEX_NAME (buffer_fill_region_size) (lex);
+    rint  size  = QUEX_NAME (buffer_fill_region_size) (lex);
     char* line  = r_port_gets (port, begin, size);
-    int   len   = line ? strlen (line) : 0;
+    rint  len   = line ? strlen (line) : 0;
 
     QUEX_NAME (buffer_fill_region_finish) (lex, len);
+
+    return len;
+}
+
+void debug_token (RToken* token)
+{
+    printf ("id=%d name=%s text=[%s]\n",
+            token->_id,
+            QUEX_NAME_TOKEN (map_id_to_name) (token->_id),
+            token->text);
 }
 
 static RToken* read_token (rsexp port, RScanner* scanner)
 {
-    RToken* t = NULL;
+    RToken* t;
 
     QUEX_NAME (receive) (scanner->lexer, &t);
 
-    if (TKN_TERMINATION == t->_id) {
-        reload_lexer (port, scanner->lexer);
+    while (TKN_EXPECT_MORE == t->_id) {
+        if (0 == reload_lexer (port, scanner->lexer)) {
+            quex_token_set (t, TKN_EOF);
+            break;
+        }
+
         QUEX_NAME (receive) (scanner->lexer, &t);
     }
 
+    // debug_token (t);
     return r_scanner_copy_token (t);
 }
 

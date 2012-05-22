@@ -1,11 +1,11 @@
-#include "boxed.h"
+#include "cell.h"
 
 #include "rose/env.h"
 #include "rose/pair.h"
 
 #include <assert.h>
 
-#define SEXP_TO_ENV(obj) R_BOXED_VALUE (obj).env
+#define SEXP_TO_ENV(obj) R_CELL_VALUE (obj).env
 
 static inline void env_set_parent_x (rsexp env, rsexp parent)
 {
@@ -19,8 +19,8 @@ static inline rsexp r_env_get_parent (rsexp env)
 
 rboolean r_env_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           r_boxed_get_type (obj) == SEXP_ENV;
+    return r_cell_p (obj) &&
+           r_cell_get_type (obj) == SEXP_ENV;
 }
 
 rsexp r_env_new ()
@@ -66,7 +66,7 @@ rsexp r_env_lookup (rsexp env, rsexp var)
     assert (r_env_p (env));
 
     for (frame = env; !r_undefined_p (frame); ) {
-        rsexp val = frame_lookup (frame, var);
+        val = frame_lookup (frame, var);
 
         if (r_undefined_p (val))
             frame = r_env_get_parent (frame);
@@ -77,14 +77,14 @@ rsexp r_env_lookup (rsexp env, rsexp var)
 
 void r_env_define (rsexp env, rsexp var, rsexp val)
 {
-    assert (r_boxed_get_type (env) == SEXP_ENV);
+    assert (r_cell_get_type (env) == SEXP_ENV);
     RHashTable* bindings = SEXP_TO_ENV (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }
 
 void r_env_set (rsexp env, rsexp var, rsexp val)
 {
-    assert (r_boxed_get_type (env) == SEXP_ENV);
+    assert (r_cell_get_type (env) == SEXP_ENV);
     RHashTable* bindings = SEXP_TO_ENV (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }

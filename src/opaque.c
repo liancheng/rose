@@ -1,12 +1,12 @@
-#include "boxed.h"
+#include "cell.h"
 #include "opaque.h"
 
-#define SEXP_TO_OPAQUE(obj) R_BOXED_VALUE (obj).opaque
+#define SEXP_TO_OPAQUE(obj) R_CELL_VALUE (obj).opaque
 
 rboolean r_opaque_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           r_boxed_get_type (obj) == SEXP_OPAQUE;
+    return r_cell_p (obj) &&
+           r_cell_get_type (obj) == SEXP_OPAQUE;
 }
 
 rsexp r_opaque_new (rpointer opaque)

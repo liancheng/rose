@@ -35,6 +35,9 @@ char*    r_port_gets         (rsexp       port,
 rint     r_port_puts         (rsexp       port,
                               char const* str);
 void     r_newline           (rsexp       port);
+void     r_write_char        (rsexp       port,
+                              char        ch);
+rboolean r_eof_p             (rsexp       port);
 
 #define r_close_input_port(port)\
         r_close_port (port)

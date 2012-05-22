@@ -18,7 +18,7 @@ char const*   r_symbol_name       (rsexp       obj,
 #define R_CACHED_SYMBOL(var, name, context)\
         static rsexp var = R_SEXP_FALSE;\
         \
-        if (R_SEXP_FALSE == var) {\
+        if (r_false_p (var)) {\
             var = r_symbol_new_static (name, context);\
         }
 

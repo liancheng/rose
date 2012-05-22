@@ -35,6 +35,7 @@ def quex_generator(source, target, env, for_signature):
         'QUEXLANG':   '--language',
         'QUEXEXT':    '--file-extension-scheme',
         'QUEXOUTDIR': '--output-directory',
+        'QUEXTKNID':  '--foreign-token-id-file'
     }
 
     Mkdir(env['QUEXOUTDIR'])
@@ -80,6 +81,9 @@ def quex_emitter(source, target, env):
         target_prefix + '-token'         + header_ext,
         target_prefix + '-token_ids'     + header_ext,
     ]
+
+    if 'QUEXTKNID' in env:
+        source.append(env['QUEXTKNID'])
 
     return (target, source)
 

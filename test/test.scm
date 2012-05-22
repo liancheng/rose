@@ -1,8 +1,9 @@
 a
+; comment
 #t
 #f
 ""
-"hello world"
+"hello \"world\""
 'a
 `a
 ,a

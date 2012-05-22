@@ -22,7 +22,7 @@ struct RSymbolTable {
     rquark      quark_seq_id;
 };
 
-static rquark r_quark_new (char* symbol, RSymbolTable* st)
+static inline rquark r_quark_new (char* symbol, RSymbolTable* st)
 {
     rquark quark;
     char** new_quarks;
@@ -42,7 +42,7 @@ static rquark r_quark_new (char* symbol, RSymbolTable* st)
     return quark;
 }
 
-static rquark string_to_quark_internal (char const*   symbol,
+static inline rquark string_to_quark_internal (char const*   symbol,
                                         rboolean      duplicate,
                                         RSymbolTable* st)
 {
@@ -56,12 +56,12 @@ static rquark string_to_quark_internal (char const*   symbol,
     return quark;
 }
 
-static RSymbolTable* get_symbol_table (rsexp context)
+static inline RSymbolTable* get_symbol_table (rsexp context)
 {
     return r_opaque_get (r_context_get (context, CTX_SYMBOL_TABLE));
 }
 
-static rquark quark_from_symbol (char const* symbol, rsexp context)
+static inline rquark quark_from_symbol (char const* symbol, rsexp context)
 {
     if (!symbol)
         return 0;
@@ -69,7 +69,7 @@ static rquark quark_from_symbol (char const* symbol, rsexp context)
     return string_to_quark_internal (symbol, TRUE, get_symbol_table (context));
 }
 
-static rquark static_symbol_to_quark (char const* symbol, rsexp context)
+static inline rquark static_symbol_to_quark (char const* symbol, rsexp context)
 {
     if (!symbol)
         return 0;
@@ -77,7 +77,7 @@ static rquark static_symbol_to_quark (char const* symbol, rsexp context)
     return string_to_quark_internal (symbol, FALSE, get_symbol_table (context));
 }
 
-static char const* r_quark_to_symbol (rquark quark, rsexp context)
+static inline char const* r_quark_to_symbol (rquark quark, rsexp context)
 {
     RSymbolTable* st = get_symbol_table (context);
     return quark < st->quark_seq_id ? st->quarks[quark] : NULL;

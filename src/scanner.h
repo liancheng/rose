@@ -27,7 +27,7 @@ void      r_scanner_free_token    (RToken* token);
 
 #define RETURN_ON_EOF_OR_FAIL(port, context)\
         do {\
-            if (TKN_TERMINATION == r_scanner_peek_id (port, context)) {\
+            if (TKN_EOF == r_scanner_peek_id (port, context)) {\
                 return R_SEXP_EOF;\
             }\
             else if (TKN_FAIL == r_scanner_peek_id (port, context)) {\

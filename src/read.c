@@ -18,7 +18,7 @@ static rsexp read_boolean (rsexp port, rsexp context)
         return R_SEXP_UNSPECIFIED;
 
     RToken* t = r_scanner_next_token (port, context);
-    rsexp res = ('t' == t->text [1]) ? R_SEXP_TRUE : R_SEXP_FALSE;
+    rsexp res = ('t' == t->text [0]) ? R_SEXP_TRUE : R_SEXP_FALSE;
     r_scanner_free_token (t);
 
     return res;
@@ -47,16 +47,12 @@ static rsexp read_compound_datum (rsexp port, rsexp context)
     return res;
 }
 
-rsexp r_read (rsexp port, rint expect, rsexp context)
+rsexp r_read (rsexp port, rsexp context)
 {
     rsexp res = read_simple_datum (port, context);
 
     if (r_unspecified_p (res))
         res = read_compound_datum (port, context);
-
-    if (r_unspecified_p (res))
-        if (expect)
-            res = r_error (r_string_new ("not a datum"), R_SEXP_NULL);
 
     return res;
 }

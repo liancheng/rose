@@ -45,10 +45,8 @@ int main (int argc, char* argv[])
     in = set_input_port (argc, argv, context);
     out = set_output_port (argc, argv, context);
 
-    // TODO I/O port error handling
-
     while (TRUE) {
-        rsexp res = r_read (in, READ_EXPECT, context);
+        rsexp res = r_read (in, context);
 
         if (r_eof_object_p (res))
             break;

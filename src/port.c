@@ -1,4 +1,4 @@
-#include "boxed.h"
+#include "cell.h"
 
 #include "rose/port.h"
 #include "rose/string.h"
@@ -6,12 +6,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#define SEXP_TO_PORT(obj)   R_BOXED_VALUE (obj).port
+#define SEXP_TO_PORT(obj)   R_CELL_VALUE (obj).port
 #define PORT_TO_FILE(port)  ((FILE*) (SEXP_TO_PORT (port).stream))
 
 static void finalize_port (void* obj, void* client_data)
 {
-    r_close_port ((rsexp)obj);
+    r_close_port ((rsexp) obj);
 }
 
 static rsexp file_port_new (FILE*       file,
@@ -26,15 +26,15 @@ static rsexp file_port_new (FILE*       file,
     SEXP_TO_PORT (port).mode    = mode;
 
     if (close_on_destroy)
-        GC_REGISTER_FINALIZER ((void*)port, finalize_port, NULL, NULL, NULL);
+        GC_REGISTER_FINALIZER ((void*) port, finalize_port, NULL, NULL, NULL);
 
     return port;
 }
 
 rboolean r_port_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           r_boxed_get_type (obj) == SEXP_PORT;
+    return r_cell_p (obj) &&
+           r_cell_get_type (obj) == SEXP_PORT;
 }
 
 rboolean r_input_port_p (rsexp obj)
@@ -124,4 +124,14 @@ void r_display_port (rsexp port, rsexp obj, rsexp context)
 void r_newline (rsexp port)
 {
     r_port_puts (port, "\n");
+}
+
+void r_write_char (rsexp port, char ch)
+{
+    fputc (ch, PORT_TO_FILE (port));
+}
+
+rboolean r_eof_p (rsexp port)
+{
+    return 0 != feof (PORT_TO_FILE (port));
 }

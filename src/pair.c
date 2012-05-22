@@ -10,8 +10,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#define PAIR_TO_SEXP(p) (((rsexp) (p) << 2) | R_SEXP_PAIR_TAG)
-#define SEXP_TO_PAIR(s) ((RPair*) ((s) >> 2))
+#define PAIR_TO_SEXP(ptr) (((rsexp) (ptr)) | R_SEXP_PAIR_TAG)
+#define SEXP_TO_PAIR(obj) ((RPair*) ((obj) & (~R_SEXP_PAIR_TAG)))
 
 rsexp r_cons (rsexp car, rsexp cdr)
 {
@@ -50,7 +50,7 @@ rsexp r_set_cdr (rsexp pair, rsexp obj)
     return R_SEXP_UNSPECIFIED;
 }
 
-static rsexp r_reverse_internal (rsexp list, rsexp acc)
+static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
 {
     return r_null_p (list)
            ? acc
@@ -143,7 +143,7 @@ static rsexp read_abbrev (rsexp port, rsexp context)
         return res;
 
     r_scanner_consume_token (port, context);
-    obj = r_read (port, READ_TRY, context);
+    obj = r_read (port, context);
 
     if (!r_unspecified_p (res))
         res = r_list (2, res, obj);
@@ -171,10 +171,10 @@ rsexp r_read_list (rsexp port, rsexp context)
     else
         return R_SEXP_UNSPECIFIED;
 
-    // Initialize the list to ' ().  Read data until `.' or `)', cons the list
-    // in reverse order and then revert it.
+    // Initialize the list to '().  Read data until `.' or `)', cons the list in
+    // reverse order and then revert it.
     for (res = R_SEXP_NULL;
-         !r_unspecified_p (obj = r_read (port, READ_TRY, context));
+         !r_unspecified_p (obj = r_read (port, context));
          res = r_cons (obj, res))
         ;
 
@@ -186,7 +186,7 @@ rsexp r_read_list (rsexp port, rsexp context)
     if (TKN_DOT == r_scanner_peek_id (port, context)) {
         r_scanner_consume_token (port, context);
 
-        last = r_read (port, READ_TRY, context);
+        last = r_read (port, context);
         if (r_unspecified_p (last))
             return R_SEXP_UNSPECIFIED;
 

@@ -1,4 +1,4 @@
-#include "boxed.h"
+#include "cell.h"
 #include "scanner.h"
 
 #include "rose/eq.h"
@@ -10,12 +10,12 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#define SEXP_TO_VECTOR(s) R_BOXED_VALUE (s).vector
+#define SEXP_TO_VECTOR(s) R_CELL_VALUE (s).vector
 
 rboolean r_vector_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           r_boxed_get_type (obj) == SEXP_VECTOR;
+    return r_cell_p (obj) &&
+           r_cell_get_type (obj) == SEXP_VECTOR;
 }
 
 rsexp r_vector_new (rsize k)
@@ -24,8 +24,8 @@ rsexp r_vector_new (rsize k)
 
     SEXP_TO_VECTOR (res).length = k;
     SEXP_TO_VECTOR (res).data = k
-                             ? GC_MALLOC (k * sizeof (rsexp))
-                             : NULL;
+                              ? GC_MALLOC (k * sizeof (rsexp))
+                              : NULL;
 
     return res;
 }
@@ -140,7 +140,7 @@ rsexp r_read_vector (rsexp port, rsexp context)
 
     // Read vector element into a list.
     for (acc = R_SEXP_NULL;
-         !r_unspecified_p (obj = r_read (port, READ_TRY, context));
+         !r_unspecified_p (obj = r_read (port, context));
          acc = r_cons (obj, acc))
         ;
 

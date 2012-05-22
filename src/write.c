@@ -15,6 +15,9 @@ void r_write (rsexp port, rsexp obj, rsexp context)
     else if (R_SEXP_FALSE == obj) {
         r_port_puts (port, "#f");
     }
+    else if (r_unspecified_p (obj)) {
+        r_port_puts (port, "#<unspecified>");
+    }
     else if (r_symbol_p (obj)) {
         r_write_symbol (port, obj, context);
     }

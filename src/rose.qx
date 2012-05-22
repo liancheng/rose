@@ -1,5 +1,6 @@
 token {
-    TERMINATION;
+    EXPECT_MORE;
+    EOF;
     FAIL;
 
     HASH_LP;
@@ -16,6 +17,7 @@ token {
     IDENTIFIER;
     BOOLEAN;
     STRING;
+    CHARACTER;
 }
 
 define {
@@ -75,13 +77,10 @@ mode FAILURE : <inheritable: only> {
 }
 
 mode EOF : <inheritable: only> {
-    <<EOF>> => TKN_TERMINATION (LexemeNull);
+    <<EOF>> => TKN_EXPECT_MORE (Lexeme);
 }
 
-mode MAIN :
-    FAILURE, EOF
-    <skip_range: "#|" "|#">
-{
+mode MAIN : FAILURE, EOF {
     /* Skippers */
     {intertoken_space}          {}
 
@@ -104,7 +103,7 @@ mode MAIN :
     {identifier}/{delimiter}    => TKN_IDENTIFIER (Lexeme);
 
     /* Booleans */
-    {boolean}/{delimiter}       => TKN_BOOLEAN (Lexeme);
+    {boolean}/{delimiter}       => TKN_BOOLEAN (LexemeBegin + 1, LexemeEnd);
 
     /* Strings */
     "\""                        => GOSUB (STRING);
