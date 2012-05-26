@@ -8,7 +8,7 @@ struct RScanner {
     RToken* lookahead_token;
 };
 
-static void scanner_free (rpointer scanner, rpointer client_data);
+static void scanner_finalize (rpointer scanner, rpointer client_data);
 
 static RScanner* get_scanner (rsexp context);
 
@@ -20,12 +20,12 @@ RScanner* r_scanner_new ()
     QUEX_NAME (construct_memory) (scanner->lexer, NULL, 0, NULL, NULL, FALSE);
     scanner->lookahead_token = NULL;
 
-    GC_REGISTER_FINALIZER (scanner, scanner_free, NULL, NULL, NULL);
+    GC_REGISTER_FINALIZER (scanner, scanner_finalize, NULL, NULL, NULL);
 
     return scanner;
 }
 
-static void scanner_free (rpointer obj, rpointer client_data)
+static void scanner_finalize (rpointer obj, rpointer client_data)
 {
     RScanner* scanner = obj;
 

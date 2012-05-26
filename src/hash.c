@@ -1,6 +1,5 @@
 #include "rose/hash.h"
 
-#include <gc/gc.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -69,7 +68,7 @@ static inline ruint r_direct_hash (rconstpointer data)
     return (ruint)data;
 }
 
-static inline rint r_direct_euqal (rconstpointer lhs, rconstpointer rhs) 
+static inline rint r_direct_euqal (rconstpointer lhs, rconstpointer rhs)
 {
     return lhs == rhs;
 }
@@ -162,13 +161,13 @@ static inline void r_hash_table_resize (RHashTable* hash_table)
     r_hash_table_set_shift_from_size (hash_table,
                                       hash_table->n_nodes * 2);
 
-    new_hashes = GC_MALLOC_ATOMIC (sizeof (ruint) * hash_table->size);
-    new_keys   = GC_MALLOC (sizeof (rpointer) * hash_table->size);
+    new_hashes = malloc (sizeof (ruint) * hash_table->size);
+    new_keys   = malloc (sizeof (rpointer) * hash_table->size);
 
     if (hash_table->keys == hash_table->values)
         new_values = new_keys;
     else
-        new_values = GC_MALLOC (sizeof (rpointer) * hash_table->size);
+        new_values = malloc (sizeof (rpointer) * hash_table->size);
 
     for (i = 0; i < old_size; ++i) {
         ruint node_hash = hash_table->hashes [i];
@@ -190,10 +189,10 @@ static inline void r_hash_table_resize (RHashTable* hash_table)
     }
 
     if (hash_table->values != hash_table->keys)
-        GC_FREE (hash_table->values);
+        free (hash_table->values);
 
-    GC_FREE (hash_table->keys);
-    GC_FREE (hash_table->hashes);
+    free (hash_table->keys);
+    free (hash_table->hashes);
 
     hash_table->hashes = new_hashes;
     hash_table->keys   = new_keys;
@@ -222,7 +221,7 @@ static inline void r_hash_table_put_node (RHashTable* hash_table,
                                           rpointer    value)
 {
     if (hash_table->keys == hash_table->values && key != value) {
-        hash_table->values = GC_MALLOC (sizeof (rpointer) * hash_table->size);
+        hash_table->values = malloc (sizeof (rpointer) * hash_table->size);
         memcpy (hash_table->values,
                 hash_table->keys,
                 sizeof (rpointer) * hash_table->size);
@@ -268,7 +267,7 @@ RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
                                    RDestructor    key_destructor,
                                    RDestructor    value_destructor)
 {
-    RHashTable* hash_table = GC_NEW (RHashTable);
+    RHashTable* hash_table = malloc (sizeof (RHashTable));
 
     r_hash_table_set_shift (hash_table, HASH_TABLE_MINIMUM_SHIFT);
 
@@ -279,8 +278,8 @@ RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
     hash_table->key_destructor   = key_destructor;
     hash_table->value_destructor = value_destructor;
 
-    hash_table->hashes = GC_MALLOC_ATOMIC (sizeof (ruint) * hash_table->size);
-    hash_table->keys   = GC_MALLOC (sizeof (rpointer) * hash_table->size);
+    hash_table->hashes = malloc (sizeof (ruint) * hash_table->size);
+    hash_table->keys   = malloc (sizeof (rpointer) * hash_table->size);
     hash_table->values = hash_table->keys;
 
     return hash_table;
@@ -289,7 +288,7 @@ RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
 void r_hash_table_free (RHashTable* hash_table)
 {
     r_hash_table_clear (hash_table);
-    GC_FREE (hash_table);
+    free (hash_table);
 }
 
 rpointer r_hash_table_get (RHashTable*   hash_table,
@@ -297,7 +296,7 @@ rpointer r_hash_table_get (RHashTable*   hash_table,
 {
     ruint hash_value;
     rsize node_index;
-    
+
     node_index = r_hash_table_get_node (hash_table, key, &hash_value);
 
     return REAL_HASH_P (hash_table->hashes [node_index])

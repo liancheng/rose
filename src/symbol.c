@@ -22,7 +22,7 @@ struct RSymbolTable {
     rquark      quark_seq_id;
 };
 
-static inline rquark r_quark_new (char* symbol, RSymbolTable* st)
+static inline rquark quark_new (char* symbol, RSymbolTable* st)
 {
     rquark quark;
     char** new_quarks;
@@ -43,14 +43,14 @@ static inline rquark r_quark_new (char* symbol, RSymbolTable* st)
 }
 
 static inline rquark string_to_quark_internal (char const*   symbol,
-                                        rboolean      duplicate,
-                                        RSymbolTable* st)
+                                               rboolean      duplicate,
+                                               RSymbolTable* st)
 {
-    rquark quark = (rquark)r_hash_table_get (st->quark_ht, symbol);
+    rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
 
     if (!quark) {
         char* str = duplicate ? r_strdup (symbol) : (char*)symbol;
-        quark = r_quark_new (str, st);
+        quark = quark_new (str, st);
     }
 
     return quark;
@@ -80,7 +80,12 @@ static inline rquark static_symbol_to_quark (char const* symbol, rsexp context)
 static inline char const* r_quark_to_symbol (rquark quark, rsexp context)
 {
     RSymbolTable* st = get_symbol_table (context);
-    return quark < st->quark_seq_id ? st->quarks[quark] : NULL;
+    return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
+}
+
+static inline void symbol_table_finalize (rpointer obj, rpointer client_data)
+{
+    r_hash_table_free (((RSymbolTable*) obj)->quark_ht);
 }
 
 ruint r_str_hash (rconstpointer str)
@@ -88,7 +93,7 @@ ruint r_str_hash (rconstpointer str)
     ruint h = 5381;
     char const* p;
 
-    for (p = (char const*)str; *p; ++p)
+    for (p = (char const*) str; *p; ++p)
         h = (h << 5) + h + *p;
 
     return h;
@@ -112,6 +117,7 @@ RSymbolTable* r_symbol_table_new ()
     res->quark_seq_id = 1;
 
     memset (res->quarks, 0, size);
+    GC_REGISTER_FINALIZER (res, symbol_table_finalize, NULL, NULL, NULL);
 
     return res;
 }

@@ -17,6 +17,11 @@ static inline rsexp r_env_get_parent (rsexp env)
     return SEXP_TO_ENV (env).parent;
 }
 
+static inline void env_finalize (rpointer obj, rpointer client_data)
+{
+    r_hash_table_free (SEXP_TO_ENV ((rsexp) obj).bindings);
+}
+
 rboolean r_env_p (rsexp obj)
 {
     return r_cell_p (obj) &&
@@ -29,6 +34,8 @@ rsexp r_env_new ()
 
     SEXP_TO_ENV (res).parent   = R_SEXP_UNDEFINED;
     SEXP_TO_ENV (res).bindings = r_hash_table_new (NULL, NULL);
+
+    GC_REGISTER_FINALIZER ((rpointer) res, env_finalize, NULL, NULL, NULL);
 
     return res;
 }
