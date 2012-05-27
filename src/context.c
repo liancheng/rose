@@ -11,10 +11,6 @@ rsexp r_context_new ()
     rsexp context = r_vector_new (CTX_N_FIELD);
 
     r_vector_set_x (context,
-                    CTX_SCANNER,
-                    r_opaque_new (r_scanner_new ()));
-
-    r_vector_set_x (context,
                     CTX_SYMBOL_TABLE,
                     r_opaque_new (r_symbol_table_new ()));
 

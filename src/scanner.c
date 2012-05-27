@@ -6,24 +6,9 @@
 struct RScanner {
     RLexer* lexer;
     RToken* lookahead_token;
+    int     line;
+    int     column;
 };
-
-static void scanner_finalize (rpointer scanner, rpointer client_data);
-
-static RScanner* get_scanner (rsexp context);
-
-RScanner* r_scanner_new ()
-{
-    RScanner* scanner = GC_NEW (RScanner);
-
-    scanner->lexer = malloc (sizeof (RLexer));
-    QUEX_NAME (construct_memory) (scanner->lexer, NULL, 0, NULL, NULL, FALSE);
-    scanner->lookahead_token = NULL;
-
-    GC_REGISTER_FINALIZER (scanner, scanner_finalize, NULL, NULL, NULL);
-
-    return scanner;
-}
 
 static void scanner_finalize (rpointer obj, rpointer client_data)
 {
@@ -52,9 +37,25 @@ static rint reload_lexer (rsexp port, RLexer* lex)
     return len;
 }
 
+RScanner* r_scanner_new ()
+{
+    RScanner* scanner = GC_NEW (RScanner);
+    memset (scanner, 0, sizeof (RScanner));
+
+    scanner->lexer = malloc (sizeof (RLexer));
+    QUEX_NAME (construct_memory) (scanner->lexer, NULL, 0, NULL, NULL, FALSE);
+    scanner->lookahead_token = NULL;
+
+    GC_REGISTER_FINALIZER (scanner, scanner_finalize, NULL, NULL, NULL);
+
+    return scanner;
+}
+
 void debug_token (RToken* token)
 {
-    printf ("id=%d name=%s text=[%s]\n",
+    printf ("%d:%d id=%d name=%s text=[%s]\n",
+            token->_line_n,
+            token->_column_n,
             token->_id,
             QUEX_NAME_TOKEN (map_id_to_name) (token->_id),
             token->text);
@@ -75,18 +76,15 @@ static RToken* read_token (rsexp port, RScanner* scanner)
         QUEX_NAME (receive) (scanner->lexer, &t);
     }
 
+    scanner->line   = t->_line_n;
+    scanner->column = t->_column_n;
+
     // debug_token (t);
     return r_scanner_copy_token (t);
 }
 
-static RScanner* get_scanner (rsexp context)
+void r_scanner_init (RScanner* scanner, rsexp port)
 {
-    return r_opaque_get (r_context_get (context, CTX_SCANNER));
-}
-
-void r_scanner_init (rsexp port, rsexp context)
-{
-    RScanner* scanner = get_scanner (context);
     reload_lexer (port, scanner->lexer);
 }
 
@@ -98,9 +96,8 @@ RToken* r_scanner_copy_token (RToken* token)
 }
 
 // The caller is responsible for freeing the returned token.
-RToken* r_scanner_next_token (rsexp port, rsexp context)
+RToken* r_scanner_next_token (RScanner* scanner, rsexp port)
 {
-    RScanner* scanner = get_scanner (context);
     RToken* res = scanner->lookahead_token;
 
     if (res)
@@ -112,24 +109,22 @@ RToken* r_scanner_next_token (rsexp port, rsexp context)
 }
 
 // The caller must not free the returned token.
-RToken* r_scanner_peek_token (rsexp port, rsexp context)
+RToken* r_scanner_peek_token (RScanner* scanner, rsexp port)
 {
-    RScanner* scanner = get_scanner (context);
-
     if (!scanner->lookahead_token)
         scanner->lookahead_token = read_token (port, scanner);
 
     return scanner->lookahead_token;
 }
 
-rtokenid r_scanner_peek_id (rsexp port, rsexp context)
+rtokenid r_scanner_peek_id (RScanner* scanner, rsexp port)
 {
-    return r_scanner_peek_token (port, context)->_id;
+    return r_scanner_peek_token (scanner, port)->_id;
 }
 
-void r_scanner_consume_token (rsexp port, rsexp context)
+void r_scanner_consume_token (RScanner* scanner, rsexp port)
 {
-    r_scanner_free_token (r_scanner_next_token (port, context));
+    r_scanner_free_token (r_scanner_next_token (scanner, port));
 }
 
 void r_scanner_free_token (RToken* token)

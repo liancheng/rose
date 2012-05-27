@@ -89,7 +89,7 @@ void r_env_define (rsexp env, rsexp var, rsexp val)
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }
 
-void r_env_set (rsexp env, rsexp var, rsexp val)
+void r_env_set_x (rsexp env, rsexp var, rsexp val)
 {
     assert (r_cell_get_type (env) == SEXP_ENV);
     RHashTable* bindings = SEXP_TO_ENV (env).bindings;

@@ -12,25 +12,25 @@ typedef QUEX_TYPE_CHARACTER rchar;
 typedef struct RScanner RScanner;
 
 RScanner* r_scanner_new           ();
-void      r_scanner_init          (rsexp   port,
-                                   rsexp   context);
-RToken*   r_scanner_next_token    (rsexp   port,
-                                   rsexp   context);
-RToken*   r_scanner_peek_token    (rsexp   port,
-                                   rsexp   context);
-rtokenid  r_scanner_peek_id       (rsexp   port,
-                                   rsexp   context);
-void      r_scanner_consume_token (rsexp   port,
-                                   rsexp   context);
-RToken*   r_scanner_copy_token    (RToken* token);
-void      r_scanner_free_token    (RToken* token);
+void      r_scanner_init          (RScanner* scanner,
+                                   rsexp     port);
+RToken*   r_scanner_next_token    (RScanner* scanner,
+                                   rsexp     port);
+RToken*   r_scanner_peek_token    (RScanner* scanner,
+                                   rsexp     port);
+rtokenid  r_scanner_peek_id       (RScanner* scanner,
+                                   rsexp     port);
+void      r_scanner_consume_token (RScanner* scanner,
+                                   rsexp     port);
+RToken*   r_scanner_copy_token    (RToken*   token);
+void      r_scanner_free_token    (RToken*   token);
 
-#define RETURN_ON_EOF_OR_FAIL(port, context)\
+#define RETURN_ON_EOF_OR_FAIL(scanner, port)\
         do {\
-            if (TKN_EOF == r_scanner_peek_id (port, context)) {\
+            if (TKN_EOF == r_scanner_peek_id (scanner, port)) {\
                 return R_SEXP_EOF;\
             }\
-            else if (TKN_FAIL == r_scanner_peek_id (port, context)) {\
+            else if (TKN_FAIL == r_scanner_peek_id (scanner, port)) {\
                 return R_SEXP_UNSPECIFIED;\
             }\
         }\

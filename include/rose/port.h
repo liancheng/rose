@@ -23,6 +23,7 @@ rboolean r_input_port_p      (rsexp       obj);
 rboolean r_output_port_p     (rsexp       obj);
 rsexp    r_open_input_file   (char const* filename);
 rsexp    r_open_output_file  (char const* filename);
+rsexp    r_open_input_string (char const* string);
 rsexp    r_stdin_port        ();
 rsexp    r_stdout_port       ();
 void     r_close_port        (rsexp       port);

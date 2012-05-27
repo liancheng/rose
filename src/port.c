@@ -5,6 +5,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #define SEXP_TO_PORT(obj)   R_CELL_VALUE (obj).port
 #define PORT_TO_FILE(port)  ((FILE*) (SEXP_TO_PORT (port).stream))
@@ -72,6 +73,12 @@ rsexp r_open_input_file (char const* filename)
 rsexp r_open_output_file (char const* filename)
 {
     return open_file (filename, OUTPUT_PORT);
+}
+
+rsexp r_open_input_string (char const* string)
+{
+    FILE* file = fmemopen ((void*) string, strlen (string), "r");
+    return file_port_new (file, "(string-input)", INPUT_PORT, TRUE);
 }
 
 rsexp r_stdin_port ()

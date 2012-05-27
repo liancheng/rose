@@ -1,8 +1,8 @@
 #include "scanner.h"
 
 #include "rose/error.h"
+#include "rose/parser.h"
 #include "rose/port.h"
-#include "rose/read.h"
 #include "rose/write.h"
 
 rsexp set_input_port (int argc, char* argv[], rsexp context)
@@ -38,23 +38,23 @@ int main (int argc, char* argv[])
     rsexp context;
     rsexp in;
     rsexp out;
+    RParserState* parser;
 
     GC_INIT ();
 
     context = r_context_new ();
-    in = set_input_port (argc, argv, context);
-    out = set_output_port (argc, argv, context);
+    in      = set_input_port (argc, argv, context);
+    out     = set_output_port (argc, argv, context);
+    parser  = r_parse_port (in, context);
 
-    while (TRUE) {
-        rsexp res = r_read (in, context);
-
-        if (r_eof_object_p (res))
-            break;
-
-        r_write (out, res, context);
-        r_newline (out);
+    if (!r_undefined_p (r_parser_error (parser))) {
+        rsexp error = r_parser_last_error (parser);
+        r_display (out, r_error_message (error), context);
     }
+    else
+        r_write (out, r_parser_result (parser), context);
 
+    r_newline (out);
     r_close_input_port (in);
     r_close_output_port (out);
 

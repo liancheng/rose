@@ -140,20 +140,6 @@ char const* r_symbol_name (rsexp obj, rsexp context)
     return r_quark_to_symbol (SEXP_TO_QUARK (obj), context);
 }
 
-rsexp r_read_symbol (rsexp port, rsexp context)
-{
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_IDENTIFIER != r_scanner_peek_id (port, context))
-        return R_SEXP_UNSPECIFIED;
-
-    RToken* t = r_scanner_next_token (port, context);
-    rsexp res = r_symbol_new ((char*) (t->text), context);
-    r_scanner_free_token (t);
-
-    return res;
-}
-
 void r_write_symbol (rsexp port, rsexp obj, rsexp context)
 {
     r_port_puts (port, r_symbol_name (obj, context));

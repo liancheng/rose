@@ -3,7 +3,6 @@
 
 #include "rose/eq.h"
 #include "rose/pair.h"
-#include "rose/read.h"
 #include "rose/vector.h"
 #include "rose/write.h"
 
@@ -123,37 +122,6 @@ rboolean r_vector_equal_p (rsexp lhs, rsexp rhs)
             return FALSE;
 
     return TRUE;
-}
-
-rsexp r_read_vector (rsexp port, rsexp context)
-{
-    rsexp acc;
-    rsexp obj;
-
-    // Consume the `#('.
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_HASH_LP == r_scanner_peek_id (port, context))
-        r_scanner_consume_token (port, context);
-    else
-        return R_SEXP_UNSPECIFIED;
-
-    // Read vector element into a list.
-    for (acc = R_SEXP_NULL;
-         !r_unspecified_p (obj = r_read (port, context));
-         acc = r_cons (obj, acc))
-        ;
-
-    // Consume the `)'.
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_RP == r_scanner_peek_id (port, context))
-        r_scanner_consume_token (port, context);
-    else
-        return R_SEXP_UNSPECIFIED;
-
-    // Convert the list to a vector.
-    return r_list_to_vector (r_reverse (acc));
 }
 
 typedef void (*ROutputFunction) (rsexp, rsexp, rsexp);

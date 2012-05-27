@@ -3,7 +3,6 @@
 #include "rose/eq.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/read.h"
 #include "rose/symbol.h"
 #include "rose/write.h"
 
@@ -64,7 +63,7 @@ rsexp r_reverse (rsexp list)
     return r_reverse_internal (list, R_SEXP_NULL);
 }
 
-rsexp r_append (rsexp list, rsexp obj)
+rsexp r_append_x (rsexp list, rsexp obj)
 {
     rsexp tail;
 
@@ -114,94 +113,6 @@ rboolean r_pair_equal_p (rsexp lhs, rsexp rhs)
            r_pair_p (rhs) &&
            r_equal_p (r_car (lhs), r_car (rhs)) &&
            r_equal_p (r_cdr (lhs), r_cdr (rhs));
-}
-
-static rsexp read_abbrev (rsexp port, rsexp context)
-{
-    rsexp res;
-    rsexp obj;
-    rtokenid id;
-
-    R_CACHED_SYMBOL (q,  "quote",            context);
-    R_CACHED_SYMBOL (qq, "quasiquote",       context);
-    R_CACHED_SYMBOL (u,  "unquote",          context);
-    R_CACHED_SYMBOL (us, "unquote-splicing", context);
-
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    id  = r_scanner_peek_id (port, context);
-    res = R_SEXP_UNSPECIFIED;
-
-    switch (id) {
-        case TKN_QUOTE:    res = q;  break;
-        case TKN_BACKTICK: res = qq; break;
-        case TKN_COMMA:    res = u;  break;
-        case TKN_COMMA_AT: res = us; break;
-    }
-
-    if (r_unspecified_p (res))
-        return res;
-
-    r_scanner_consume_token (port, context);
-    obj = r_read (port, context);
-
-    if (!r_unspecified_p (res))
-        res = r_list (2, res, obj);
-
-    return res;
-}
-
-rsexp r_read_list (rsexp port, rsexp context)
-{
-    rsexp res;
-    rsexp obj;
-    rsexp last;
-
-    // Handle abbreviations (quote, unquote, unquote-splicing & quasiquote).
-    res = read_abbrev (port, context);
-
-    if (!r_unspecified_p (res))
-        return res;
-
-    // Consume the ` ('.
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_LP == r_scanner_peek_id (port, context))
-        r_scanner_consume_token (port, context);
-    else
-        return R_SEXP_UNSPECIFIED;
-
-    // Initialize the list to '().  Read data until `.' or `)', cons the list in
-    // reverse order and then revert it.
-    for (res = R_SEXP_NULL;
-         !r_unspecified_p (obj = r_read (port, context));
-         res = r_cons (obj, res))
-        ;
-
-    res = r_reverse (res);
-
-    // Handle dotted improper list like (a b c . d).
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_DOT == r_scanner_peek_id (port, context)) {
-        r_scanner_consume_token (port, context);
-
-        last = r_read (port, context);
-        if (r_unspecified_p (last))
-            return R_SEXP_UNSPECIFIED;
-
-        r_append (res, last);
-    }
-
-    // Consume the `)'.
-    RETURN_ON_EOF_OR_FAIL (port, context);
-
-    if (TKN_RP == r_scanner_peek_id (port, context))
-        r_scanner_consume_token (port, context);
-    else
-        return R_SEXP_UNSPECIFIED;
-
-    return res;
 }
 
 typedef void (*ROutputFunction) (rsexp, rsexp, rsexp);

@@ -4,7 +4,6 @@
 #include "rose/sexp.h"
 
 typedef enum {
-    CTX_SCANNER,
     CTX_SYMBOL_TABLE,
     CTX_ENV,
     CTX_CURRENT_INPUT_PORT,

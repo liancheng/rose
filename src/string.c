@@ -35,20 +35,6 @@ char const* r_string_cstr (rsexp obj)
     return SEXP_TO_STRING (obj).data;
 }
 
-rsexp r_read_string (rsexp input, rsexp context)
-{
-    RETURN_ON_EOF_OR_FAIL (input, context);
-
-    if (TKN_STRING != r_scanner_peek_id (input, context))
-        return R_SEXP_UNSPECIFIED;
-
-    RToken* t = r_scanner_next_token (input, context);
-    rsexp res = r_string_new ((char*) t->text);
-    r_scanner_free_token (t);
-
-    return res;
-}
-
 void r_write_string (rsexp port, rsexp obj, rsexp context)
 {
     char* p;
