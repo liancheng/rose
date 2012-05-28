@@ -1,7 +1,7 @@
 #include "scanner.h"
 
 #include "rose/error.h"
-#include "rose/parser.h"
+#include "rose/read.h"
 #include "rose/port.h"
 #include "rose/write.h"
 
@@ -38,21 +38,21 @@ int main (int argc, char* argv[])
     rsexp context;
     rsexp in;
     rsexp out;
-    RParserState* parser;
+    RReaderState* reader;
 
     GC_INIT ();
 
     context = r_context_new ();
     in      = set_input_port (argc, argv, context);
     out     = set_output_port (argc, argv, context);
-    parser  = r_parse_port (in, context);
+    reader  = r_read_from_port (in, context);
 
-    if (!r_undefined_p (r_parser_error (parser))) {
-        rsexp error = r_parser_last_error (parser);
+    if (!r_undefined_p (r_reader_error (reader))) {
+        rsexp error = r_reader_last_error (reader);
         r_display (out, r_error_message (error), context);
     }
     else
-        r_write (out, r_parser_result (parser), context);
+        r_write (out, r_reader_result (reader), context);
 
     r_newline (out);
     r_close_input_port (in);

@@ -3,17 +3,17 @@
 
 #include "rose/sexp.h"
 
-typedef struct RParserState RParserState;
+typedef struct RReaderState RReaderState;
 
-rsexp         r_parser_result (RParserState* parser);
-RParserState* r_parse_file    (char*         filename,
-                               rsexp         context);
-RParserState* r_parse_string  (char*         string,
-                               rsexp         context);
-RParserState* r_parse_port    (rsexp         port,
-                               rsexp         context);
+rsexp         r_reader_result    (RReaderState* parser);
+RReaderState* r_read_from_file   (char*         filename,
+                                  rsexp         context);
+RReaderState* r_read_from_string (char*         string,
+                                  rsexp         context);
+RReaderState* r_read_from_port   (rsexp         port,
+                                  rsexp         context);
 
-rsexp r_parser_error (RParserState* parser);
-rsexp r_parser_last_error (RParserState* parser);
+rsexp r_reader_error      (RReaderState* reader);
+rsexp r_reader_last_error (RReaderState* reader);
 
 #endif  //  __ROSE_PARSER_H__
