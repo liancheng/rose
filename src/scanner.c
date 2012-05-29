@@ -79,7 +79,7 @@ static RToken* read_token (rsexp port, RScanner* scanner)
     scanner->line   = t->_line_n;
     scanner->column = t->_column_n;
 
-    // debug_token (t);
+    debug_token (t);
     return r_scanner_copy_token (t);
 }
 
@@ -131,4 +131,14 @@ void r_scanner_free_token (RToken* token)
 {
     QUEX_NAME_TOKEN (destruct) (token);
     free (token);
+}
+
+int r_scanner_line (RScanner* scanner)
+{
+    return scanner->line;
+}
+
+int r_scanner_column (RScanner* scanner)
+{
+    return scanner->column;
 }

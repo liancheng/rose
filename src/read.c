@@ -2,8 +2,8 @@
 
 #include "rose/error.h"
 #include "rose/pair.h"
-#include "rose/read.h"
 #include "rose/port.h"
+#include "rose/read.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
@@ -48,10 +48,12 @@ static void raise_syntax_error (RReaderState* reader,
 {
     R_CACHED_SYMBOL (type, "syntax", reader->context);
 
-    reader->error_type = type;
-    reader->last_error = r_error (r_string_new (message), R_SEXP_NULL);
+    rsexp error = r_error (r_string_new (message),
+                           r_cons (r_int_to_sexp (r_reader_line (reader)),
+                                   r_int_to_sexp (r_reader_column (reader))));
 
-    // TODO add location information
+    reader->error_type = type;
+    reader->last_error = error;
 
     longjmp (reader->jmp, 1);
 }
@@ -327,4 +329,14 @@ rsexp r_reader_error (RReaderState* reader)
 rsexp r_reader_last_error (RReaderState* reader)
 {
     return reader->last_error;
+}
+
+int r_reader_line (RReaderState* reader)
+{
+    return r_scanner_line (reader->scanner);
+}
+
+int r_reader_column (RReaderState* reader)
+{
+    return r_scanner_column (reader->scanner);
 }

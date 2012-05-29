@@ -24,6 +24,8 @@ void      r_scanner_consume_token (RScanner* scanner,
                                    rsexp     port);
 RToken*   r_scanner_copy_token    (RToken*   token);
 void      r_scanner_free_token    (RToken*   token);
+int       r_scanner_line          (RScanner* scanner);
+int       r_scanner_column        (RScanner* scanner);
 
 #define RETURN_ON_EOF_OR_FAIL(scanner, port)\
         do {\

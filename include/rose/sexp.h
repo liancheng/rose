@@ -32,7 +32,7 @@ typedef rword rsexp;
 #define R_SEXP_SYMBOL_TAG           0x03
 #define R_SEXP_IMMEDIATE_TAG        0x07
 
-#define R_SEXP_MAKE_IMMEDIATE(n)    ((rsexp) ((n << 3) | R_SEXP_IMMEDIATE_TAG))
+#define R_SEXP_MAKE_IMMEDIATE(n)    ((rsexp) (((n) << 3) | R_SEXP_IMMEDIATE_TAG))
 #define R_SEXP_NULL                 R_SEXP_MAKE_IMMEDIATE (0)
 #define R_SEXP_FALSE                R_SEXP_MAKE_IMMEDIATE (1)
 #define R_SEXP_TRUE                 R_SEXP_MAKE_IMMEDIATE (2)
@@ -47,6 +47,9 @@ typedef rword rsexp;
 #define r_eof_object_p(obj)     ((obj) == R_SEXP_EOF)
 #define r_unspecified_p(obj)    ((obj) == R_SEXP_UNSPECIFIED)
 #define r_undefined_p(obj)      ((obj) == R_SEXP_UNDEFINED)
+
+#define r_int_to_sexp(n)    ((rsexp)(((n) << 3) | R_SEXP_SMALL_FIXNUM_TAG))
+#define r_sexp_to_int(obj)  (((int)(obj)) >> 3)
 
 #include <gc/gc.h>
 

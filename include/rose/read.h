@@ -15,5 +15,7 @@ RReaderState* r_read_from_port   (rsexp         port,
 
 rsexp r_reader_error      (RReaderState* reader);
 rsexp r_reader_last_error (RReaderState* reader);
+int   r_reader_line       (RReaderState* reader);
+int   r_reader_column     (RReaderState* reader);
 
 #endif  //  __ROSE_PARSER_H__
