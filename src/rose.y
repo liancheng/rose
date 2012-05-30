@@ -13,8 +13,11 @@
 #include "rose/sexp.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
+#include "rose/vector.h"
 
 #include "scanner.h"
+
+#define KEYWORD(str) r_symbol_new_static ((str), state->context)
 
 int  rose_yylex   (YYSTYPE*      yylval,
                    RReaderState* scanner);
@@ -54,36 +57,79 @@ rsexp make_boolean (char* text)
 %token<text> TKN_STRING
 %token<text> TKN_CHARACTER
 
-%type<sexp> start
+%type<sexp> abbreviation
+%type<sexp> abbrev_prefix
+%type<sexp> compound_datum
+%type<sexp> data
 %type<sexp> datum
 %type<sexp> datum_seq
-%type<sexp> data
+%type<sexp> improper_list
+%type<sexp> list
+%type<sexp> proper_list
 %type<sexp> simple_datum
+%type<sexp> start
+%type<sexp> vector
 
 %%
 
 start
-    : datum_seq             { state->tree = $1; }
+    : datum_seq                 { state->tree = $1; }
     ;
 
 datum
-    : simple_datum          { $$ = $1; }
+    : simple_datum              { $$ = $1; }
+    | compound_datum            { $$ = $1; }
     ;
 
 data
-    : datum                 { $$ = $1; }
-    | data datum            { $$ = r_append_x ($1, r_list (1, $2)); }
+    : datum                     { $$ = $1; }
+    | data datum                { $$ = r_append_x ($1, r_list (1, $2)); }
     ;
 
 datum_seq
-    :                       { $$ = R_SEXP_NULL; }
-    | data                  { $$ = $1; }
+    :                           { $$ = R_SEXP_NULL; }
+    | data                      { $$ = $1; }
     ;
 
 simple_datum
-    : TKN_IDENTIFIER        { $$ = r_symbol_new ($1, state->context); }
-    | TKN_STRING            { $$ = r_string_new ($1); }
-    | TKN_BOOLEAN           { $$ = make_boolean ($1); }
+    : TKN_IDENTIFIER            { $$ = r_symbol_new ($1, state->context); }
+    | TKN_STRING                { $$ = r_string_new ($1); }
+    | TKN_BOOLEAN               { $$ = make_boolean ($1); }
+    ;
+
+compound_datum
+    : list                      { $$ = $1; }
+    | vector                    { $$ = $1; }
+    ;
+
+list
+    : proper_list               { $$ = $1; }
+    | improper_list             { $$ = $1; }
+    | abbreviation              { $$ = $1; }
+    ;
+
+proper_list
+    : "(" ")"                   { $$ = R_SEXP_NULL; }
+    | "(" data ")"              { $$ = $2; }
+    ;
+
+improper_list
+    : "(" data "." datum ")"    { $$ = r_append_x ($2, $4); }
+    ;
+
+abbreviation
+    : abbrev_prefix datum       { $$ = r_list (2, $1, $2); }
+    ;
+
+abbrev_prefix
+    : "'"                       { $$ = KEYWORD ("quote"); }
+    | "`"                       { $$ = KEYWORD ("quasiquote");}
+    | ","                       { $$ = KEYWORD ("unquote"); }
+    | ",@"                      { $$ = KEYWORD ("unquote-splicing"); }
+    ;
+
+vector
+    : "#(" datum_seq ")"        { $$ = r_list_to_vector ($2); }
     ;
 
 %%
