@@ -2,20 +2,22 @@
 #define __ROSE_PARSER_H__
 
 #include "rose/sexp.h"
+#include "scanner.h"
+
+#include <setjmp.h>
 
 typedef struct RReaderState RReaderState;
 
-rsexp         r_reader_result    (RReaderState* parser);
-RReaderState* r_read_from_file   (char*         filename,
-                                  rsexp         context);
-RReaderState* r_read_from_string (char*         string,
-                                  rsexp         context);
-RReaderState* r_read_from_port   (rsexp         port,
-                                  rsexp         context);
+struct RReaderState {
+    rsexp     context;
+    rsexp     input_port;
+    rsexp     tree;
+    rsexp     error_type;
+    rsexp     last_error;
+    RScanner* scanner;
+    jmp_buf   jmp;
+};
 
-rsexp r_reader_error      (RReaderState* reader);
-rsexp r_reader_last_error (RReaderState* reader);
-int   r_reader_line       (RReaderState* reader);
-int   r_reader_column     (RReaderState* reader);
+RReaderState* r_reader_new (rsexp context);
 
 #endif  //  __ROSE_PARSER_H__

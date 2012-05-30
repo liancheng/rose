@@ -6,6 +6,7 @@
 #include "rose/read.h"
 #include "rose/string.h"
 #include "rose/write.h"
+#include "rose.h"
 
 rsexp set_input_port (int argc, char* argv[], rsexp context)
 {
@@ -44,28 +45,26 @@ void display_syntax_error (rsexp port, rsexp error)
     r_port_printf (port, "%d:%d %s\n", line, column, message);
 }
 
+int rose_yyparse (RReaderState* state);
+
 int main (int argc, char* argv[])
 {
     rsexp context;
-    rsexp in;
-    rsexp out;
-    RReaderState* reader;
+    RReaderState* state;
 
     GC_INIT ();
 
     context = r_context_new ();
-    in      = set_input_port (argc, argv, context);
-    out     = set_output_port (argc, argv, context);
-    reader  = r_read_from_port (in, context);
+    set_input_port (argc, argv, context);
+    set_output_port (argc, argv, context);
 
-    if (!r_undefined_p (r_reader_error (reader)))
-        display_syntax_error (out, r_reader_last_error (reader));
-    else
-        r_write (out, r_reader_result (reader), context);
+    state = r_reader_new (context);
+    state->tree = R_SEXP_NULL;
 
-    r_newline (out);
-    r_close_input_port (in);
-    r_close_output_port (out);
+    rose_yyparse (state);
+
+    r_write (r_current_output_port (context), state->tree, context);
+    r_newline (r_current_output_port (context));
 
     return EXIT_SUCCESS;
 }
