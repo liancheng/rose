@@ -21,8 +21,7 @@ typedef rword rsexp;
  * - #b000 (#x0, #d0): pointer to cell object
  * - #b001 (#x1, #d1): small fixnum
  * - #b010 (#x2, #d2): pair
- * - #b011 (#x3, #d3): char
- * - #b100 (#x3, #d3): symbol
+ * - #b011 (#x3, #d3): symbol
  * - #b111 (#x7, #d7): immediate constants ('(), #t, #f, etc.)
  */
 #define R_SEXP_TAG_MASK             0x07

@@ -1,5 +1,3 @@
-#include "scanner.h"
-
 #include "rose/eq.h"
 #include "rose/pair.h"
 #include "rose/port.h"

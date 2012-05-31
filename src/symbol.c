@@ -1,5 +1,4 @@
 #include "opaque.h"
-#include "scanner.h"
 
 #include "rose/hash.h"
 #include "rose/port.h"

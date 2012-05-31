@@ -1,5 +1,4 @@
 #include "cell.h"
-#include "scanner.h"
 
 #include "rose/eq.h"
 #include "rose/pair.h"

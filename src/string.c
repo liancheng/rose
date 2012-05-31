@@ -1,5 +1,4 @@
 #include "cell.h"
-#include "scanner.h"
 
 #include "rose/string.h"
 

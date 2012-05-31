@@ -1,6 +1,5 @@
 token {
-    EXPECT_MORE;
-    EOF;
+    TERMINATION;
     FAIL;
 
     HASH_LP;
@@ -77,7 +76,7 @@ mode FAILURE : <inheritable: only> {
 }
 
 mode EOF : <inheritable: only> {
-    <<EOF>> => TKN_EXPECT_MORE (Lexeme);
+    <<EOF>> => TKN_TERMINATION (Lexeme);
 }
 
 mode MAIN : FAILURE, EOF {

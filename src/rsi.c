@@ -1,5 +1,3 @@
-#include "scanner.h"
-
 #include "rose/error.h"
 #include "rose/pair.h"
 #include "rose/port.h"
@@ -50,21 +48,24 @@ int rose_yyparse (RReaderState* state);
 int main (int argc, char* argv[])
 {
     rsexp context;
+    rsexp in;
+    rsexp out;
     RReaderState* state;
 
     GC_INIT ();
 
     context = r_context_new ();
-    set_input_port (argc, argv, context);
-    set_output_port (argc, argv, context);
-
-    state = r_reader_new (context);
-    state->tree = R_SEXP_NULL;
+    in      = set_input_port (argc, argv, context);
+    out     = set_output_port (argc, argv, context);
+    state   = r_reader_new (context);
 
     rose_yyparse (state);
 
-    r_write (r_current_output_port (context), state->tree, context);
-    r_newline (r_current_output_port (context));
+    r_write (out, state->tree, context);
+    r_newline (out);
+
+    r_close_port (in);
+    r_close_port (out);
 
     return EXIT_SUCCESS;
 }

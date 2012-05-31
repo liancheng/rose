@@ -3,15 +3,6 @@
 
 #include "rose/sexp.h"
 
-rsexp r_read_string    (rsexp port,
-                        rsexp context);
-rsexp r_read_vector    (rsexp port,
-                        rsexp context);
-rsexp r_read_symbol    (rsexp port,
-                        rsexp context);
-rsexp r_read_list      (rsexp port,
-                        rsexp context);
-
 void  r_write_string   (rsexp port,
                         rsexp obj,
                         rsexp context);

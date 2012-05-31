@@ -1,10 +1,11 @@
 #include "opaque.h"
-#include "scanner.h"
 
 #include "rose/context.h"
 #include "rose/env.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
+
+#include <assert.h>
 
 rsexp r_context_new ()
 {

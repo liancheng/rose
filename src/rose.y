@@ -9,32 +9,23 @@
 %{
 
 #include "rose/pair.h"
+#include "rose/port.h"
 #include "rose/read.h"
 #include "rose/sexp.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
-#include "scanner.h"
+#define YYSTYPE rsexp
 
 #define KEYWORD(str) r_symbol_new_static ((str), state->context)
 
 int  rose_yylex   (YYSTYPE*      yylval,
-                   RReaderState* scanner);
-void rose_yyerror (RReaderState* scanner,
+                   RReaderState* state);
+void rose_yyerror (RReaderState* state,
                    char const*   message);
 
-rsexp make_boolean (char* text)
-{
-    return text [0] == 't' ? R_SEXP_TRUE : R_SEXP_FALSE;
-}
-
 %}
-
-%union {
-    char* text;
-    rsexp sexp;
-}
 
 %token TKN_EXPECT_MORE
 %token TKN_EOF
@@ -52,23 +43,10 @@ rsexp make_boolean (char* text)
 %token TKN_QUOTE            "'"
 %token TKN_BACKTICK         "`"
 
-%token<text> TKN_IDENTIFIER
-%token<text> TKN_BOOLEAN
-%token<text> TKN_STRING
-%token<text> TKN_CHARACTER
-
-%type<sexp> abbreviation
-%type<sexp> abbrev_prefix
-%type<sexp> compound_datum
-%type<sexp> data
-%type<sexp> datum
-%type<sexp> datum_seq
-%type<sexp> improper_list
-%type<sexp> list
-%type<sexp> proper_list
-%type<sexp> simple_datum
-%type<sexp> start
-%type<sexp> vector
+%token TKN_IDENTIFIER
+%token TKN_BOOLEAN
+%token TKN_STRING
+%token TKN_CHARACTER
 
 %%
 
@@ -82,7 +60,7 @@ datum
     ;
 
 data
-    : datum                     { $$ = $1; }
+    : datum                     { $$ = r_list (1, $1); }
     | data datum                { $$ = r_append_x ($1, r_list (1, $2)); }
     ;
 
@@ -92,9 +70,9 @@ datum_seq
     ;
 
 simple_datum
-    : TKN_IDENTIFIER            { $$ = r_symbol_new ($1, state->context); }
-    | TKN_STRING                { $$ = r_string_new ($1); }
-    | TKN_BOOLEAN               { $$ = make_boolean ($1); }
+    : TKN_IDENTIFIER            { $$ = $1; }
+    | TKN_STRING                { $$ = $1; }
+    | TKN_BOOLEAN               { $$ = $1; }
     ;
 
 compound_datum
@@ -134,6 +112,49 @@ vector
 
 %%
 
+static rint reload_lexer (RLexer* lexer, rsexp port)
+{
+    QUEX_NAME (buffer_fill_region_prepare) (lexer);
+
+    char* begin = (char*) QUEX_NAME (buffer_fill_region_begin) (lexer);
+    rint  size  = QUEX_NAME (buffer_fill_region_size) (lexer);
+    char* line  = r_port_gets (port, begin, size);
+    rint  len   = line ? strlen (line) : 0;
+
+    QUEX_NAME (buffer_fill_region_finish) (lexer, len);
+
+    return len;
+}
+
+static RToken* copy_token (RToken* token)
+{
+    RToken* copy = malloc (sizeof (RToken));
+    QUEX_NAME_TOKEN (copy_construct) (copy, token);
+    return copy;
+}
+
+static void free_token (RToken* token)
+{
+    QUEX_NAME_TOKEN (destruct) (token);
+    free (token);
+}
+
+static RToken* next_token (RLexer* lexer, rsexp port)
+{
+    RToken* token;
+
+    QUEX_NAME (receive) (lexer, &token);
+
+    while (TKN_TERMINATION == token->_id) {
+        if (0 == reload_lexer (lexer, port))
+            break;
+
+        QUEX_NAME (receive) (lexer, &token);
+    }
+
+    return copy_token (token);
+}
+
 void rose_yyerror (RReaderState* state, char const* message)
 {
     fprintf (stderr, "%s\n", message);
@@ -141,10 +162,29 @@ void rose_yyerror (RReaderState* state, char const* message)
 
 int rose_yylex (YYSTYPE* yylval, RReaderState* state)
 {
-    RToken* t;
+    RToken* token;
+    rtokenid id;
+    char* text;
 
-    t = r_scanner_next_token (state->scanner, state->input_port);
-    yylval->text = (char*) t->text;
+    token = next_token (state->lexer, state->input_port);
+    id    = token->_id;
+    text  = (char*) token->text;
 
-    return t->_id;
+    switch (id) {
+        case TKN_IDENTIFIER:
+            *yylval = r_symbol_new (text, state->context);
+            break;
+
+        case TKN_STRING:
+            *yylval = r_string_new (text);
+            break;
+
+        case TKN_BOOLEAN:
+            *yylval = (text [0] == 't') ? R_SEXP_TRUE : R_SEXP_FALSE;
+            break;
+    }
+
+    free_token (token);
+
+    return id;
 }
