@@ -9,11 +9,11 @@ typedef struct RSymbolTable RSymbolTable;
 
 RSymbolTable* r_symbol_table_new  ();
 rsexp         r_symbol_new        (char const* symbol,
-                                   rsexp       context);
+                                   RContext*   context);
 rsexp         r_symbol_new_static (char const* symbol,
-                                   rsexp       context);
+                                   RContext*   context);
 char const*   r_symbol_name       (rsexp       obj,
-                                   rsexp       context);
+                                   RContext*   context);
 
 #define R_CACHED_SYMBOL(var, name, context)\
         static rsexp var = R_SEXP_FALSE;\

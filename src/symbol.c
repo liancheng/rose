@@ -1,10 +1,8 @@
-#include "opaque.h"
-
-#include "rose/hash.h"
+#include "detail/context.h"
+#include "detail/hash.h"
 #include "rose/port.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
-#include "rose/vector.h"
 
 #include <assert.h>
 #include <string.h>
@@ -55,30 +53,26 @@ static inline rquark string_to_quark_internal (char const*   symbol,
     return quark;
 }
 
-static inline RSymbolTable* get_symbol_table (rsexp context)
-{
-    return r_opaque_get (r_context_get (context, CTX_SYMBOL_TABLE));
-}
-
-static inline rquark quark_from_symbol (char const* symbol, rsexp context)
+static inline rquark quark_from_symbol (char const* symbol, RContext* context)
 {
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, TRUE, get_symbol_table (context));
+    return string_to_quark_internal (symbol, TRUE, context->symbol_table);
 }
 
-static inline rquark static_symbol_to_quark (char const* symbol, rsexp context)
+static inline rquark static_symbol_to_quark (char const* symbol,
+                                             RContext*   context)
 {
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, FALSE, get_symbol_table (context));
+    return string_to_quark_internal (symbol, FALSE, context->symbol_table);
 }
 
-static inline char const* r_quark_to_symbol (rquark quark, rsexp context)
+static inline char const* r_quark_to_symbol (rquark quark, RContext* context)
 {
-    RSymbolTable* st = get_symbol_table (context);
+    RSymbolTable* st = context->symbol_table;
     return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
 }
 
@@ -121,30 +115,30 @@ RSymbolTable* r_symbol_table_new ()
     return res;
 }
 
-rsexp r_symbol_new (char const* symbol, rsexp context)
+rsexp r_symbol_new (char const* symbol, RContext* context)
 {
     rquark quark = quark_from_symbol (symbol, context);
     return QUARK_TO_SEXP (quark);
 }
 
-rsexp r_symbol_new_static (char const* symbol, rsexp context)
+rsexp r_symbol_new_static (char const* symbol, RContext* context)
 {
     rquark quark = static_symbol_to_quark (symbol, context);
     return QUARK_TO_SEXP (quark);
 }
 
-char const* r_symbol_name (rsexp obj, rsexp context)
+char const* r_symbol_name (rsexp obj, RContext* context)
 {
     assert (r_symbol_p (obj));
     return r_quark_to_symbol (SEXP_TO_QUARK (obj), context);
 }
 
-void r_write_symbol (rsexp port, rsexp obj, rsexp context)
+void r_write_symbol (rsexp port, rsexp obj, RContext* context)
 {
     r_port_puts (port, r_symbol_name (obj, context));
 }
 
-void r_display_symbol (rsexp port, rsexp obj, rsexp context)
+void r_display_symbol (rsexp port, rsexp obj, RContext* context)
 {
     r_write_symbol (port, obj, context);
 }

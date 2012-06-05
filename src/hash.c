@@ -1,4 +1,4 @@
-#include "rose/hash.h"
+#include "detail/hash.h"
 
 #include <stdlib.h>
 #include <string.h>

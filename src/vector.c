@@ -1,9 +1,10 @@
-#include "cell.h"
-
+#include "detail/cell.h"
+#include "rose/context.h"
 #include "rose/eq.h"
 #include "rose/pair.h"
+#include "rose/port.h"
 #include "rose/vector.h"
-#include "rose/write.h"
+#include "rose/writer.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -123,12 +124,12 @@ rboolean r_vector_equal_p (rsexp lhs, rsexp rhs)
     return TRUE;
 }
 
-typedef void (*ROutputFunction) (rsexp, rsexp, rsexp);
+typedef void (*ROutputFunction) (rsexp, rsexp, RContext*);
 
 static void output_vector (rsexp           port,
                            rsexp           obj,
                            ROutputFunction output_fn,
-                           rsexp           context)
+                           RContext*       context)
 {
     rsize i;
     rsize length;
@@ -151,12 +152,12 @@ static void output_vector (rsexp           port,
     r_port_puts (port, ")");
 }
 
-void r_write_vector (rsexp port, rsexp obj, rsexp context)
+void r_write_vector (rsexp port, rsexp obj, RContext* context)
 {
     output_vector (port, obj, r_write, context);
 }
 
-void r_display_vector (rsexp port, rsexp obj, rsexp context)
+void r_display_vector (rsexp port, rsexp obj, RContext* context)
 {
     output_vector (port, obj, r_display, context);
 }

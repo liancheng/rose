@@ -3,11 +3,7 @@
 
 #include "rose/sexp.h"
 
-typedef struct RVector {
-    rsize  length;
-    rsexp* data;
-}
-RVector;
+typedef struct RVector RVector;
 
 rboolean r_vector_p       (rsexp obj);
 rsexp    r_vector_new     (rsize k);

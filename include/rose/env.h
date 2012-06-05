@@ -1,14 +1,9 @@
 #ifndef __ROSE_ENV_H__
 #define __ROSE_ENV_H__
 
-#include "rose/hash.h"
 #include "rose/sexp.h"
 
-typedef struct REnv {
-    rsexp       parent;
-    RHashTable* bindings;
-}
-REnv;
+typedef struct REnv REnv;
 
 rboolean r_env_p      (rsexp obj);
 rsexp    r_env_new    ();

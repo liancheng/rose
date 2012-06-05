@@ -3,11 +3,7 @@
 
 #include "rose/sexp.h"
 
-typedef struct RString {
-    rsize length;
-    char* data;
-}
-RString;
+typedef struct RString RString;
 
 char*       r_strdup      (char const* str);
 rboolean    r_string_p    (rsexp       obj);

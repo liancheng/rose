@@ -1,43 +1,19 @@
-#include "opaque.h"
+#include "detail/context.h"
 
-#include "rose/context.h"
 #include "rose/env.h"
+#include "rose/port.h"
 #include "rose/symbol.h"
-#include "rose/vector.h"
 
 #include <assert.h>
 
-rsexp r_context_new ()
+RContext* r_context_new ()
 {
-    rsexp context = r_vector_new (CTX_N_FIELD);
+    RContext* context = GC_NEW (RContext);
 
-    r_vector_set_x (context,
-                    CTX_SYMBOL_TABLE,
-                    r_opaque_new (r_symbol_table_new ()));
-
-    r_vector_set_x (context,
-                    CTX_ENV,
-                    r_env_new ());
-
-    r_vector_set_x (context,
-                    CTX_CURRENT_INPUT_PORT,
-                    R_SEXP_NULL);
-
-    r_vector_set_x (context,
-                    CTX_CURRENT_OUTPUT_PORT,
-                    R_SEXP_NULL);
+    context->symbol_table        = r_symbol_table_new ();
+    context->env                 = r_env_new ();
+    context->current_input_port  = r_stdin_port ();
+    context->current_output_port = r_stdout_port ();
 
     return context;
-}
-
-rsexp r_context_get (rsexp context, ruint key)
-{
-    assert (key < CTX_N_FIELD);
-    return r_vector_ref (context, key);
-}
-
-rsexp r_context_set_x (rsexp context, ruint key, rsexp value)
-{
-    assert (key < CTX_N_FIELD);
-    return r_vector_set_x (context, key, value);
 }

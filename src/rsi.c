@@ -1,71 +1,59 @@
 #include "rose/error.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/read.h"
+#include "rose/reader.h"
 #include "rose/string.h"
-#include "rose/write.h"
-#include "rose.h"
+#include "rose/writer.h"
 
-rsexp set_input_port (int argc, char* argv[], rsexp context)
+void display_syntax_error (rsexp error, RContext* context)
 {
-    rsexp port;
+    rsexp irritants = r_error_irritants (error);
+    rsexp line      = r_car (irritants);
+    rsexp column    = r_cdr (irritants);
+    rsexp message   = r_error_message (error);
 
-    port = (argc > 1)
-         ? r_open_input_file (argv[1])
-         : r_stdin_port ();
-
-    if (!r_error_p (port))
-        r_set_current_input_port_x (port, context);
-
-    return port;
+    r_port_printf (r_current_input_port (context),
+                   "%d:%d %s\n",
+                   r_sexp_to_int (line),
+                   r_sexp_to_int (column),
+                   r_string_cstr (message));
 }
-
-rsexp set_output_port (int argc, char* argv[], rsexp context)
-{
-    rsexp port;
-
-    port = (argc > 2)
-         ? r_open_output_file (argv[2])
-         : r_stdout_port ();
-
-    if (!r_error_p (port))
-        r_set_current_output_port_x (port, context);
-
-    return port;
-}
-
-void display_syntax_error (rsexp port, rsexp error)
-{
-    int line = r_car (r_error_irritants (error));
-    int column = r_cdr (r_error_irritants (error));
-    char const* message = r_string_cstr (r_error_message (error));
-
-    r_port_printf (port, "%d:%d %s\n", line, column, message);
-}
-
-int rose_yyparse (RReaderState* state);
 
 int main (int argc, char* argv[])
 {
-    rsexp context;
-    rsexp in;
-    rsexp out;
-    RReaderState* state;
+    RContext* context;
+    RReaderState* reader;
+    rsexp input;
+    rsexp output;
 
     GC_INIT ();
 
     context = r_context_new ();
-    in      = set_input_port (argc, argv, context);
-    out     = set_output_port (argc, argv, context);
-    state   = r_reader_new (context);
 
-    rose_yyparse (state);
+    if (argc > 1) {
+        rsexp port = r_open_input_file (argv [1]);
+        r_set_current_input_port_x (port, context);
+    }
 
-    r_write (out, state->tree, context);
-    r_newline (out);
+    input  = r_current_input_port (context);
+    output = r_current_output_port (context);
+    reader = r_reader_from_port (input, context);
 
-    r_close_port (in);
-    r_close_port (out);
+    while (1) {
+        rsexp datum = r_read (reader);
+
+        if (r_eof_object_p (datum))
+            break;
+
+        if (r_reader_error_p (reader)) {
+            rsexp error = r_reader_last_error (reader);
+            display_syntax_error (error, context);
+            break;
+        }
+
+        r_write (output, datum, context);
+        r_write_char (output, '\n');
+    }
 
     return EXIT_SUCCESS;
 }

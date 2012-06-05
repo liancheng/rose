@@ -1,8 +1,9 @@
+#include "detail/cell.h"
 #include "rose/eq.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/symbol.h"
-#include "rose/write.h"
+#include "rose/writer.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -113,12 +114,12 @@ rboolean r_pair_equal_p (rsexp lhs, rsexp rhs)
            r_equal_p (r_cdr (lhs), r_cdr (rhs));
 }
 
-typedef void (*ROutputFunction) (rsexp, rsexp, rsexp);
+typedef void (*ROutputFunction) (rsexp, rsexp, RContext*);
 
 static void output_cdr (rsexp           port,
                         rsexp           obj,
                         ROutputFunction output_fn,
-                        rsexp           context)
+                        RContext*       context)
 {
     if (r_pair_p (obj)) {
         r_port_puts (port, " ");
@@ -134,7 +135,7 @@ static void output_cdr (rsexp           port,
 static void output_pair (rsexp           port,
                          rsexp           obj,
                          ROutputFunction output_fn,
-                         rsexp           context)
+                         RContext*       context)
 {
     assert (r_pair_p (obj));
 
@@ -144,22 +145,22 @@ static void output_pair (rsexp           port,
     r_port_puts (port, ")");
 }
 
-void r_write_pair (rsexp port, rsexp obj, rsexp context)
+void r_write_pair (rsexp port, rsexp obj, RContext* context)
 {
     output_pair (port, obj, r_write, context);
 }
 
-void r_write_null (rsexp port, rsexp obj, rsexp context)
+void r_write_null (rsexp port, rsexp obj, RContext* context)
 {
     r_port_puts (port, "()");
 }
 
-void r_display_pair (rsexp port, rsexp obj, rsexp context)
+void r_display_pair (rsexp port, rsexp obj, RContext* context)
 {
     output_pair (port, obj, r_display, context);
 }
 
-void r_display_null (rsexp port, rsexp obj, rsexp context)
+void r_display_null (rsexp port, rsexp obj, RContext* context)
 {
     r_port_puts (port, "()");
 }

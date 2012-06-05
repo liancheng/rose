@@ -1,5 +1,5 @@
-#include "cell.h"
-
+#include "detail/cell.h"
+#include "rose/error.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
@@ -10,7 +10,7 @@
 #define SEXP_TO_PORT(obj)   R_CELL_VALUE (obj).port
 #define PORT_TO_FILE(port)  ((FILE*) (SEXP_TO_PORT (port).stream))
 
-static void finalize_port (void* obj, void* client_data)
+static void port_finalize (void* obj, void* client_data)
 {
     r_close_port ((rsexp) obj);
 }
@@ -27,7 +27,7 @@ static rsexp file_port_new (FILE*       file,
     SEXP_TO_PORT (port).mode    = mode;
 
     if (close_on_destroy)
-        GC_REGISTER_FINALIZER ((void*) port, finalize_port, NULL, NULL, NULL);
+        GC_REGISTER_FINALIZER ((void*) port, port_finalize, NULL, NULL, NULL);
 
     return port;
 }
@@ -128,11 +128,6 @@ void r_display_port (rsexp port, rsexp obj, rsexp context)
     r_write_port (port, obj, context);
 }
 
-void r_newline (rsexp port)
-{
-    r_port_puts (port, "\n");
-}
-
 void r_write_char (rsexp port, char ch)
 {
     fputc (ch, PORT_TO_FILE (port));
@@ -141,4 +136,34 @@ void r_write_char (rsexp port, char ch)
 rboolean r_eof_p (rsexp port)
 {
     return 0 != feof (PORT_TO_FILE (port));
+}
+
+void r_close_input_port (rsexp port)
+{
+    r_close_port (port);
+}
+
+void r_close_output_port (rsexp port)
+{
+    r_close_port (port);
+}
+
+rsexp r_current_input_port (RContext* context)
+{
+    return context->current_input_port;
+}
+
+rsexp r_current_output_port (RContext* context)
+{
+    return context->current_output_port;
+}
+
+void r_set_current_input_port_x (rsexp port, RContext* context)
+{
+    context->current_input_port = port;
+}
+
+void r_set_current_output_port_x (rsexp port, RContext* context)
+{
+    context->current_output_port = port;
 }

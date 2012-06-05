@@ -1,5 +1,4 @@
-#include "cell.h"
-
+#include "detail/cell.h"
 #include "rose/env.h"
 #include "rose/pair.h"
 

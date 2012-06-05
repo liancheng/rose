@@ -3,13 +3,7 @@
 
 #include "rose/sexp.h"
 
-#include <stdarg.h>
-
-typedef struct RError {
-    rsexp message;
-    rsexp irritants;
-}
-RError;
+typedef struct RError RError;
 
 rboolean r_error_p               (rsexp obj);
 rsexp    r_error                 (rsexp message,

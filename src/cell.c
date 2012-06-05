@@ -1,4 +1,4 @@
-#include "cell.h"
+#include "detail/cell.h"
 
 #include <assert.h>
 
@@ -8,7 +8,7 @@ RCellType r_cell_get_type (rsexp obj)
     return ((RCell*) obj)->type;
 }
 
-void r_cell_set_type (rsexp obj, RCellType type)
+void r_cell_set_type_x (rsexp obj, RCellType type)
 {
     assert (r_cell_p (obj));
     ((RCell*) obj)->type = type;

@@ -5,11 +5,7 @@
 
 #define r_pair_p(obj) (((obj) & R_SEXP_TAG_MASK) == R_SEXP_PAIR_TAG)
 
-typedef struct RPair {
-    rsexp car;
-    rsexp cdr;
-}
-RPair;
+typedef struct RPair RPair;
 
 rsexp    r_cons         (rsexp car,
                          rsexp cdr);

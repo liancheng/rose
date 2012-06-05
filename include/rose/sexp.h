@@ -9,7 +9,6 @@ typedef enum {
     SEXP_VECTOR,
     SEXP_PORT,
     SEXP_ERROR,
-    SEXP_OPAQUE,
 }
 RCellType;
 
@@ -54,6 +53,6 @@ typedef rword rsexp;
 
 #define R_SEXP_NEW(obj, type)\
         rsexp obj = (rsexp) GC_NEW (RCell);\
-        r_cell_set_type (obj, type)
+        r_cell_set_type_x (obj, type)
 
 #endif  //  __ROSE_SEXP_H__

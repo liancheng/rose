@@ -8,9 +8,10 @@
 
 %{
 
+#include "detail/reader.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/read.h"
+#include "rose/reader.h"
 #include "rose/sexp.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
@@ -27,12 +28,9 @@ void rose_yyerror (RReaderState* state,
 
 %}
 
-%token TKN_EXPECT_MORE
-%token TKN_EOF
 %token TKN_FAIL
 
 %token TKN_HASH_LP          "#("
-%token TKN_HASH_U8_LP       "#u8("
 %token TKN_HASH_SEMICOLON   "#;"
 %token TKN_LP               "("
 %token TKN_RP               ")"
@@ -47,11 +45,13 @@ void rose_yyerror (RReaderState* state,
 %token TKN_BOOLEAN
 %token TKN_STRING
 %token TKN_CHARACTER
+%token TKN_NUMBER
 
 %%
 
 start
-    : datum_seq                 { state->tree = $1; }
+    :                           { state->tree = R_SEXP_EOF; }
+    | datum                     { state->tree = $1; YYACCEPT; }
     ;
 
 datum
@@ -81,27 +81,14 @@ compound_datum
     ;
 
 list
-    : proper_list               { $$ = $1; }
-    | improper_list             { $$ = $1; }
-    | abbreviation              { $$ = $1; }
-    ;
-
-proper_list
-    : "(" ")"                   { $$ = R_SEXP_NULL; }
-    | "(" data ")"              { $$ = $2; }
-    ;
-
-improper_list
-    : "(" data "." datum ")"    { $$ = r_append_x ($2, $4); }
-    ;
-
-abbreviation
     : abbrev_prefix datum       { $$ = r_list (2, $1, $2); }
+    | "(" datum_seq ")"         { $$ = $2; }
+    | "(" data "." datum ")"    { $$ = r_append_x ($2, $4); }
     ;
 
 abbrev_prefix
     : "'"                       { $$ = KEYWORD ("quote"); }
-    | "`"                       { $$ = KEYWORD ("quasiquote");}
+    | "`"                       { $$ = KEYWORD ("quasiquote"); }
     | ","                       { $$ = KEYWORD ("unquote"); }
     | ",@"                      { $$ = KEYWORD ("unquote-splicing"); }
     ;

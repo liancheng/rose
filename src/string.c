@@ -1,5 +1,5 @@
-#include "cell.h"
-
+#include "detail/cell.h"
+#include "rose/port.h"
 #include "rose/string.h"
 
 #include <string.h>

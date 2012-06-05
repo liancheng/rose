@@ -1,5 +1,4 @@
-#include "cell.h"
-
+#include "detail/cell.h"
 #include "rose/error.h"
 #include "rose/string.h"
 

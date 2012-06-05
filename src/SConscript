@@ -5,16 +5,16 @@ env.Append(LIBS='gc',
            CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
            YACCFLAGS='-d')
 
-lex_src = env.Quex(source='rose.qx',
+lex_src = env.Quex(source='lexer.qx',
                    QUEXENGINE='lexer',
                    QUEXLANG='C',
                    QUEXOUTDIR=Dir('quex').abspath,
-                   QUEXTKNID=File('token-ids.h').abspath,
+                   QUEXTKNID=File('detail/token-ids.h').abspath,
                    QUEXFLAGS=['--token-id-prefix TKN_',
                               '--token-policy queue',
                               '--token-class token'])
 
-parser_src = env.CFile(source='rose.y')
+parser_src = env.CFile(source='parser.y')
 rsi_obj = env.Object(source=[Glob('*.c'), Glob('quex/*.c')])
 rsi_bin = env.Program(target='rsi', source=rsi_obj)
 

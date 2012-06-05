@@ -1,13 +1,13 @@
-#include "sexp_io.h"
-
+#include "detail/sexp_io.h"
+#include "rose/context.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
-#include "rose/write.h"
+#include "rose/writer.h"
 
-void r_write (rsexp port, rsexp obj, rsexp context)
+void r_write (rsexp port, rsexp obj, RContext* context)
 {
     if (R_SEXP_TRUE == obj) {
         r_port_puts (port, "#t");
@@ -38,7 +38,7 @@ void r_write (rsexp port, rsexp obj, rsexp context)
     }
 }
 
-void r_display (rsexp port, rsexp obj, rsexp context)
+void r_display (rsexp port, rsexp obj, RContext* context)
 {
     if (R_SEXP_TRUE == obj) {
         r_port_puts (port, "#t");

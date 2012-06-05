@@ -1,0 +1,176 @@
+token
+{
+    TERMINATION;
+    FAIL;
+
+    HASH_LP;
+    HASH_SEMICOLON;
+    LP;
+    RP;
+    DOT;
+    ELLIPSIS;
+    COMMA_AT;
+    COMMA;
+    QUOTE;
+    BACKTICK;
+    IDENTIFIER;
+    BOOLEAN;
+    STRING;
+    CHARACTER;
+    NUMBER;
+}
+
+define
+{
+    /* Skipper and delimiter */
+    whitespace                  [ \n\t]
+    comment                     ;.*
+    atomsphere                  {whitespace}|{comment}
+    intertoken_space            {atomsphere}+
+    delimiter                   {whitespace}|[()";]
+
+    /* Identifier (symbol) */
+    letter                      [a-z]
+    special_initial             [!$%&*/:<=>?^_~]
+    digit                       [0-9]
+    initial                     {letter}
+                                |{special_initial}
+    digit                       [0-9]
+    special_subsequent          [+\-.@]
+    subsequent                  {initial}|{digit}|{special_subsequent}
+    peculiar_identifier         "+"|"-"|"..."
+    identifier                  {initial}{subsequent}*|{peculiar_identifier}
+
+    exactness                   #[ei]
+    sign                        [+\-]
+
+    bin_digit                   [01]
+    bin_uinteger                {bin_digit}+#*
+    bin_ureal                   {bin_uinteger}|{bin_uinteger}"/"{bin_uinteger}
+    bin_real                    {sign}{bin_ureal}
+    bin_complex                 {bin_real}
+                                |{bin_real}@{bin_ureal}
+                                |{bin_real}?{sign}{bin_ureal}?i
+    bin_radix                   #b
+    bin_prefix                  {bin_radix}{exactness}|{exactness}{bin_radix}
+    bin_num                     {bin_prefix}{bin_complex}
+
+    oct_digit                   {bin_digit}|[2-7]
+    oct_uinteger                {oct_digit}+#*
+    oct_ureal                   {oct_uinteger}|{oct_uinteger}"/"{oct_uinteger}
+    oct_real                    {sign}{oct_ureal}
+    oct_complex                 {oct_real}
+                                |{oct_real}@{oct_ureal}
+                                |{oct_real}?{sign}{oct_ureal}?i
+    oct_radix                   #o
+    oct_prefix                  {oct_radix}{exactness}|{exactness}{oct_radix}
+    oct_num                     {oct_prefix}{oct_complex}
+
+    dec_digit                   {oct_digit}|[89]
+    dec_uinteger                {dec_digit}+#*
+    exponent_marker             [esfdl]
+    suffix                      {exponent_marker}{sign}?{dec_digit}+
+    decimal                     {dec_uinteger}{suffix}?
+                                |"."{dec_digit}+#*{suffix}?
+                                |{dec_digit}+"."{dec_digit}*#*{suffix}?
+                                |{dec_digit}+#+"."#*{suffix}?
+    dec_ureal                   {dec_uinteger}
+                                |{dec_uinteger}"/"{dec_uinteger}
+                                |{decimal}
+    dec_real                    {sign}{dec_ureal}
+    dec_complex                 {dec_real}
+                                |{dec_real}@{dec_ureal}
+                                |{dec_real}?{sign}{dec_ureal}?i
+    dec_radix                   #d
+    dec_prefix                  {dec_radix}{exactness}|{exactness}{dec_radix}
+    dec_num                     {dec_prefix}{dec_complex}
+
+    hex_digit                   {dec_digit}|[a-f]
+    hex_uinteger                {hex_digit}+#*
+    hex_ureal                   {hex_uinteger}|{hex_uinteger}"/"{hex_uinteger}
+    hex_real                    {sign}{hex_ureal}
+    hex_complex                 {hex_real}
+                                |{hex_real}@{hex_ureal}
+                                |{hex_real}?{sign}{hex_ureal}?i
+    hex_radix                   #x
+    hex_prefix                  {hex_radix}{exactness}|{exactness}{hex_radix}
+    hex_num                     {hex_prefix}{hex_complex}
+
+    /* Number */
+    number                      {bin_num}|{oct_num}|{dec_num}|{hex_num}
+
+    /* Character */
+    character_name              "space"|"newline"
+    character                   #\\{character_name}|#\\.
+
+    /* Boolean */
+    boolean                     #[tf]
+}
+
+start = MAIN;
+
+mode FAILURE : <inheritable: only>
+{
+    <<FAIL>> => TKN_FAIL (Lexeme);
+}
+
+mode EOF : <inheritable: only>
+{
+    <<EOF>> => TKN_TERMINATION (Lexeme);
+}
+
+mode MAIN : FAILURE, EOF
+{
+    /* Skippers */
+    {intertoken_space}          {}
+
+    /* Punctuations */
+    "#;"                        => TKN_HASH_SEMICOLON (Lexeme);
+    "#("                        => TKN_HASH_LP (Lexeme);
+    "("                         => TKN_LP (Lexeme);
+    ")"                         => TKN_RP (Lexeme);
+    "."                         => TKN_DOT (Lexeme);
+    "..."                       => TKN_ELLIPSIS (Lexeme);
+
+    /* Abbreviations */
+    ,@                          => TKN_COMMA_AT (Lexeme);
+    ,                           => TKN_COMMA (Lexeme);
+    "'"                         => TKN_QUOTE (Lexeme);
+    `                           => TKN_BACKTICK (Lexeme);
+
+    /* Symbols */
+    {identifier}/{delimiter}    => TKN_IDENTIFIER (Lexeme);
+
+    /* Number */
+    {number}/{delimiter}        => TKN_NUMBER (Lexeme);
+
+    /* Booleans */
+    {boolean}/{delimiter}       => TKN_BOOLEAN (LexemeBegin + 1, LexemeEnd);
+
+    /* Characters */
+    {character}/{delimiter}     => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
+
+    /* Strings */
+    "\""                        => GOSUB (STRING);
+}
+
+mode STRING : EOF, FAILURE
+{
+    on_entry                    { self_accumulator_clear (); }
+    on_exit                     {
+                                  self_accumulator_add_character ('\0');
+                                  self_accumulator_flush (TKN_STRING);
+                                }
+
+    \\a                         { self_accumulator_add_character ('\a'); }
+    \\t                         { self_accumulator_add_character ('\t'); }
+    \\n                         { self_accumulator_add_character ('\n'); }
+    \\r                         { self_accumulator_add_character ('\r'); }
+    \\\"                        { self_accumulator_add_character ('\"'); }
+    \\\\                        { self_accumulator_add_character ('\\'); }
+    \n                          { self_accumulator_add_character ('\n'); }
+
+    \"                          => GOUP ();
+
+    .                           { self_accumulator_add (Lexeme, LexemeEnd); }
+}
