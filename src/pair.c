@@ -8,8 +8,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#define PAIR_TO_SEXP(ptr) (((rsexp) (ptr)) | R_SEXP_PAIR_TAG)
-#define SEXP_TO_PAIR(obj) ((RPair*) ((obj) & (~R_SEXP_PAIR_TAG)))
+#define PAIR_TO_SEXP(ptr) (((rsexp) (ptr)) | R_PAIR_TAG)
+#define SEXP_TO_PAIR(obj) ((RPair*) ((obj) & (~R_PAIR_TAG)))
 
 rsexp r_cons (rsexp car, rsexp cdr)
 {
@@ -38,14 +38,14 @@ rsexp r_set_car (rsexp pair, rsexp obj)
 {
     assert (r_pair_p (pair));
     SEXP_TO_PAIR (pair)->car = obj;
-    return R_SEXP_UNSPECIFIED;
+    return R_UNSPECIFIED;
 }
 
 rsexp r_set_cdr (rsexp pair, rsexp obj)
 {
     assert (r_pair_p (pair));
     SEXP_TO_PAIR (pair)->cdr = obj;
-    return R_SEXP_UNSPECIFIED;
+    return R_UNSPECIFIED;
 }
 
 static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
@@ -59,7 +59,7 @@ static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
 rsexp r_reverse (rsexp list)
 {
     assert (r_null_p (list) || r_pair_p (list));
-    return r_reverse_internal (list, R_SEXP_NULL);
+    return r_reverse_internal (list, R_NULL);
 }
 
 rsexp r_append_x (rsexp list, rsexp obj)
@@ -92,7 +92,7 @@ rsexp r_list (rsize count, ...)
 
     va_start (args, count);
 
-    rsexp res = R_SEXP_NULL;
+    rsexp res = R_NULL;
     for (i = 0; i < count; ++i)
         res = r_cons (va_arg (args, rsexp), res);
 

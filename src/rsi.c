@@ -5,6 +5,8 @@
 #include "rose/string.h"
 #include "rose/writer.h"
 
+#include <gc/gc.h>
+
 void display_syntax_error (rsexp error, RContext* context)
 {
     rsexp irritants = r_error_irritants (error);
@@ -14,8 +16,8 @@ void display_syntax_error (rsexp error, RContext* context)
 
     r_port_printf (r_current_input_port (context),
                    "%d:%d %s\n",
-                   r_sexp_to_int (line),
-                   r_sexp_to_int (column),
+                   r_int_from_sexp (line),
+                   r_int_from_sexp (column),
                    r_string_cstr (message));
 }
 

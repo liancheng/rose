@@ -4,6 +4,7 @@
 #include "detail/hash.h"
 #include "rose/sexp.h"
 
+#include <gc/gc.h>
 #include <stdio.h>
 
 struct REnv{
@@ -51,8 +52,12 @@ typedef struct RCell {
 }
 RCell;
 
-#define r_cell_p(s)         (((s) & R_SEXP_TAG_MASK) == R_SEXP_CELL_TAG)
+#define r_cell_p(s)         (((s) & R_TC3_MASK) == R_CELL_TAG)
 #define R_CELL_VALUE(obj)   ((RCell*) obj)->value
+
+#define R_SEXP_NEW(obj, type)\
+        rsexp obj = (rsexp) GC_NEW (RCell);\
+        r_cell_set_type_x (obj, type)
 
 RCellType r_cell_get_type   (rsexp     obj);
 void      r_cell_set_type_x (rsexp     obj,

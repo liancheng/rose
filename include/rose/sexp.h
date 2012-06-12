@@ -17,42 +17,55 @@ typedef rword rsexp;
 /*
  * Simple tagging.  Ends in:
  *
- * - #b000 (#x0, #d0): pointer to cell object
- * - #b001 (#x1, #d1): small fixnum
- * - #b010 (#x2, #d2): pair
- * - #b011 (#x3, #d3): symbol
- * - #b111 (#x7, #d7): immediate constants ('(), #t, #f, etc.)
+ * - #b000: pointer to cell object
+ * - #b001: int30 (even)
+ * - #b010: pair
+ * - #b011: fixnum
+ * - #b100: non-int30 immediate objects
+ *   - #b00100: special constants ('(), #t, #f, eof, unspecified, undefined)
+ *   - #b01100: characters
+ *   - #b10100: symbols
+ * - #b101: int30 (odd)
+ * - #b110:
+ * - #b111: flonum
  */
-#define R_SEXP_TAG_MASK             0x07
-#define R_SEXP_CELL_TAG             0x00
-#define R_SEXP_SMALL_FIXNUM_TAG     0x01
-#define R_SEXP_PAIR_TAG             0x02
-#define R_SEXP_SYMBOL_TAG           0x03
-#define R_SEXP_IMMEDIATE_TAG        0x07
 
-#define R_SEXP_MAKE_IMMEDIATE(n)    ((rsexp) (((n) << 3) | R_SEXP_IMMEDIATE_TAG))
-#define R_SEXP_NULL                 R_SEXP_MAKE_IMMEDIATE (0)
-#define R_SEXP_FALSE                R_SEXP_MAKE_IMMEDIATE (1)
-#define R_SEXP_TRUE                 R_SEXP_MAKE_IMMEDIATE (2)
-#define R_SEXP_EOF                  R_SEXP_MAKE_IMMEDIATE (3)
-#define R_SEXP_UNSPECIFIED          R_SEXP_MAKE_IMMEDIATE (4)
-#define R_SEXP_UNDEFINED            R_SEXP_MAKE_IMMEDIATE (5)
+#define R_TC3_MASK              0x07
+#define R_TC5_MASK              0x1f
+#define R_TC3_BITS              3
+#define R_TC5_BITS              5
 
-#define r_null_p(obj)           ((obj) == R_SEXP_NULL)
-#define r_boolean_p(obj)        ((obj) == R_SEXP_TRUE || (obj) == R_SEXP_FALSE)
-#define r_false_p(obj)          ((obj) == R_SEXP_FALSE)
-#define r_true_p(obj)           ((obj) != R_SEXP_FALSE)
-#define r_eof_object_p(obj)     ((obj) == R_SEXP_EOF)
-#define r_unspecified_p(obj)    ((obj) == R_SEXP_UNSPECIFIED)
-#define r_undefined_p(obj)      ((obj) == R_SEXP_UNDEFINED)
+#define R_CELL_TAG              0x00
+#define R_INT30_TAG             0x01
+#define R_PAIR_TAG              0x02
+#define R_FIXNUM_TAG            0x03
+#define R_FLONUM_TAG            0x07
 
-#define r_int_to_sexp(n)    ((rsexp)(((n) << 3) | R_SEXP_SMALL_FIXNUM_TAG))
-#define r_sexp_to_int(obj)  (((int)(obj)) >> 3)
+#define R_TC5_TAG               0x04
+#define R_SPECIAL_CONST_TAG     0x04
+#define R_CHARACTER_TAG         0x0a
+#define R_SYMBOL_TAG            0x14
 
-#include <gc/gc.h>
+#define R_MAKE_SPECIAL_CONST(n) ((((n) << R_TC5_BITS) | R_SPECIAL_CONST_TAG))
+#define R_NULL                  R_MAKE_SPECIAL_CONST (0)
+#define R_FALSE                 R_MAKE_SPECIAL_CONST (1)
+#define R_TRUE                  R_MAKE_SPECIAL_CONST (2)
+#define R_EOF                   R_MAKE_SPECIAL_CONST (3)
+#define R_UNSPECIFIED           R_MAKE_SPECIAL_CONST (4)
+#define R_UNDEFINED             R_MAKE_SPECIAL_CONST (5)
 
-#define R_SEXP_NEW(obj, type)\
-        rsexp obj = (rsexp) GC_NEW (RCell);\
-        r_cell_set_type_x (obj, type)
+#define r_special_consts_p(obj) (((obj) & R_TC5_MASK) == R_SPECIAL_CONST_TAG)
+#define r_null_p(obj)           ((obj) == R_NULL)
+#define r_boolean_p(obj)        ((obj) == R_TRUE || (obj) == R_FALSE)
+#define r_false_p(obj)          ((obj) == R_FALSE)
+#define r_true_p(obj)           ((obj) != R_FALSE)
+#define r_eof_object_p(obj)     ((obj) == R_EOF)
+#define r_unspecified_p(obj)    ((obj) == R_UNSPECIFIED)
+#define r_undefined_p(obj)      ((obj) == R_UNDEFINED)
+
+#define r_int_to_sexp(n)        ((rsexp)(((n) << 2) | R_INT30_TAG))
+#define r_int_from_sexp(obj)    (((int)(obj)) >> 2)
+#define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
+#define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 
 #endif  //  __ROSE_SEXP_H__

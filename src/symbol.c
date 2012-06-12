@@ -4,12 +4,13 @@
 #include "rose/string.h"
 #include "rose/symbol.h"
 
+#include <gc/gc.h>
 #include <assert.h>
 #include <string.h>
 
 #define QUARK_BLOCK_SIZE     1024
-#define QUARK_TO_SEXP(quark) ((rsexp) ((quark << 3) | R_SEXP_SYMBOL_TAG))
-#define SEXP_TO_QUARK(obj)   (obj >> 3)
+#define QUARK_TO_SEXP(quark) ((rsexp) ((quark << R_TC5_BITS) | R_SYMBOL_TAG))
+#define SEXP_TO_QUARK(obj)   (obj >> R_TC5_BITS)
 
 typedef rword rquark;
 

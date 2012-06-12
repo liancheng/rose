@@ -78,7 +78,7 @@ rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
 
     SEXP_TO_VECTOR (vector).data[k] = obj;
 
-    return R_SEXP_UNSPECIFIED;
+    return R_UNSPECIFIED;
 }
 
 rsize r_vector_length (rsexp vector)
@@ -90,7 +90,7 @@ rsize r_vector_length (rsexp vector)
 rsexp r_list_to_vector (rsexp list)
 {
     rsize length = r_length (list);
-    rsexp res = r_make_vector (length, R_SEXP_UNSPECIFIED);
+    rsexp res = r_make_vector (length, R_UNSPECIFIED);
     rsize k;
 
     for (k = 0; k < length; ++k) {

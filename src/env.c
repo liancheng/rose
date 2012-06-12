@@ -31,7 +31,7 @@ rsexp r_env_new ()
 {
     R_SEXP_NEW (res, SEXP_ENV);
 
-    SEXP_TO_ENV (res).parent   = R_SEXP_UNDEFINED;
+    SEXP_TO_ENV (res).parent   = R_UNDEFINED;
     SEXP_TO_ENV (res).bindings = r_hash_table_new (NULL, NULL);
 
     GC_REGISTER_FINALIZER ((rpointer) res, env_finalize, NULL, NULL, NULL);
@@ -61,7 +61,7 @@ static rsexp frame_lookup (rsexp frame, rsexp var)
     bindings = SEXP_TO_ENV (frame).bindings;
     val = r_hash_table_get (bindings, (rconstpointer) var);
 
-    return val ? (rsexp) val : R_SEXP_UNDEFINED;
+    return val ? (rsexp) val : R_UNDEFINED;
 }
 
 rsexp r_env_lookup (rsexp env, rsexp var)

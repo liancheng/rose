@@ -3,7 +3,7 @@
 
 #include "rose/sexp.h"
 
-#define r_symbol_p(s) (((s) & 0x07) == R_SEXP_SYMBOL_TAG)
+#define r_symbol_p(s) (((s) & R_TC5_MASK) == R_SYMBOL_TAG)
 
 typedef struct RSymbolTable RSymbolTable;
 

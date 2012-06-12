@@ -50,7 +50,7 @@ void rose_yyerror (RReaderState* state,
 %%
 
 start
-    :                           { state->tree = R_SEXP_EOF; }
+    :                           { state->tree = R_EOF; }
     | datum                     { state->tree = $1; YYACCEPT; }
     ;
 
@@ -65,7 +65,7 @@ data
     ;
 
 datum_seq
-    :                           { $$ = R_SEXP_NULL; }
+    :                           { $$ = R_NULL; }
     | data                      { $$ = $1; }
     ;
 
@@ -167,7 +167,7 @@ int rose_yylex (YYSTYPE* yylval, RReaderState* state)
             break;
 
         case TKN_BOOLEAN:
-            *yylval = (text [0] == 't') ? R_SEXP_TRUE : R_SEXP_FALSE;
+            *yylval = (text [0] == 't') ? R_TRUE : R_FALSE;
             break;
     }
 

@@ -4,6 +4,7 @@
 #include "rose/port.h"
 #include "rose/symbol.h"
 
+#include <gc/gc.h>
 #include <assert.h>
 
 RContext* r_context_new ()

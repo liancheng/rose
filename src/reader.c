@@ -33,9 +33,9 @@ RReaderState* r_reader_new (RContext* context)
 
     reader->context    = context;
     reader->input_port = r_current_input_port (context);
-    reader->tree       = R_SEXP_NULL;
-    reader->error_type = R_SEXP_UNDEFINED;
-    reader->last_error = R_SEXP_UNDEFINED;
+    reader->tree       = R_NULL;
+    reader->error_type = R_UNDEFINED;
+    reader->last_error = R_UNDEFINED;
     reader->lexer      = lexer_new ();
 
     return reader;
@@ -81,6 +81,6 @@ rsexp r_reader_last_error (RReaderState* reader)
 
 void r_reader_clear_error (RReaderState* reader)
 {
-    reader->error_type = R_SEXP_UNDEFINED;
-    reader->last_error = R_SEXP_UNDEFINED;
+    reader->error_type = R_UNDEFINED;
+    reader->last_error = R_UNDEFINED;
 }

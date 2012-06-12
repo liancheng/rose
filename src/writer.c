@@ -9,10 +9,10 @@
 
 void r_write (rsexp port, rsexp obj, RContext* context)
 {
-    if (R_SEXP_TRUE == obj) {
+    if (R_TRUE == obj) {
         r_port_puts (port, "#t");
     }
-    else if (R_SEXP_FALSE == obj) {
+    else if (R_FALSE == obj) {
         r_port_puts (port, "#f");
     }
     else if (r_unspecified_p (obj)) {
@@ -40,10 +40,10 @@ void r_write (rsexp port, rsexp obj, RContext* context)
 
 void r_display (rsexp port, rsexp obj, RContext* context)
 {
-    if (R_SEXP_TRUE == obj) {
+    if (R_TRUE == obj) {
         r_port_puts (port, "#t");
     }
-    else if (R_SEXP_FALSE == obj) {
+    else if (R_FALSE == obj) {
         r_port_puts (port, "#f");
     }
     else if (r_symbol_p (obj)) {
