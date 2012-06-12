@@ -54,7 +54,7 @@ typedef rword rsexp;
 #define R_UNSPECIFIED           R_MAKE_SPECIAL_CONST (4)
 #define R_UNDEFINED             R_MAKE_SPECIAL_CONST (5)
 
-#define r_special_consts_p(obj) (((obj) & R_TC5_MASK) == R_SPECIAL_CONST_TAG)
+#define r_special_const_p(obj)  (((obj) & R_TC5_MASK) == R_SPECIAL_CONST_TAG)
 #define r_null_p(obj)           ((obj) == R_NULL)
 #define r_boolean_p(obj)        ((obj) == R_TRUE || (obj) == R_FALSE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
