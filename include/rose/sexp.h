@@ -26,7 +26,7 @@ typedef rword rsexp;
  *   - #b01100: characters
  *   - #b10100: symbols
  * - #b101: int30 (odd)
- * - #b110:
+ * - #b110: boolean
  * - #b111: flonum
  */
 
@@ -39,6 +39,7 @@ typedef rword rsexp;
 #define R_INT30_TAG             0x01
 #define R_PAIR_TAG              0x02
 #define R_FIXNUM_TAG            0x03
+#define R_BOOLEAN_TAG           0x06
 #define R_FLONUM_TAG            0x07
 
 #define R_TC5_TAG               0x04
@@ -46,25 +47,27 @@ typedef rword rsexp;
 #define R_CHARACTER_TAG         0x0a
 #define R_SYMBOL_TAG            0x14
 
+#define R_MAKE_BOOLEAN(n)       ((n << R_TC3_BITS) | R_BOOLEAN_TAG)
+#define R_FALSE                 R_MAKE_BOOLEAN(0)
+#define R_TRUE                  R_MAKE_BOOLEAN(1)
+
 #define R_MAKE_SPECIAL_CONST(n) ((((n) << R_TC5_BITS) | R_SPECIAL_CONST_TAG))
 #define R_NULL                  R_MAKE_SPECIAL_CONST (0)
-#define R_FALSE                 R_MAKE_SPECIAL_CONST (1)
-#define R_TRUE                  R_MAKE_SPECIAL_CONST (2)
 #define R_EOF                   R_MAKE_SPECIAL_CONST (3)
 #define R_UNSPECIFIED           R_MAKE_SPECIAL_CONST (4)
 #define R_UNDEFINED             R_MAKE_SPECIAL_CONST (5)
 
+#define r_boolean_p(obj)        (((obj) & R_TC3_MASK) == R_BOOLEAN_TAG)
 #define r_special_const_p(obj)  (((obj) & R_TC5_MASK) == R_SPECIAL_CONST_TAG)
 #define r_null_p(obj)           ((obj) == R_NULL)
-#define r_boolean_p(obj)        ((obj) == R_TRUE || (obj) == R_FALSE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
 #define r_true_p(obj)           ((obj) != R_FALSE)
 #define r_eof_object_p(obj)     ((obj) == R_EOF)
 #define r_unspecified_p(obj)    ((obj) == R_UNSPECIFIED)
 #define r_undefined_p(obj)      ((obj) == R_UNDEFINED)
 
-#define r_int_to_sexp(n)        ((rsexp)(((n) << 2) | R_INT30_TAG))
-#define r_int_from_sexp(obj)    (((int)(obj)) >> 2)
+#define r_int_to_sexp(n)        ((rsexp) (((n) << 2) | R_INT30_TAG))
+#define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 
