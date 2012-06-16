@@ -1,41 +1,141 @@
-#include "detail/cell.h"
+#include "detail/context.h"
+#include "detail/sexp.h"
 #include "rose/error.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
+#include <gc/gc.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-#define SEXP_TO_PORT(obj)   R_CELL_VALUE (obj).port
-#define PORT_TO_FILE(port)  ((FILE*) (SEXP_TO_PORT (port).stream))
+enum {
+    INPUT_PORT,
+    OUTPUT_PORT,
+};
 
-static void port_finalize (void* obj, void* client_data)
+struct RPort {
+    RType* type;
+    FILE*  stream;
+    rint   mode;
+    rsexp  name;
+};
+
+#define SEXP_TO_PORT(obj)    (*((RPort*) (obj)))
+#define SEXP_FROM_PORT(port) ((rsexp) (port))
+#define PORT_TO_FILE(obj)    ((FILE*) (SEXP_TO_PORT (obj).stream))
+
+static RType* r_port_type_info ();
+
+static void r_port_finalize (void* obj, void* client_data)
 {
     r_close_port ((rsexp) obj);
 }
 
-static rsexp file_port_new (FILE*       file,
-                            char const* name,
-                            rint        mode,
-                            rboolean    close_on_destroy)
+static rsexp r_file_port_new (FILE*       file,
+                              char const* name,
+                              rint        mode,
+                              rboolean    close_on_destroy)
 {
-    R_SEXP_NEW (port, SEXP_PORT);
+    RPort* port = GC_NEW (RPort);
 
-    SEXP_TO_PORT (port).stream  = file;
-    SEXP_TO_PORT (port).name    = r_string_new (name);
-    SEXP_TO_PORT (port).mode    = mode;
+    port->type   = r_port_type_info ();
+    port->stream = file;
+    port->name   = r_string_new (name);
+    port->mode   = mode;
 
     if (close_on_destroy)
-        GC_REGISTER_FINALIZER ((void*) port, port_finalize, NULL, NULL, NULL);
+        GC_REGISTER_FINALIZER ((void*) port, r_port_finalize, NULL, NULL, NULL);
 
-    return port;
+    return SEXP_FROM_PORT (port);
+}
+
+static rsexp r_open_file (char const* filename, rint mode)
+{
+    FILE* file;
+    char* mode_str;
+
+    mode_str = (INPUT_PORT == mode) ? "r" : "w";
+    file = fopen (filename, mode_str);
+
+    if (!file)
+        return r_error_new (r_string_new ("cannot open file"),
+                            r_string_new (filename));
+
+    return r_file_port_new (file, filename, mode, TRUE);
+}
+
+static void r_port_write (rsexp port, rsexp obj, RContext* context)
+{
+    r_port_printf (port, "#<port %s>", SEXP_TO_PORT (obj).name);
+}
+
+static RType* r_port_type_info ()
+{
+    static RType* type = NULL;
+
+    if (!type) {
+        type = GC_NEW (RType);
+
+        type->cell_size  = sizeof (RPort);
+        type->name       = "port";
+        type->write_fn   = r_port_write;
+        type->display_fn = r_port_write;
+    }
+
+    return type;
+}
+
+rsexp r_open_input_file (char const* filename)
+{
+    return r_open_file (filename, INPUT_PORT);
+}
+
+rsexp r_open_output_file (char const* filename)
+{
+    return r_open_file (filename, OUTPUT_PORT);
+}
+
+rsexp r_open_input_string (char const* string)
+{
+    FILE* file = fmemopen ((void*) string, strlen (string), "r");
+    return r_file_port_new (file, "(string-input)", INPUT_PORT, TRUE);
+}
+
+rsexp r_stdin_port ()
+{
+    return r_file_port_new (stdin, "(standard-input)", INPUT_PORT, FALSE);
+}
+
+rsexp r_stdout_port ()
+{
+    return r_file_port_new (stdout, "(standard-output)", OUTPUT_PORT, FALSE);
+}
+
+void r_close_input_port (rsexp port)
+{
+    r_close_port (port);
+}
+
+void r_close_output_port (rsexp port)
+{
+    r_close_port (port);
+}
+
+void r_close_port (rsexp port)
+{
+    fclose (PORT_TO_FILE (port));
+}
+
+rboolean r_eof_p (rsexp port)
+{
+    return 0 != feof (PORT_TO_FILE (port));
 }
 
 rboolean r_port_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           r_cell_get_type (obj) == SEXP_PORT;
+           R_CELL_TYPE (obj) == r_port_type_info ();
 }
 
 rboolean r_input_port_p (rsexp obj)
@@ -48,52 +148,6 @@ rboolean r_output_port_p (rsexp obj)
 {
     return r_port_p (obj) &&
            SEXP_TO_PORT (obj).mode == OUTPUT_PORT;
-}
-
-static rsexp open_file (char const* filename, rint mode)
-{
-    FILE* file;
-    char* mode_str;
-
-    mode_str = (INPUT_PORT == mode) ? "r" : "w";
-    file = fopen (filename, mode_str);
-
-    if (!file)
-        return r_error (r_string_new ("cannot open file"),
-                        r_string_new (filename));
-
-    return file_port_new (file, filename, mode, TRUE);
-}
-
-rsexp r_open_input_file (char const* filename)
-{
-    return open_file (filename, INPUT_PORT);
-}
-
-rsexp r_open_output_file (char const* filename)
-{
-    return open_file (filename, OUTPUT_PORT);
-}
-
-rsexp r_open_input_string (char const* string)
-{
-    FILE* file = fmemopen ((void*) string, strlen (string), "r");
-    return file_port_new (file, "(string-input)", INPUT_PORT, TRUE);
-}
-
-rsexp r_stdin_port ()
-{
-    return file_port_new (stdin, "(standard-input)", INPUT_PORT, FALSE);
-}
-
-rsexp r_stdout_port ()
-{
-    return file_port_new (stdout, "(standard-output)", OUTPUT_PORT, FALSE);
-}
-
-void r_close_port (rsexp port)
-{
-    fclose (PORT_TO_FILE (port));
 }
 
 rint r_port_printf (rsexp port, char const* format, ...)
@@ -118,34 +172,9 @@ rint r_port_puts (rsexp port, char const* str)
     return fputs (str, PORT_TO_FILE (port));
 }
 
-void r_write_port (rsexp port, rsexp obj, rsexp context)
-{
-    r_port_printf (port, "#<port %s>", SEXP_TO_PORT (obj).name);
-}
-
-void r_display_port (rsexp port, rsexp obj, rsexp context)
-{
-    r_write_port (port, obj, context);
-}
-
 void r_write_char (rsexp port, char ch)
 {
     fputc (ch, PORT_TO_FILE (port));
-}
-
-rboolean r_eof_p (rsexp port)
-{
-    return 0 != feof (PORT_TO_FILE (port));
-}
-
-void r_close_input_port (rsexp port)
-{
-    r_close_port (port);
-}
-
-void r_close_output_port (rsexp port)
-{
-    r_close_port (port);
 }
 
 rsexp r_current_input_port (RContext* context)

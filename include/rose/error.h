@@ -5,11 +5,11 @@
 
 typedef struct RError RError;
 
-rboolean r_error_p               (rsexp obj);
-rsexp    r_error                 (rsexp message,
+rsexp    r_error_new             (rsexp message,
                                   rsexp irritants);
-rsexp    r_error_message         (rsexp error);
-rsexp    r_error_irritants       (rsexp error);
+rboolean r_error_p               (rsexp obj);
+rsexp    r_error_get_message     (rsexp error);
+rsexp    r_error_get_irritants   (rsexp error);
 void     r_error_set_message_x   (rsexp error,
                                   rsexp message);
 void     r_error_set_irritants_x (rsexp error,

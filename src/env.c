@@ -1,10 +1,22 @@
-#include "detail/cell.h"
+#include "detail/hash.h"
+#include "detail/sexp.h"
 #include "rose/env.h"
 #include "rose/pair.h"
+#include "rose/port.h"
 
 #include <assert.h>
+#include <gc/gc.h>
 
-#define SEXP_TO_ENV(obj) R_CELL_VALUE (obj).env
+struct REnv{
+    RType*      type;
+    rsexp       parent;
+    RHashTable* bindings;
+};
+
+#define SEXP_TO_ENV(obj)   (*((REnv*) obj))
+#define SEXP_FROM_ENV(env) ((rsexp) env)
+
+static RType* r_env_type_info ();
 
 static inline void env_set_parent_x (rsexp env, rsexp parent)
 {
@@ -21,22 +33,44 @@ static inline void env_finalize (rpointer obj, rpointer client_data)
     r_hash_table_free (SEXP_TO_ENV ((rsexp) obj).bindings);
 }
 
+static void r_env_write (rsexp port, rsexp obj, RContext* context)
+{
+    r_port_printf (port, "#<%s>", r_env_type_info ()->name);
+}
+
+static RType* r_env_type_info ()
+{
+    static RType* type = NULL;
+
+    if (!type) {
+        type = GC_NEW (RType);
+
+        type->cell_size  = sizeof (REnv);
+        type->name       = "environment";
+        type->write_fn   = r_env_write;
+        type->display_fn = r_env_write;
+    }
+
+    return type;
+}
+
 rboolean r_env_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           r_cell_get_type (obj) == SEXP_ENV;
+           R_CELL_TYPE (obj) == r_env_type_info ();
 }
 
 rsexp r_env_new ()
 {
-    R_SEXP_NEW (res, SEXP_ENV);
+    REnv* res = GC_NEW (REnv);
 
-    SEXP_TO_ENV (res).parent   = R_UNDEFINED;
-    SEXP_TO_ENV (res).bindings = r_hash_table_new (NULL, NULL);
+    res->type     = r_env_type_info ();
+    res->parent   = R_UNDEFINED;
+    res->bindings = r_hash_table_new (NULL, NULL);
 
     GC_REGISTER_FINALIZER ((rpointer) res, env_finalize, NULL, NULL, NULL);
 
-    return res;
+    return SEXP_FROM_ENV (res);
 }
 
 rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
@@ -83,14 +117,14 @@ rsexp r_env_lookup (rsexp env, rsexp var)
 
 void r_env_define (rsexp env, rsexp var, rsexp val)
 {
-    assert (r_cell_get_type (env) == SEXP_ENV);
+    assert (r_env_p (env));
     RHashTable* bindings = SEXP_TO_ENV (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }
 
 void r_env_set_x (rsexp env, rsexp var, rsexp val)
 {
-    assert (r_cell_get_type (env) == SEXP_ENV);
+    assert (r_env_p (env));
     RHashTable* bindings = SEXP_TO_ENV (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }

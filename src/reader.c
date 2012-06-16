@@ -1,6 +1,4 @@
 #include "detail/reader.h"
-#include "rose/context.h"
-#include "rose/error.h"
 #include "rose/port.h"
 #include "rose/reader.h"
 
@@ -8,7 +6,7 @@
 
 extern int rose_yyparse (RReaderState* state);
 
-static void lexer_finalize (rpointer obj, rpointer client_data)
+static void r_lexer_finalize (rpointer obj, rpointer client_data)
 {
     QUEX_NAME (destruct) ((RLexer*) obj);
 }
@@ -19,7 +17,7 @@ static RLexer* lexer_new ()
 
     lexer = GC_NEW (RLexer);
     QUEX_NAME (construct_memory) (lexer, NULL, 0, NULL, NULL, FALSE);
-    GC_REGISTER_FINALIZER (lexer, lexer_finalize, NULL, NULL, NULL);
+    GC_REGISTER_FINALIZER (lexer, r_lexer_finalize, NULL, NULL, NULL);
 
     return lexer;
 }
@@ -41,17 +39,12 @@ RReaderState* r_reader_new (RContext* context)
     return reader;
 }
 
-rsexp r_reader_ast (RReaderState* state)
-{
-    return state->tree;
-}
-
 RReaderState* r_reader_from_file (char const* filename, RContext* context)
 {
     return r_reader_from_port (r_open_input_file (filename), context);
 }
 
-RReaderState* r_read_from_string (char const* string, RContext* context)
+RReaderState* r_reader_from_string (char const* string, RContext* context)
 {
     return r_reader_from_port (r_open_input_string (string), context);
 }

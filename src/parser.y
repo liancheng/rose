@@ -8,6 +8,7 @@
 
 %{
 
+#include "detail/context.h"
 #include "detail/reader.h"
 #include "rose/pair.h"
 #include "rose/port.h"
@@ -19,7 +20,7 @@
 
 #define YYSTYPE rsexp
 
-#define KEYWORD(str) r_symbol_new_static ((str), state->context)
+#define KEYWORD(name) r_keyword ((name), state->context)
 
 int  rose_yylex   (YYSTYPE*      yylval,
                    RReaderState* state);
@@ -87,10 +88,10 @@ list
     ;
 
 abbrev_prefix
-    : "'"                       { $$ = KEYWORD ("quote"); }
-    | "`"                       { $$ = KEYWORD ("quasiquote"); }
-    | ","                       { $$ = KEYWORD ("unquote"); }
-    | ",@"                      { $$ = KEYWORD ("unquote-splicing"); }
+    : "'"                       { $$ = KEYWORD (R_QUOTE); }
+    | "`"                       { $$ = KEYWORD (R_QUASIQUOTE); }
+    | ","                       { $$ = KEYWORD (R_UNQUOTE); }
+    | ",@"                      { $$ = KEYWORD (R_UNQUOTE_SPLICING); }
     ;
 
 vector

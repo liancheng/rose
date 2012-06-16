@@ -1,0 +1,78 @@
+#include "detail/context.h"
+#include "detail/sexp.h"
+#include "rose/port.h"
+
+#include <gc/gc.h>
+
+void r_register_pair_type   (RContext* context);
+void r_register_symbol_type (RContext* context);
+
+static void r_boolean_write (rsexp port, rsexp obj, RContext* context)
+{
+    r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
+}
+
+static void r_special_const_write (rsexp port, rsexp obj, RContext* context)
+{
+    static char* str[] = {
+        "()",
+        "#<eof>",
+        "#<undefined>",
+        "#<unspecified>",
+    };
+
+    r_port_puts (port, str [obj >> R_TC5_BITS]);
+}
+
+static void r_special_const_display (rsexp port, rsexp obj, RContext* context)
+{
+    r_port_puts (port, r_null_p (obj) ? "()" : "");
+}
+
+static void r_register_boolean_type (RContext* context)
+{
+    RType* type = GC_NEW (RType);
+
+    type->cell_size = 0;
+    type->name = "boolean";
+    type->write_fn = &r_boolean_write;
+    type->display_fn = &r_boolean_write;
+
+    context->tc3_types [R_BOOLEAN_TAG] = type;
+}
+
+static void r_register_special_const_type (RContext* context)
+{
+    RType* type = GC_NEW (RType);
+
+    type->cell_size = 0;
+    type->name = "special-const";
+    type->write_fn = &r_special_const_write;
+    type->display_fn = &r_special_const_display;
+
+    context->tc5_types [R_SPECIAL_CONST_TAG >> R_TC3_BITS] = type;
+}
+
+RType* r_sexp_get_type (rsexp obj, RContext* context)
+{
+    rint tc3 = (obj & R_TC3_MASK);
+
+    if (R_CELL_TAG == tc3)
+        return R_CELL_TYPE (obj);
+
+    if (R_TC5_TAG == tc3) {
+        rint tc5 = (obj & R_TC5_MASK);
+        return context->tc5_types [tc5 >> R_TC3_BITS];
+    }
+
+    return context->tc3_types [tc3];
+}
+
+void r_register_immediate_types (RContext* context)
+{
+    r_register_boolean_type (context);
+    r_register_special_const_type (context);
+    r_register_pair_type (context);
+    r_register_symbol_type (context);
+}
+

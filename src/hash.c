@@ -63,17 +63,17 @@ static const size_t prime_mod [] = {
     2147483647
 };
 
-static inline ruint r_direct_hash (rconstpointer data)
+static ruint r_direct_hash (rconstpointer data)
 {
     return (ruint)data;
 }
 
-static inline rint r_direct_euqal (rconstpointer lhs, rconstpointer rhs)
+static rint r_direct_euqal (rconstpointer lhs, rconstpointer rhs)
 {
     return lhs == rhs;
 }
 
-static inline void r_hash_table_set_shift (RHashTable* hash_table, rint shift)
+static void r_hash_table_set_shift (RHashTable* hash_table, rint shift)
 {
     ruint i;
     ruint mask;
@@ -89,7 +89,7 @@ static inline void r_hash_table_set_shift (RHashTable* hash_table, rint shift)
     hash_table->mask = mask;
 }
 
-static inline rint find_closest_shift (rint n)
+static rint r_find_closest_shift (rint n)
 {
     rint i;
 
@@ -99,10 +99,10 @@ static inline rint find_closest_shift (rint n)
     return i;
 }
 
-static inline void r_hash_table_set_shift_from_size (RHashTable* hash_table,
-                                                     rint        size)
+static void r_hash_table_set_shift_from_size (RHashTable* hash_table,
+                                              rint        size)
 {
-    rint shift = find_closest_shift (size);
+    rint shift = r_find_closest_shift (size);
 
     if (shift < HASH_TABLE_MINIMUM_SHIFT)
         shift = HASH_TABLE_MINIMUM_SHIFT;
@@ -110,9 +110,9 @@ static inline void r_hash_table_set_shift_from_size (RHashTable* hash_table,
     r_hash_table_set_shift (hash_table, shift);
 }
 
-static inline rsize r_hash_table_get_node (RHashTable*   hash_table,
-                                           rconstpointer key,
-                                           ruint*        hash_return)
+static rsize r_hash_table_get_node (RHashTable*   hash_table,
+                                    rconstpointer key,
+                                    ruint*        hash_return)
 {
     ruint hash_value      = hash_table->hash_fn (key);
     rsize node_index      = hash_value % hash_table->mod;
@@ -149,7 +149,7 @@ static inline rsize r_hash_table_get_node (RHashTable*   hash_table,
     return node_index;
 }
 
-static inline void r_hash_table_resize (RHashTable* hash_table)
+static void r_hash_table_resize (RHashTable* hash_table)
 {
     rsize     old_size;
     ruint*    new_hashes;
@@ -201,7 +201,7 @@ static inline void r_hash_table_resize (RHashTable* hash_table)
     hash_table->n_occupied = hash_table->n_nodes;
 }
 
-static inline void r_hash_table_maybe_resize (RHashTable* hash_table)
+static void r_hash_table_maybe_resize (RHashTable* hash_table)
 {
     rsize occupied = hash_table->n_occupied;
     rsize size     = hash_table->size;
@@ -214,11 +214,11 @@ static inline void r_hash_table_maybe_resize (RHashTable* hash_table)
     }
 }
 
-static inline void r_hash_table_put_node (RHashTable* hash_table,
-                                          rsize       node_index,
-                                          ruint       key_hash,
-                                          rpointer    key,
-                                          rpointer    value)
+static void r_hash_table_put_node (RHashTable* hash_table,
+                                   rsize       node_index,
+                                   ruint       key_hash,
+                                   rpointer    key,
+                                   rpointer    value)
 {
     if (hash_table->keys == hash_table->values && key != value) {
         hash_table->values = malloc (sizeof (rpointer) * hash_table->size);
@@ -316,9 +316,9 @@ void r_hash_table_put (RHashTable* hash_table,
     r_hash_table_put_node (hash_table, node_index, hash_value, key, value);
 }
 
-static inline void r_hash_table_delete_node (RHashTable*   hash_table,
-                                             rconstpointer key,
-                                             rsize         node_index)
+static void r_hash_table_delete_node (RHashTable*   hash_table,
+                                      rconstpointer key,
+                                      rsize         node_index)
 {
     rconstpointer old_key   = hash_table->keys   [node_index];
     rconstpointer old_value = hash_table->values [node_index];

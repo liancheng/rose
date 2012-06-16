@@ -3,7 +3,7 @@
 
 #include "rose/sexp.h"
 
-#define r_symbol_p(s) (((s) & R_TC5_MASK) == R_SYMBOL_TAG)
+#define r_symbol_p(obj) R_TC5_EQ_P ((obj), R_SYMBOL_TAG)
 
 typedef struct RSymbolTable RSymbolTable;
 
@@ -14,12 +14,5 @@ rsexp         r_symbol_new_static (char const* symbol,
                                    RContext*   context);
 char const*   r_symbol_name       (rsexp       obj,
                                    RContext*   context);
-
-#define R_CACHED_SYMBOL(var, name, context)\
-        static rsexp var = R_SEXP_FALSE;\
-        \
-        if (r_false_p (var)) {\
-            var = r_symbol_new_static (name, context);\
-        }
 
 #endif  //  __ROSE_SYMBOL_H__

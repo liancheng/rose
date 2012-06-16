@@ -9,16 +9,16 @@
 
 void display_syntax_error (rsexp error, RContext* context)
 {
-    rsexp irritants = r_error_irritants (error);
+    rsexp irritants = r_error_get_irritants (error);
     rsexp line      = r_car (irritants);
     rsexp column    = r_cdr (irritants);
-    rsexp message   = r_error_message (error);
+    rsexp message   = r_error_get_message (error);
 
     r_port_printf (r_current_input_port (context),
                    "%d:%d %s\n",
                    r_int_from_sexp (line),
                    r_int_from_sexp (column),
-                   r_string_cstr (message));
+                   r_string_to_cstr (message));
 }
 
 int main (int argc, char* argv[])

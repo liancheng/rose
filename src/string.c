@@ -1,40 +1,20 @@
-#include "detail/cell.h"
+#include "detail/sexp.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
+#include <gc/gc.h>
 #include <string.h>
 
-#define SEXP_TO_STRING(obj) R_CELL_VALUE (obj).string
+struct RString {
+    RType* type;
+    rsize  length;
+    char*  data;
+};
 
-char* r_strdup (char const* str)
-{
-    char* res = GC_MALLOC_ATOMIC (strlen (str) * sizeof (char));
-    strcpy (res, str);
-    return res;
-}
+#define SEXP_TO_STRING(obj)   (*((RString*) (obj)))
+#define SEXP_FROM_STRING(str) ((rsexp) (str))
 
-rboolean r_string_p (rsexp obj)
-{
-    return r_cell_p (obj) &&
-           r_cell_get_type (obj) == SEXP_STRING;
-}
-
-rsexp r_string_new (char const* str)
-{
-    R_SEXP_NEW (res, SEXP_STRING);
-
-    SEXP_TO_STRING (res).length = strlen (str) + 1;
-    SEXP_TO_STRING (res).data   = r_strdup (str);
-
-    return res;
-}
-
-char const* r_string_cstr (rsexp obj)
-{
-    return SEXP_TO_STRING (obj).data;
-}
-
-void r_write_string (rsexp port, rsexp obj, rsexp context)
+static void r_write_string (rsexp port, rsexp obj, RContext* context)
 {
     char* p;
 
@@ -49,7 +29,45 @@ void r_write_string (rsexp port, rsexp obj, rsexp context)
     r_write_char (port, '"');
 }
 
-void r_display_string (rsexp port, rsexp obj, rsexp context)
+static void r_display_string (rsexp port, rsexp obj, RContext* context)
 {
     r_port_puts (port, SEXP_TO_STRING (obj).data);
+}
+
+static RType* r_string_type_info ()
+{
+    static RType* type = NULL;
+
+    if (!type) {
+        type = GC_NEW (RType);
+
+        type->cell_size  = sizeof (RString);
+        type->name       = "string";
+        type->write_fn   = r_write_string;
+        type->display_fn = r_display_string;
+    }
+
+    return type;
+}
+
+rsexp r_string_new (char const* str)
+{
+    RString* res = GC_NEW (RString);
+
+    res->type   = r_string_type_info ();
+    res->length = strlen (str) + 1;
+    res->data   = GC_STRDUP (str);
+
+    return SEXP_FROM_STRING (res);
+}
+
+rboolean r_string_p (rsexp obj)
+{
+    return r_cell_p (obj) &&
+           (R_CELL_TYPE (obj) == r_string_type_info ());
+}
+
+char const* r_string_to_cstr (rsexp obj)
+{
+    return SEXP_TO_STRING (obj).data;
 }

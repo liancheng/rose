@@ -5,12 +5,12 @@
 
 typedef struct RVector RVector;
 
-rboolean r_vector_p       (rsexp obj);
 rsexp    r_vector_new     (rsize k);
 rsexp    r_make_vector    (rsize k,
                            rsexp fill);
 rsexp    r_vector         (rsize k,
                            ...);
+rboolean r_vector_p       (rsexp obj);
 rboolean r_vector_equal_p (rsexp lhs,
                            rsexp rhs);
 rsexp    r_vector_ref     (rsexp vector,

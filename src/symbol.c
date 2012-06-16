@@ -1,7 +1,7 @@
 #include "detail/context.h"
 #include "detail/hash.h"
+#include "detail/sexp.h"
 #include "rose/port.h"
-#include "rose/string.h"
 #include "rose/symbol.h"
 
 #include <gc/gc.h>
@@ -20,7 +20,7 @@ struct RSymbolTable {
     rquark      quark_seq_id;
 };
 
-static inline rquark quark_new (char* symbol, RSymbolTable* st)
+static rquark quark_new (char* symbol, RSymbolTable* st)
 {
     rquark quark;
     char** new_quarks;
@@ -40,21 +40,21 @@ static inline rquark quark_new (char* symbol, RSymbolTable* st)
     return quark;
 }
 
-static inline rquark string_to_quark_internal (char const*   symbol,
-                                               rboolean      duplicate,
-                                               RSymbolTable* st)
+static rquark string_to_quark_internal (char const*   symbol,
+                                        rboolean      duplicate,
+                                        RSymbolTable* st)
 {
     rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
 
     if (!quark) {
-        char* str = duplicate ? r_strdup (symbol) : (char*)symbol;
+        char* str = duplicate ? GC_STRDUP (symbol) : (char*)symbol;
         quark = quark_new (str, st);
     }
 
     return quark;
 }
 
-static inline rquark quark_from_symbol (char const* symbol, RContext* context)
+static rquark quark_from_symbol (char const* symbol, RContext* context)
 {
     if (!symbol)
         return 0;
@@ -62,8 +62,8 @@ static inline rquark quark_from_symbol (char const* symbol, RContext* context)
     return string_to_quark_internal (symbol, TRUE, context->symbol_table);
 }
 
-static inline rquark static_symbol_to_quark (char const* symbol,
-                                             RContext*   context)
+static rquark static_symbol_to_quark (char const* symbol,
+                                      RContext*   context)
 {
     if (!symbol)
         return 0;
@@ -71,18 +71,18 @@ static inline rquark static_symbol_to_quark (char const* symbol,
     return string_to_quark_internal (symbol, FALSE, context->symbol_table);
 }
 
-static inline char const* r_quark_to_symbol (rquark quark, RContext* context)
+static char const* r_quark_to_symbol (rquark quark, RContext* context)
 {
     RSymbolTable* st = context->symbol_table;
     return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
 }
 
-static inline void symbol_table_finalize (rpointer obj, rpointer client_data)
+static void symbol_table_finalize (rpointer obj, rpointer client_data)
 {
     r_hash_table_free (((RSymbolTable*) obj)->quark_ht);
 }
 
-ruint r_str_hash (rconstpointer str)
+static ruint r_str_hash (rconstpointer str)
 {
     ruint h = 5381;
     char const* p;
@@ -93,9 +93,14 @@ ruint r_str_hash (rconstpointer str)
     return h;
 }
 
-rboolean r_str_equal (rconstpointer lhs, rconstpointer rhs)
+static rboolean r_str_equal (rconstpointer lhs, rconstpointer rhs)
 {
     return 0 == strcmp ((char const*) lhs, (char const*) rhs);
+}
+
+static void r_symbol_write (rsexp port, rsexp obj, RContext* context)
+{
+    r_port_puts (port, r_symbol_name (obj, context));
 }
 
 RSymbolTable* r_symbol_table_new ()
@@ -134,12 +139,14 @@ char const* r_symbol_name (rsexp obj, RContext* context)
     return r_quark_to_symbol (SEXP_TO_QUARK (obj), context);
 }
 
-void r_write_symbol (rsexp port, rsexp obj, RContext* context)
+void r_register_symbol_type (RContext* context)
 {
-    r_port_puts (port, r_symbol_name (obj, context));
-}
+    RType* type = GC_NEW (RType);
 
-void r_display_symbol (rsexp port, rsexp obj, RContext* context)
-{
-    r_write_symbol (port, obj, context);
+    type->cell_size  = 0;
+    type->name       = "symbol";
+    type->write_fn   = r_symbol_write;
+    type->display_fn = r_symbol_write;
+
+    context->tc5_types [R_SYMBOL_TAG >> R_TC3_BITS] = type;
 }

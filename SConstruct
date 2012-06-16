@@ -9,7 +9,7 @@ base = Environment(tools=['default', 'quex'],
 
 clang = base.Clone(CC='clang')
 gcc   = base.Clone(CC='gcc')
-env   = clang;
+env   = clang
 
 rsi_bin = env.SConscript(dirs='src',
                          exports='env',

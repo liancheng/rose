@@ -1,36 +1,83 @@
-#include "detail/cell.h"
+#include "detail/sexp.h"
 #include "rose/error.h"
+#include "rose/port.h"
 #include "rose/string.h"
+#include "rose/writer.h"
 
 #include <assert.h>
+#include <gc/gc.h>
 
-#define SEXP_TO_ERROR(s) R_CELL_VALUE (s).error
+struct RError {
+    RType* type;
+    rsexp  message;
+    rsexp  irritants;
+};
+
+#define SEXP_TO_ERROR(obj)     (*((RError*) obj))
+#define SEXP_FROM_ERROR(error) ((rsexp) error)
+
+static void r_error_write (rsexp port, rsexp obj, RContext* context)
+{
+    assert (r_error_p (obj));
+
+    r_port_puts (port, "error: ");
+    r_write (port, r_error_get_message (obj), context);
+    r_port_puts (port, " irritants: ");
+    r_write (port, r_error_get_irritants (obj), context);
+}
+
+static void r_error_display (rsexp port, rsexp obj, RContext* context)
+{
+    assert (r_error_p (obj));
+
+    r_port_puts (port, "error: ");
+    r_display (port, r_error_get_message (obj), context);
+    r_port_puts (port, " irritants: ");
+    r_display (port, r_error_get_irritants (obj), context);
+}
+
+static RType* r_error_type_info ()
+{
+    static RType* type = NULL;
+
+    if (!type) {
+        type = GC_NEW (RType);
+
+        type->cell_size  = sizeof (RError);
+        type->name       = "port";
+        type->write_fn   = r_error_write;
+        type->display_fn = r_error_display;
+    }
+
+    return type;
+}
+
+rsexp r_error_new (rsexp message, rsexp irritants)
+{
+    assert (r_string_p (message));
+
+    RError* res = GC_NEW (RError);
+
+    res->type      = r_error_type_info ();
+    res->message   = message;
+    res->irritants = irritants;
+
+    return SEXP_FROM_ERROR (res);
+}
 
 rboolean r_error_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           r_cell_get_type (obj) == SEXP_ERROR;
+           R_CELL_TYPE (obj) == r_error_type_info ();
 }
 
-rsexp r_error (rsexp message, rsexp irritants)
-{
-    assert (r_string_p (message));
-
-    R_SEXP_NEW (res, SEXP_ERROR);
-
-    SEXP_TO_ERROR (res).message = message;
-    SEXP_TO_ERROR (res).irritants = irritants;
-
-    return res;
-}
-
-rsexp r_error_message (rsexp error)
+rsexp r_error_get_message (rsexp error)
 {
     assert (r_error_p (error));
     return SEXP_TO_ERROR (error).message;
 }
 
-rsexp r_error_irritants (rsexp error)
+rsexp r_error_get_irritants (rsexp error)
 {
     assert (r_error_p (error));
     return SEXP_TO_ERROR (error).irritants;
