@@ -18,6 +18,8 @@
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
+#include <string.h>
+
 #define YYSTYPE rsexp
 
 #define KEYWORD(name) r_keyword ((name), state->context)
@@ -71,9 +73,11 @@ datum_seq
     ;
 
 simple_datum
-    : TKN_IDENTIFIER            { $$ = $1; }
+    : TKN_BOOLEAN               { $$ = $1; }
+    | TKN_NUMBER                { $$ = $1; }
+    | TKN_CHARACTER             { $$ = $1; }
     | TKN_STRING                { $$ = $1; }
-    | TKN_BOOLEAN               { $$ = $1; }
+    | TKN_IDENTIFIER            { $$ = $1; }
     ;
 
 compound_datum
@@ -143,6 +147,25 @@ static RToken* next_token (RLexer* lexer, rsexp port)
     return copy_token (token);
 }
 
+static char lexeme_to_char (char const* text)
+{
+    rint len = strlen (text);
+
+    if (len > 1) {
+        if (0 == strcmp (text, "space"))     return ' ';
+        if (0 == strcmp (text, "tab"))       return '\t';
+        if (0 == strcmp (text, "newline"))   return '\n';
+        if (0 == strcmp (text, "return"))    return '\r';
+        if (0 == strcmp (text, "null"))      return '\0';
+        if (0 == strcmp (text, "alarm"))     return '\a';
+        if (0 == strcmp (text, "backspace")) return '\b';
+        if (0 == strcmp (text, "escape"))    return '\x1b';
+        if (0 == strcmp (text, "delete"))    return '\x7f';
+    }
+
+    return *text;
+}
+
 void rose_yyerror (RReaderState* state, char const* message)
 {
     fprintf (stderr, "%s\n", message);
@@ -169,6 +192,14 @@ int rose_yylex (YYSTYPE* yylval, RReaderState* state)
 
         case TKN_BOOLEAN:
             *yylval = (text [0] == 't') ? R_TRUE : R_FALSE;
+            break;
+
+        case TKN_NUMBER:
+            *yylval = r_int_to_sexp (atoi (text));
+            break;
+
+        case TKN_CHARACTER:
+            *yylval = r_char_to_sexp (lexeme_to_char (text));
             break;
     }
 

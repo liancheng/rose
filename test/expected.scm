@@ -15,3 +15,12 @@
 #()
 #(a)
 #(a b)
+#\a
+#\space
+#\tab
+#\alarm
+#\newline
+#\backspace
+#\delete
+#\return
+#\escape

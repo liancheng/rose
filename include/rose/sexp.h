@@ -35,6 +35,8 @@ typedef void (*RDisplayFunction) (rsexp, rsexp, RContext*);
 
 #define R_CELL_TAG              0x00
 #define R_INT30_TAG             0x01
+#define R_INT30_EVEN_TAG        0x01
+#define R_INT30_ODD_TAG         0x05
 #define R_PAIR_TAG              0x02
 #define R_FIXNUM_TAG            0x03
 #define R_BOOLEAN_TAG           0x06
@@ -65,6 +67,7 @@ typedef void (*RDisplayFunction) (rsexp, rsexp, RContext*);
 #define r_false_p(obj)          ((obj) == R_FALSE)
 #define r_true_p(obj)           ((obj) != R_FALSE)
 
+#define r_char_p(obj)           R_TC5_EQ_P ((obj), R_CHARACTER_TAG)
 #define r_special_const_p(obj)  R_TC5_EQ_P((obj), R_SPECIAL_CONST_TAG)
 #define r_null_p(obj)           ((obj) == R_NULL)
 #define r_eof_object_p(obj)     ((obj) == R_EOF)
@@ -77,5 +80,7 @@ typedef void (*RDisplayFunction) (rsexp, rsexp, RContext*);
 #define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
+#define r_char_to_sexp(c)       (((c) << R_TC5_BITS) | R_CHARACTER_TAG)
+#define r_char_from_sexp(obj)   ((obj) >> R_TC5_BITS)
 
 #endif  //  __ROSE_SEXP_H__
