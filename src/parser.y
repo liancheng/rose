@@ -10,6 +10,7 @@
 
 #include "detail/context.h"
 #include "detail/reader.h"
+#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/reader.h"
@@ -147,23 +148,24 @@ static RToken* next_token (RLexer* lexer, rsexp port)
     return copy_token (token);
 }
 
-static char lexeme_to_char (char const* text)
+static rsexp lexeme_to_char (char const* text)
 {
     rint len = strlen (text);
+    char res = *text;
 
     if (len > 1) {
-        if (0 == strcmp (text, "space"))     return ' ';
-        if (0 == strcmp (text, "tab"))       return '\t';
-        if (0 == strcmp (text, "newline"))   return '\n';
-        if (0 == strcmp (text, "return"))    return '\r';
-        if (0 == strcmp (text, "null"))      return '\0';
-        if (0 == strcmp (text, "alarm"))     return '\a';
-        if (0 == strcmp (text, "backspace")) return '\b';
-        if (0 == strcmp (text, "escape"))    return '\x1b';
-        if (0 == strcmp (text, "delete"))    return '\x7f';
+        if      (0 == strcmp (text, "space"))     res = ' ';
+        else if (0 == strcmp (text, "tab"))       res = '\t';
+        else if (0 == strcmp (text, "newline"))   res = '\n';
+        else if (0 == strcmp (text, "return"))    res = '\r';
+        else if (0 == strcmp (text, "null"))      res = '\0';
+        else if (0 == strcmp (text, "alarm"))     res = '\a';
+        else if (0 == strcmp (text, "backspace")) res = '\b';
+        else if (0 == strcmp (text, "escape"))    res = '\x1b';
+        else if (0 == strcmp (text, "delete"))    res = '\x7f';
     }
 
-    return *text;
+    return r_char_to_sexp (res);
 }
 
 void rose_yyerror (RReaderState* state, char const* message)
@@ -195,11 +197,11 @@ int rose_yylex (YYSTYPE* yylval, RReaderState* state)
             break;
 
         case TKN_NUMBER:
-            *yylval = r_int_to_sexp (atoi (text));
+            *yylval = r_string_to_number (text);
             break;
 
         case TKN_CHARACTER:
-            *yylval = r_char_to_sexp (lexeme_to_char (text));
+            *yylval = lexeme_to_char (text);
             break;
     }
 

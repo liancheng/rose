@@ -6,6 +6,8 @@
 
 void r_register_pair_type   (RContext* context);
 void r_register_symbol_type (RContext* context);
+void r_register_fixnum_type (RContext* context);
+void r_register_flonum_type (RContext* context);
 
 static void r_boolean_write (rsexp port, rsexp obj, RContext* context)
 {
@@ -136,4 +138,6 @@ void r_register_immediate_types (RContext* context)
     r_register_symbol_type (context);
     r_register_int30_type (context);
     r_register_character_type (context);
+    r_register_fixnum_type (context);
+    r_register_flonum_type (context);
 }

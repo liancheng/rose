@@ -1,14 +1,10 @@
-#include "rose/sexp.h"
-
+#include <gc/gc.h>
 #include <gtest/gtest.h>
 
-TEST(test_sexp, SEXP_NULL_should_succeed)
+int main (int argc, char* argv[])
 {
-    ASSERT_TRUE(SEXP_NULL_P(SEXP_NULL));
-}
-
-int main(int argc, char* argv[])
-{
+    GC_INIT ();
     testing::InitGoogleTest(&argc, argv);
+
     return RUN_ALL_TESTS();
 }

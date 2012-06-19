@@ -1,0 +1,10 @@
+Import('env', 'rose_lib')
+
+env = env.Clone()
+env.Prepend(LIBS=[rose_lib])
+
+rsi_bin = env.Program(target='rsi', source=[Glob('*.c')])
+
+Return('rsi_bin')
+
+# vim:ft=python

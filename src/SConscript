@@ -1,8 +1,7 @@
 Import('env')
 
 env = env.Clone()
-env.Append(LIBS='gc',
-           CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
+env.Append(CPPDEFINES='QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
            YACCFLAGS='-d')
 
 lex_src = env.Quex(source='lexer.qx',
@@ -15,13 +14,15 @@ lex_src = env.Quex(source='lexer.qx',
                               '--token-class token'])
 
 parser_src = env.CFile(source='parser.y')
-rsi_obj = env.Object(source=[Glob('*.c'), Glob('quex/*.c')])
-rsi_bin = env.Program(target='rsi', source=rsi_obj)
 
-env.Depends(target=rsi_obj, dependency=lex_src)
-env.Depends(target=rsi_obj, dependency=parser_src)
+rose_lib = env.StaticLibrary(target='rose',
+                             source=[Glob('*.c'),
+                                     Glob('quex/*.c')])
+
 env.Depends(target=lex_src, dependency=parser_src)
+env.Depends(target=rose_lib, dependency=lex_src)
+env.Depends(target=rose_lib, dependency=parser_src)
 
-Return('rsi_bin')
+Return('rose_lib')
 
 # vim:ft=python
