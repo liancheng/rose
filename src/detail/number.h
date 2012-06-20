@@ -20,6 +20,8 @@ struct RNumberReader {
 
     rboolean    exact;
     rint        radix;
+    rboolean    seen_exact;
+    rboolean    seen_radix;
 
     jmp_buf     error_jmp;
 };

@@ -48,8 +48,8 @@ RContext* r_context_new ()
 
     context->symbol_table        = r_symbol_table_new ();
     context->env                 = r_env_new ();
-    context->current_input_port  = r_stdin_port ();
-    context->current_output_port = r_stdout_port ();
+    context->current_input_port  = r_stdin_port (context);
+    context->current_output_port = r_stdout_port (context);
 
     r_register_immediate_types (context);
     r_register_keywords (context);

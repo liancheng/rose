@@ -5,12 +5,12 @@
 #include <gc/gc.h>
 #include <string.h>
 
-static void r_fixnum_write (rsexp port, rsexp obj, RContext* context)
+static void r_fixnum_write (rsexp port, rsexp obj)
 {
     r_port_puts (port, "#<fixnum>");
 }
 
-static void r_flonum_write (rsexp port, rsexp obj, RContext* context)
+static void r_flonum_write (rsexp port, rsexp obj)
 {
     r_port_puts (port, "#<flonum>");
 }
@@ -46,7 +46,7 @@ char r_number_lookahead (RNumberReader* reader, rint k)
 
 rboolean r_number_read_exactness (RNumberReader* reader)
 {
-    rboolean res = TRUE;
+    rboolean pass = TRUE;
 
     if ('#' != r_number_lookahead (reader, 0))
         return FALSE;
@@ -61,19 +61,21 @@ rboolean r_number_read_exactness (RNumberReader* reader)
             break;
 
         default:
-            res = FALSE;
+            pass = FALSE;
             break;
     }
 
-    if (res)
+    if (pass) {
         r_number_consume_n (reader, 2);
+        reader->seen_exact = TRUE;
+    }
 
-    return res;
+    return pass;
 }
 
 rboolean r_number_read_radix (RNumberReader* reader)
 {
-    rboolean res = TRUE;
+    rboolean pass= TRUE;
 
     if ('#' != r_number_lookahead (reader, 0))
         return FALSE;
@@ -96,14 +98,16 @@ rboolean r_number_read_radix (RNumberReader* reader)
             break;
 
         default:
-            res = FALSE;
+            pass = FALSE;
             break;
     }
 
-    if (res)
+    if (pass) {
         r_number_consume_n (reader, 2);
+        reader->seen_radix = TRUE;
+    }
 
-    return res;
+    return pass;
 }
 
 rboolean r_number_read_prefix (RNumberReader* reader)
@@ -118,26 +122,12 @@ rboolean r_number_read_prefix (RNumberReader* reader)
         return TRUE;
     }
 
-    // <prefix> is optional
-    return TRUE;
-}
-
-rboolean r_number_read_polar (RNumberReader* reader)
-{
-    return TRUE;
-}
-
-rboolean r_number_read_rectangular (RNumberReader* reader)
-{
     return TRUE;
 }
 
 rboolean r_number_read (RNumberReader* reader)
 {
-    if (r_number_read_polar (reader))
-        return TRUE;
-
-    if (r_number_read_rectangular (reader))
+    if (r_number_read_prefix (reader))
         return TRUE;
 
     return FALSE;
@@ -149,8 +139,10 @@ RNumberReader* r_number_reader_new ()
 
     memset (reader, 0, sizeof (RNumberReader));
 
-    reader->exact = TRUE;
-    reader->radix = 10;
+    reader->exact      = TRUE;
+    reader->radix      = 10;
+    reader->seen_exact = FALSE;
+    reader->seen_radix = FALSE;
 
     return reader;
 }

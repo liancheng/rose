@@ -9,7 +9,7 @@ void r_register_symbol_type (RContext* context);
 void r_register_fixnum_type (RContext* context);
 void r_register_flonum_type (RContext* context);
 
-static void r_boolean_write (rsexp port, rsexp obj, RContext* context)
+static void r_boolean_write (rsexp port, rsexp obj)
 {
     r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
 }
@@ -26,7 +26,7 @@ static void r_register_boolean_type (RContext* context)
     context->tc3_types [R_BOOLEAN_TAG] = type;
 }
 
-static void r_special_const_write (rsexp port, rsexp obj, RContext* context)
+static void r_special_const_write (rsexp port, rsexp obj)
 {
     static char* str[] = {
         "()",
@@ -38,7 +38,7 @@ static void r_special_const_write (rsexp port, rsexp obj, RContext* context)
     r_port_puts (port, str [obj >> R_TC5_BITS]);
 }
 
-static void r_special_const_display (rsexp port, rsexp obj, RContext* context)
+static void r_special_const_display (rsexp port, rsexp obj)
 {
     r_port_puts (port, r_null_p (obj) ? "()" : "");
 }
@@ -55,7 +55,7 @@ static void r_register_special_const_type (RContext* context)
     context->tc5_types [R_SPECIAL_CONST_TAG >> R_TC3_BITS] = type;
 }
 
-static void r_int30_write (rsexp port, rsexp obj, RContext* context)
+static void r_int30_write (rsexp port, rsexp obj)
 {
     r_port_printf (port, "%d", r_int_from_sexp (obj));
 }
@@ -73,7 +73,7 @@ static void r_register_int30_type (RContext* context)
     context->tc3_types [R_INT30_ODD_TAG] = type;
 }
 
-static void r_character_write (rsexp port, rsexp obj, RContext* context)
+static void r_character_write (rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
     char* name = NULL;
@@ -98,7 +98,7 @@ static void r_character_write (rsexp port, rsexp obj, RContext* context)
         r_write_char (port, ch);
 }
 
-static void r_character_display (rsexp port, rsexp obj, RContext* context)
+static void r_character_display (rsexp port, rsexp obj)
 {
     r_write_char (port, r_char_from_sexp (obj));
 }

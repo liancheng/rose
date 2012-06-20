@@ -41,12 +41,12 @@ RReaderState* r_reader_new (RContext* context)
 
 RReaderState* r_reader_from_file (char const* filename, RContext* context)
 {
-    return r_reader_from_port (r_open_input_file (filename), context);
+    return r_reader_from_port (r_open_input_file (filename, context), context);
 }
 
 RReaderState* r_reader_from_string (char const* string, RContext* context)
 {
-    return r_reader_from_port (r_open_input_string (string), context);
+    return r_reader_from_port (r_open_input_string (string, context), context);
 }
 
 RReaderState* r_reader_from_port (rsexp port, RContext* context)

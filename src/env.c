@@ -33,7 +33,7 @@ static inline void env_finalize (rpointer obj, rpointer client_data)
     r_hash_table_free (SEXP_TO_ENV ((rsexp) obj).bindings);
 }
 
-static void r_env_write (rsexp port, rsexp obj, RContext* context)
+static void r_env_write (rsexp port, rsexp obj)
 {
     r_port_printf (port, "#<%s>", r_env_type_info ()->name);
 }

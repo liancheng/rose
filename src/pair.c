@@ -17,7 +17,7 @@ struct RPair {
 #define PAIR_TO_SEXP(ptr) (((rsexp) (ptr)) | R_PAIR_TAG)
 #define SEXP_TO_PAIR(obj) ((RPair*) ((obj) & (~R_PAIR_TAG)))
 
-typedef void (*ROutputFunction) (rsexp, rsexp, RContext*);
+typedef void (*ROutputFunction) (rsexp, rsexp);
 
 static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
 {
@@ -29,30 +29,28 @@ static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
 
 static void output_cdr (rsexp           port,
                         rsexp           obj,
-                        ROutputFunction output_fn,
-                        RContext*       context)
+                        ROutputFunction output_fn)
 {
     if (r_pair_p (obj)) {
         r_port_puts (port, " ");
-        output_fn (port, r_car (obj), context);
-        output_cdr (port, r_cdr (obj), output_fn, context);
+        output_fn (port, r_car (obj));
+        output_cdr (port, r_cdr (obj), output_fn);
     }
     else if (!r_null_p (obj)) {
         r_port_puts (port, " . ");
-        output_fn (port, obj, context);
+        output_fn (port, obj);
     }
 }
 
 static void output_pair (rsexp           port,
                          rsexp           obj,
-                         ROutputFunction output_fn,
-                         RContext*       context)
+                         ROutputFunction output_fn)
 {
     assert (r_pair_p (obj));
 
     r_port_puts (port, "(");
-    output_fn (port, r_car (obj), context);
-    output_cdr (port, r_cdr (obj), output_fn, context);
+    output_fn (port, r_car (obj));
+    output_cdr (port, r_cdr (obj), output_fn);
     r_port_puts (port, ")");
 }
 
@@ -151,14 +149,14 @@ rsize r_length (rsexp list)
     return r_null_p (list) ? 0 : 1 + r_length (r_cdr (list));
 }
 
-void r_pair_write (rsexp port, rsexp obj, RContext* context)
+void r_pair_write (rsexp port, rsexp obj)
 {
-    output_pair (port, obj, r_write, context);
+    output_pair (port, obj, r_write);
 }
 
-void r_pair_display (rsexp port, rsexp obj, RContext* context)
+void r_pair_display (rsexp port, rsexp obj)
 {
-    output_pair (port, obj, r_display, context);
+    output_pair (port, obj, r_display);
 }
 
 void r_register_pair_type (RContext* context)

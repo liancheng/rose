@@ -20,20 +20,20 @@ static void r_error_write (rsexp port, rsexp obj, RContext* context)
 {
     assert (r_error_p (obj));
 
-    r_port_puts (port, "error: ");
-    r_write (port, r_error_get_message (obj), context);
-    r_port_puts (port, " irritants: ");
-    r_write (port, r_error_get_irritants (obj), context);
+    r_format (port,
+              "error: ~s, irritants: ~s",
+              r_error_get_message (obj),
+              r_error_get_irritants (obj));
 }
 
 static void r_error_display (rsexp port, rsexp obj, RContext* context)
 {
     assert (r_error_p (obj));
 
-    r_port_puts (port, "error: ");
-    r_display (port, r_error_get_message (obj), context);
-    r_port_puts (port, " irritants: ");
-    r_display (port, r_error_get_irritants (obj), context);
+    r_format (port,
+              "error: ~a, irritants: ~a",
+              r_error_get_message (obj),
+              r_error_get_irritants (obj));
 }
 
 static RType* r_error_type_info ()

@@ -18,44 +18,41 @@ struct RVector {
 #define SEXP_TO_VECTOR(obj)   (*((RVector*) (obj)))
 #define SEXP_FROM_VECTOR(obj) ((rsexp) obj)
 
-typedef void (*ROutputFunction) (rsexp, rsexp, RContext*);
+typedef void (*ROutputFunction) (rsexp, rsexp);
 
 rboolean r_vector_p (rsexp obj);
 
 static void output_vector (rsexp           port,
                            rsexp           obj,
-                           ROutputFunction output_fn,
-                           RContext*       context)
+                           ROutputFunction output_fn)
 {
-    rsize i;
-    rsize length;
-
     assert (r_vector_p (obj));
+
+    rsize i;
+    rsize length = r_vector_length (obj);
 
     r_port_puts (port, "#(");
 
-    length = r_vector_length (obj);
-
     if (length) {
-        output_fn (port, r_vector_ref (obj, 0), context);
+        output_fn (port, r_vector_ref (obj, 0));
 
         for (i = 1; i < length; ++i) {
             r_port_puts (port, " ");
-            output_fn (port, r_vector_ref (obj, i), context);
+            output_fn (port, r_vector_ref (obj, i));
         }
     }
 
     r_port_puts (port, ")");
 }
 
-static void r_vector_write (rsexp port, rsexp obj, RContext* context)
+static void r_vector_write (rsexp port, rsexp obj)
 {
-    output_vector (port, obj, r_write, context);
+    output_vector (port, obj, r_write);
 }
 
-static void r_vector_display (rsexp port, rsexp obj, RContext* context)
+static void r_vector_display (rsexp port, rsexp obj)
 {
-    output_vector (port, obj, r_display, context);
+    output_vector (port, obj, r_display);
 }
 
 static RType* r_vector_type_info ()

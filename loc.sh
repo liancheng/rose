@@ -1,3 +1,3 @@
 #!/bin/sh
 
-find include src -name "*.[chy]" -o -name "*.qx" | xargs wc -l
+find include src tools -name "*.[chy]" -o -name "*.qx" | xargs wc -l

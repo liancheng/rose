@@ -10,15 +10,12 @@
 void display_syntax_error (rsexp error, RContext* context)
 {
     rsexp irritants = r_error_get_irritants (error);
-    rsexp line      = r_car (irritants);
-    rsexp column    = r_cdr (irritants);
-    rsexp message   = r_error_get_message (error);
 
-    r_port_printf (r_current_input_port (context),
-                   "%d:%d %s\n",
-                   r_int_from_sexp (line),
-                   r_int_from_sexp (column),
-                   r_string_to_cstr (message));
+    r_format (r_current_input_port (context),
+              "~a:~a ~a~%",
+              r_car (irritants),
+              r_cdr (irritants),
+              r_error_get_message (error));
 }
 
 int main (int argc, char* argv[])
@@ -33,7 +30,7 @@ int main (int argc, char* argv[])
     context = r_context_new ();
 
     if (argc > 1) {
-        rsexp port = r_open_input_file (argv [1]);
+        rsexp port = r_open_input_file (argv [1], context);
         r_set_current_input_port_x (port, context);
     }
 
@@ -53,8 +50,7 @@ int main (int argc, char* argv[])
             break;
         }
 
-        r_write (output, datum, context);
-        r_write_char (output, '\n');
+        r_format (output, "~s~%", datum);
     }
 
     return EXIT_SUCCESS;

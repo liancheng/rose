@@ -98,9 +98,9 @@ static rboolean r_str_equal (rconstpointer lhs, rconstpointer rhs)
     return 0 == strcmp ((char const*) lhs, (char const*) rhs);
 }
 
-static void r_symbol_write (rsexp port, rsexp obj, RContext* context)
+static void r_symbol_write (rsexp port, rsexp obj)
 {
-    r_port_puts (port, r_symbol_name (obj, context));
+    r_port_puts (port, r_symbol_name (obj, r_port_get_context (port)));
 }
 
 RSymbolTable* r_symbol_table_new ()

@@ -9,8 +9,8 @@ typedef rword rsexp;
 typedef struct RType RType;
 typedef struct RCell RCell;
 
-typedef void (*RWriteFunction)   (rsexp, rsexp, RContext*);
-typedef void (*RDisplayFunction) (rsexp, rsexp, RContext*);
+typedef void (*RWriteFunction)   (rsexp, rsexp);
+typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 /*
  * Simple tagging.  Ends in:
@@ -78,6 +78,9 @@ typedef void (*RDisplayFunction) (rsexp, rsexp, RContext*);
 
 #define r_int_to_sexp(n)        ((rsexp) (((n) << 2) | R_INT30_TAG))
 #define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
+#define R_ZERO                  r_int_to_sexp (0)
+#define R_ONE                   r_int_to_sexp (1)
+
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 #define r_char_to_sexp(c)       (((c) << R_TC5_BITS) | R_CHARACTER_TAG)
