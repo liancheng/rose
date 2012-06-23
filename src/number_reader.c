@@ -16,7 +16,10 @@
 #define NEXT\
         r_number_reader_next (reader)
 
-#define LOOKAHEAD(n)\
+#define LOOKAHEAD\
+        r_number_reader_lookahead (reader, 0u)
+
+#define LOOKAHEAD_N(n)\
         r_number_reader_lookahead (reader, (n))
 
 #define CONSUME\
@@ -206,10 +209,10 @@ rboolean r_number_read_prefix (RNumberReader* reader)
  */
 rboolean r_number_read_radix (RNumberReader* reader)
 {
-    if ('#' != LOOKAHEAD (0u))
+    if ('#' != LOOKAHEAD)
         return FALSE;
 
-    switch (LOOKAHEAD (1u)) {
+    switch (LOOKAHEAD_N (1u)) {
         case 'b':
             reader->radix = 2;
             break;
@@ -241,10 +244,10 @@ rboolean r_number_read_radix (RNumberReader* reader)
  */
 rboolean r_number_read_exactness (RNumberReader* reader)
 {
-    if ('#' != LOOKAHEAD (0u))
+    if ('#' != LOOKAHEAD)
         return FALSE;
 
-    switch (LOOKAHEAD (1u)) {
+    switch (LOOKAHEAD_N (1u)) {
         case 'e':
             reader->exact = TRUE;
             break;
@@ -627,6 +630,11 @@ clear:
     return success;
 }
 
+/**
+ *  ureal_uint
+ *      : uinteger
+ *      ;
+ */
 rboolean r_number_read_ureal_uint (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t uinteger;
@@ -666,7 +674,7 @@ rboolean r_number_read_suffix (RNumberReader* reader, rint* exponent)
     MARK;
     *exponent = 0;
 
-    if (!strchr ("esfdl", LOOKAHEAD (0u))) {
+    if (!strchr ("esfdl", LOOKAHEAD)) {
         REWIND;
         return TRUE;
     }
@@ -702,7 +710,7 @@ rboolean r_number_read_uinteger (RNumberReader* reader, mpz_t uinteger)
     if (!r_number_read_digits (reader, uinteger))
         return REWIND;
 
-    if ('.' == LOOKAHEAD (0u))
+    if ('.' == LOOKAHEAD)
         return REWIND;
 
     return TRUE;
@@ -737,7 +745,7 @@ rboolean r_number_read_digits (RNumberReader* reader, mpz_t digits)
  */
 rboolean r_number_read_digit (RNumberReader* reader, ruint* digit)
 {
-    if (!xdigit_to_uint (LOOKAHEAD (0u), digit))
+    if (!xdigit_to_uint (LOOKAHEAD, digit))
         return FALSE;
 
     if (*digit >= reader->radix)
@@ -755,7 +763,7 @@ rboolean r_number_read_digit (RNumberReader* reader, ruint* digit)
  */
 rboolean r_number_read_sign (RNumberReader* reader, rint* sign)
 {
-    switch (LOOKAHEAD (0u)) {
+    switch (LOOKAHEAD) {
         case '+':
             CONSUME;
             *sign = 1;
