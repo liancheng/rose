@@ -41,9 +41,69 @@ define
     peculiar_identifier         "+"|"-"|"..."
     identifier                  {initial}{subsequent}*|{peculiar_identifier}
 
+    exactness                   #[ei]
+    sign                        [+\-]
+
+    bin_radix                   #b
+    bin_prefix                  {exactness}{bin_radix}
+                                |{bin_radix}{exactness}?
+    bin_digit                   0|1
+    bin_uinteger                {bin_digit}+#*
+    bin_ureal                   {bin_uinteger}("/"{bin_uinteger})?
+    bin_real                    {sign}?{bin_ureal}
+    bin_complex                 {bin_real}@{bin_real}
+                                |{bin_real}?{sign}{bin_ureal}?"i"
+                                |{bin_real}
+    bin_number                  {bin_prefix}{bin_complex}
+
+    oct_radix                   #o
+    oct_prefix                  {exactness}{oct_radix}
+                                |{oct_radix}{exactness}?
+    oct_digit                   [0-7]
+    oct_uinteger                {oct_digit}+#*
+    oct_ureal                   {oct_uinteger}("/"{oct_uinteger})?
+    oct_real                    {sign}?{oct_ureal}
+    oct_complex                 {oct_real}@{oct_real}
+                                |{oct_real}?{sign}{oct_ureal}?"i"
+                                |{oct_real}
+    oct_number                  {oct_prefix}{oct_complex}
+
+    dec_radix                   #d
+    dec_prefix                  {exactness}{dec_radix}?
+                                |{dec_radix}{exactness}?
+    dec_digit                   [0-9]
+    dec_uinteger                {dec_digit}+#*
+    exponent_marker             [esfdl]
+    suffix                      {exponent_marker}{sign}?{dec_digit}+
+    decimal                     ("."{dec_digit}+#*
+                                 |{dec_digit}+"."{dec_digit}*#*
+                                 |{dec_digit}+#+"."#*
+                                 |{dec_uinteger}
+                                ){suffix}?
+    dec_ureal                   {dec_uinteger}("/"{dec_uinteger})?|{decimal}
+    dec_real                    {sign}?{dec_ureal}
+    dec_complex                 {dec_real}@{dec_real}
+                                |{dec_real}?{sign}{dec_ureal}?"i"
+                                |{dec_real}
+    dec_number                  {dec_prefix}?{dec_complex}
+
+    hex_radix                   #x
+    hex_prefix                  {exactness}{hex_radix}
+                                |{hex_radix}{exactness}?
+    hex_digit                   [0-9a-f]
+    hex_uinteger                {hex_digit}+"#"*
+    hex_ureal                   {hex_uinteger}("/"{hex_uinteger})?
+    hex_real                    {sign}?{hex_ureal}
+    hex_complex                 {hex_real}@{hex_real}
+                                |{hex_real}?{sign}{hex_ureal}?"i"
+                                |{hex_real}
+    hex_number                  {hex_prefix}{hex_complex}
 
     /* Number */
-    number                      [0-9]+
+    number                      {bin_number}
+                                |{oct_number}
+                                |{dec_number}
+                                |{hex_number}
 
     /* Character */
     character_name              "space"|"newline"

@@ -14,8 +14,8 @@ struct RPair {
     rsexp cdr;
 };
 
-#define PAIR_TO_SEXP(ptr) (((rsexp) (ptr)) | R_PAIR_TAG)
-#define SEXP_TO_PAIR(obj) ((RPair*) ((obj) & (~R_PAIR_TAG)))
+#define PAIR_TO_SEXP(pair)  (((rsexp) (pair)) | R_PAIR_TAG)
+#define PAIR_FROM_SEXP(obj) ((RPair*) ((obj) & (~R_PAIR_TAG)))
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
@@ -68,26 +68,26 @@ rsexp r_cons (rsexp car, rsexp cdr)
 rsexp r_car (rsexp obj)
 {
     assert (r_pair_p (obj));
-    return SEXP_TO_PAIR (obj)->car;
+    return PAIR_FROM_SEXP (obj)->car;
 }
 
 rsexp r_cdr (rsexp obj)
 {
     assert (r_pair_p (obj));
-    return SEXP_TO_PAIR (obj)->cdr;
+    return PAIR_FROM_SEXP (obj)->cdr;
 }
 
 rsexp r_set_car_x (rsexp pair, rsexp obj)
 {
     assert (r_pair_p (pair));
-    SEXP_TO_PAIR (pair)->car = obj;
+    PAIR_FROM_SEXP (pair)->car = obj;
     return R_UNSPECIFIED;
 }
 
 rsexp r_set_cdr_x (rsexp pair, rsexp obj)
 {
     assert (r_pair_p (pair));
-    SEXP_TO_PAIR (pair)->cdr = obj;
+    PAIR_FROM_SEXP (pair)->cdr = obj;
     return R_UNSPECIFIED;
 }
 

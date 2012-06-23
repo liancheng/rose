@@ -67,7 +67,7 @@ void r_array_push_back (RArray* array, rpointer value)
 
 void r_array_pop_back (RArray* array)
 {
-    if (0 == array->size)
+    if (0u == array->size)
         return;
 
     array->size--;
@@ -84,6 +84,15 @@ void r_array_push_front_n (RArray* array, rpointer values, uint n)
 void r_array_push_front (RArray* array, rpointer value)
 {
     r_array_push_front_n (array, &value, 1u);
+}
+
+void r_array_pop_front (RArray* array)
+{
+    if (0u == array->size)
+        return;
+
+    array->size--;
+    memmove (array->data + 1, array->data, sizeof (rpointer) * array->size);
 }
 
 uint r_array_size (RArray* array)

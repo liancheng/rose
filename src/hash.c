@@ -140,7 +140,7 @@ static rsize r_hash_table_get_node (RHashTable*   hash_table,
         ++step;
         node_index += step;
         node_index &= hash_table->mask;
-        node_hash = hash_table->hashes [node_index];
+        node_hash   = hash_table->hashes [node_index];
     }
 
     if (have_tombstone)

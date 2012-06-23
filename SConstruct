@@ -2,7 +2,7 @@ from os import environ
 
 base = Environment(tools=['default', 'quex'],
                    ENV=environ,
-                   LIBS=['gc', 'gmp'],
+                   LIBS=['gc', 'gmp', 'm'],
                    CPPFLAGS='-ggdb -Wall',
                    CPPPATH=['#include/',
                             '#build/src/',

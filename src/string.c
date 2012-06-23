@@ -11,16 +11,16 @@ struct RString {
     char*  data;
 };
 
-#define SEXP_TO_STRING(obj)   (*((RString*) (obj)))
-#define SEXP_FROM_STRING(str) ((rsexp) (str))
+#define STRING_FROM_SEXP(obj)   (*((RString*) (obj)))
+#define STRING_TO_SEXP(string)  ((rsexp) (string))
 
-static void r_write_string (rsexp port, rsexp obj, RContext* context)
+static void r_write_string (rsexp port, rsexp obj)
 {
     char* p;
 
     r_write_char (port, '"');
 
-    for (p = SEXP_TO_STRING (obj).data; *p; ++p)
+    for (p = STRING_FROM_SEXP (obj).data; *p; ++p)
         if ('"' == *p)
             r_port_puts (port, "\\\"");
         else
@@ -29,9 +29,9 @@ static void r_write_string (rsexp port, rsexp obj, RContext* context)
     r_write_char (port, '"');
 }
 
-static void r_display_string (rsexp port, rsexp obj, RContext* context)
+static void r_display_string (rsexp port, rsexp obj)
 {
-    r_port_puts (port, SEXP_TO_STRING (obj).data);
+    r_port_puts (port, STRING_FROM_SEXP (obj).data);
 }
 
 static RType* r_string_type_info ()
@@ -58,7 +58,7 @@ rsexp r_string_new (char const* str)
     res->length = strlen (str) + 1;
     res->data   = GC_STRDUP (str);
 
-    return SEXP_FROM_STRING (res);
+    return STRING_TO_SEXP (res);
 }
 
 rboolean r_string_p (rsexp obj)
@@ -69,5 +69,5 @@ rboolean r_string_p (rsexp obj)
 
 char const* r_string_to_cstr (rsexp obj)
 {
-    return SEXP_TO_STRING (obj).data;
+    return STRING_FROM_SEXP (obj).data;
 }

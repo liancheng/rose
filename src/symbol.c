@@ -10,7 +10,7 @@
 
 #define QUARK_BLOCK_SIZE     1024
 #define QUARK_TO_SEXP(quark) ((rsexp) ((quark << R_TC5_BITS) | R_SYMBOL_TAG))
-#define SEXP_TO_QUARK(obj)   (obj >> R_TC5_BITS)
+#define QUARK_FROM_SEXP(obj) (obj >> R_TC5_BITS)
 
 typedef rword rquark;
 
@@ -136,7 +136,7 @@ rsexp r_symbol_new_static (char const* symbol, RContext* context)
 char const* r_symbol_name (rsexp obj, RContext* context)
 {
     assert (r_symbol_p (obj));
-    return r_quark_to_symbol (SEXP_TO_QUARK (obj), context);
+    return r_quark_to_symbol (QUARK_FROM_SEXP (obj), context);
 }
 
 void r_register_symbol_type (RContext* context)

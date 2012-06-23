@@ -1,161 +1,55 @@
 #include "detail/context.h"
+#include "detail/gmp.h"
 #include "detail/number.h"
+#include "detail/number_reader.h"
+#include "detail/port.h"
+#include "detail/sexp.h"
 #include "rose/port.h"
 
 #include <gc/gc.h>
 #include <string.h>
 
+#define FIXNUM_TO_SEXP(ptr)     (((rsexp) (ptr)) | R_FIXNUM_TAG)
+#define FIXNUM_FROM_SEXP(obj)   ((RFixnum*) ((obj) & (~R_FIXNUM_TAG)))
+
+#define FLONUM_TO_SEXP(ptr)     (((rsexp) (ptr)) | R_FLONUM_TAG)
+#define FLONUM_FROM_SEXP(obj)   ((RFlonum*) ((obj) & (~R_FLONUM_TAG)))
+
 static void r_fixnum_write (rsexp port, rsexp obj)
 {
-    r_port_puts (port, "#<fixnum>");
+    RFixnum* fixnum = FIXNUM_FROM_SEXP (obj);
+    FILE*    stream = PORT_TO_FILE (port);
+
+    mpq_out_str (stream, 10, fixnum->real);
+
+    if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u)) {
+        if (0 < mpq_cmp_ui (fixnum->imag, 0u, 1u))
+            r_write_char (port, '+');
+
+        mpq_out_str (stream, 10, fixnum->imag);
+        r_write_char (port, 'i');
+    }
 }
 
 static void r_flonum_write (rsexp port, rsexp obj)
 {
-    r_port_puts (port, "#<flonum>");
-}
+    RFlonum* flonum = FLONUM_FROM_SEXP (obj);
 
-static char r_number_next_char (RNumberReader* reader)
-{
-    char ch = '\0';
+    r_port_printf (port, "%f", flonum->real);
 
-    if (reader->pos < reader->end) {
-        ch = *(reader->pos);
-        ++(reader->pos);
+    if (flonum->imag != 0.) {
+        if (flonum->imag > 0.)
+            r_write_char (port, '+');
+
+        r_port_printf (port, "%f", flonum->imag);
+        r_write_char (port, 'i');
     }
-
-    return ch;
 }
 
-static void r_number_consume (RNumberReader* reader)
+static void r_fixnum_finalize (rpointer obj, rpointer client_data)
 {
-    reader->lookahead [reader->lookahead_index] = r_number_next_char (reader);
-    reader->lookahead_index = (reader->lookahead_index + 1) % 2;
-}
-
-static void r_number_consume_n (RNumberReader* reader, rint n)
-{
-    while (n--)
-        r_number_consume (reader);
-}
-
-char r_number_lookahead (RNumberReader* reader, rint k)
-{
-    return reader->lookahead [(reader->lookahead_index + k) % 2];
-}
-
-rboolean r_number_read_exactness (RNumberReader* reader)
-{
-    rboolean pass = TRUE;
-
-    if ('#' != r_number_lookahead (reader, 0))
-        return FALSE;
-
-    switch (r_number_lookahead (reader, 1)) {
-        case 'e':
-            reader->exact = TRUE;
-            break;
-
-        case 'i':
-            reader->exact = FALSE;
-            break;
-
-        default:
-            pass = FALSE;
-            break;
-    }
-
-    if (pass) {
-        r_number_consume_n (reader, 2);
-        reader->seen_exact = TRUE;
-    }
-
-    return pass;
-}
-
-rboolean r_number_read_radix (RNumberReader* reader)
-{
-    rboolean pass= TRUE;
-
-    if ('#' != r_number_lookahead (reader, 0))
-        return FALSE;
-
-    switch (r_number_lookahead (reader, 1)) {
-        case 'b':
-            reader->radix = 2;
-            break;
-
-        case 'o':
-            reader->radix = 8;
-            break;
-
-        case 'd':
-            reader->radix = 10;
-            break;
-
-        case 'x':
-            reader->radix = 16;
-            break;
-
-        default:
-            pass = FALSE;
-            break;
-    }
-
-    if (pass) {
-        r_number_consume_n (reader, 2);
-        reader->seen_radix = TRUE;
-    }
-
-    return pass;
-}
-
-rboolean r_number_read_prefix (RNumberReader* reader)
-{
-    if (r_number_read_radix (reader)) {
-        r_number_read_exactness (reader);
-        return TRUE;
-    }
-
-    if (r_number_read_exactness (reader)) {
-        r_number_read_radix (reader);
-        return TRUE;
-    }
-
-    return TRUE;
-}
-
-rboolean r_number_read (RNumberReader* reader)
-{
-    if (r_number_read_prefix (reader))
-        return TRUE;
-
-    return FALSE;
-}
-
-RNumberReader* r_number_reader_new ()
-{
-    RNumberReader* reader = GC_NEW (RNumberReader);
-
-    memset (reader, 0, sizeof (RNumberReader));
-
-    reader->exact      = TRUE;
-    reader->radix      = 10;
-    reader->seen_exact = FALSE;
-    reader->seen_radix = FALSE;
-
-    return reader;
-}
-
-void r_number_reader_set_input (RNumberReader* reader,
-                                char const*    begin,
-                                char const*    end)
-{
-    reader->begin = begin;
-    reader->end   = end;
-    reader->pos   = begin;
-
-    r_number_consume_n (reader, 2);
+    RFixnum* fixnum = obj;
+    r_fixnum_clear (fixnum);
 }
 
 void r_register_fixnum_type (RContext* context)
@@ -184,23 +78,55 @@ void r_register_flonum_type (RContext* context)
 
 rsexp r_string_to_number (char const* text)
 {
-    char const*    begin  = text;
-    char const*    end    = text + strlen (text);
-    RNumberReader* reader = r_number_reader_new ();
-
-    if (setjmp (reader->error_jmp)) {
-        // Exception handling.
-        return R_UNSPECIFIED;
-    }
-
-    r_number_reader_set_input (reader, begin, end);
-    r_number_read (reader);
-
-    return r_int_to_sexp (atoi (text));
+    return r_number_read (r_number_reader_new (), text);
 }
 
-rboolean r_number_eoi_p (RNumberReader* reader)
+rsexp r_fixnum_new ()
 {
-    return (reader->pos == reader->end) &&
-           ('\0' == r_number_lookahead (reader, 0));
+    RFixnum* fixnum = GC_NEW (RFixnum);
+
+    r_fixnum_init (fixnum);
+    GC_REGISTER_FINALIZER (fixnum, r_fixnum_finalize, NULL, NULL, NULL);
+
+    return FIXNUM_TO_SEXP (fixnum);
+}
+
+rsexp r_flonum_new ()
+{
+    RFlonum* flonum = GC_NEW (RFlonum);
+
+    flonum->real = 0.;
+    flonum->imag = 0.;
+
+    return FLONUM_TO_SEXP (flonum);
+}
+
+void r_fixnum_init (RFixnum* fixnum)
+{
+    mpq_inits (fixnum->real, fixnum->imag, NULL);
+}
+
+void r_fixnum_clear (RFixnum* fixnum)
+{
+    mpq_clears (fixnum->real, fixnum->imag, NULL);
+}
+
+void r_fixnum_set_real_x (rsexp obj, mpq_t real)
+{
+    mpq_set (FIXNUM_FROM_SEXP (obj)->real, real);
+}
+
+void r_fixnum_set_imag_x (rsexp obj, mpq_t imag)
+{
+    mpq_set (FIXNUM_FROM_SEXP (obj)->imag, imag);
+}
+
+void r_flonum_set_real_x (rsexp obj, double real)
+{
+    FLONUM_FROM_SEXP (obj)->real = real;
+}
+
+void r_flonum_set_imag_x (rsexp obj, double imag)
+{
+    FLONUM_FROM_SEXP (obj)->imag = imag;
 }

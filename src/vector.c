@@ -15,8 +15,8 @@ struct RVector {
     rsexp* data;
 };
 
-#define SEXP_TO_VECTOR(obj)   (*((RVector*) (obj)))
-#define SEXP_FROM_VECTOR(obj) ((rsexp) obj)
+#define VECTOR_FROM_SEXP(obj)   (*((RVector*) (obj)))
+#define VECTOR_TO_SEXP(vector)  ((rsexp) (vector))
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
@@ -79,7 +79,7 @@ rsexp r_vector_new (rsize k)
     res->length = k;
     res->data   = k ? GC_MALLOC (k * sizeof (rsexp)) : NULL;
 
-    return SEXP_FROM_VECTOR (res);
+    return VECTOR_TO_SEXP (res);
 }
 
 rsexp r_make_vector (rsize k, rsexp fill)
@@ -89,7 +89,7 @@ rsexp r_make_vector (rsize k, rsexp fill)
     rsize  i;
 
     res  = r_vector_new (k);
-    data = SEXP_TO_VECTOR (res).data;
+    data = VECTOR_FROM_SEXP (res).data;
 
     for (i = 0; i < k; ++i)
         data [i] = fill;
@@ -105,7 +105,7 @@ rsexp r_vector (rsize k, ...)
     rsexp*  data;
 
     res  = r_vector_new (k);
-    data = SEXP_TO_VECTOR (res).data;
+    data = VECTOR_FROM_SEXP (res).data;
 
     va_start (args, k);
 
@@ -131,13 +131,13 @@ rboolean r_vector_equal_p (rsexp lhs, rsexp rhs)
     if (!r_vector_p (rhs))
         return FALSE;
 
-    length = SEXP_TO_VECTOR (lhs).length;
+    length = VECTOR_FROM_SEXP (lhs).length;
 
-    if (SEXP_TO_VECTOR (rhs).length != length)
+    if (VECTOR_FROM_SEXP (rhs).length != length)
         return FALSE;
 
-    rsexp* lhs_data = SEXP_TO_VECTOR (lhs).data;
-    rsexp* rhs_data = SEXP_TO_VECTOR (rhs).data;
+    rsexp* lhs_data = VECTOR_FROM_SEXP (lhs).data;
+    rsexp* rhs_data = VECTOR_FROM_SEXP (rhs).data;
 
     for (k = 0; k < length; ++k)
         if (!r_equal_p (lhs_data [k], rhs_data [k]))
@@ -150,15 +150,15 @@ rsexp r_vector_ref (rsexp vector, rsize k)
 {
     assert (r_vector_p (vector));
     assert (r_vector_length (vector) > k);
-    return SEXP_TO_VECTOR (vector).data [k];
+    return VECTOR_FROM_SEXP (vector).data [k];
 }
 
 rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
 {
     assert (r_vector_p (vector));
-    assert (SEXP_TO_VECTOR (vector).length > k);
+    assert (VECTOR_FROM_SEXP (vector).length > k);
 
-    SEXP_TO_VECTOR (vector).data [k] = obj;
+    VECTOR_FROM_SEXP (vector).data [k] = obj;
 
     return R_UNSPECIFIED;
 }
@@ -166,7 +166,7 @@ rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
 rsize r_vector_length (rsexp vector)
 {
     assert (r_vector_p (vector));
-    return SEXP_TO_VECTOR (vector).length;
+    return VECTOR_FROM_SEXP (vector).length;
 }
 
 rsexp r_list_to_vector (rsexp list)

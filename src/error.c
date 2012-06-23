@@ -13,10 +13,10 @@ struct RError {
     rsexp  irritants;
 };
 
-#define SEXP_TO_ERROR(obj)     (*((RError*) obj))
-#define SEXP_FROM_ERROR(error) ((rsexp) error)
+#define ERROR_FROM_SEXP(obj) (*((RError*) obj))
+#define ERROR_TO_SEXP(error) ((rsexp) error)
 
-static void r_error_write (rsexp port, rsexp obj, RContext* context)
+static void r_error_write (rsexp port, rsexp obj)
 {
     assert (r_error_p (obj));
 
@@ -26,7 +26,7 @@ static void r_error_write (rsexp port, rsexp obj, RContext* context)
               r_error_get_irritants (obj));
 }
 
-static void r_error_display (rsexp port, rsexp obj, RContext* context)
+static void r_error_display (rsexp port, rsexp obj)
 {
     assert (r_error_p (obj));
 
@@ -62,7 +62,7 @@ rsexp r_error_new (rsexp message, rsexp irritants)
     res->message   = message;
     res->irritants = irritants;
 
-    return SEXP_FROM_ERROR (res);
+    return ERROR_TO_SEXP (res);
 }
 
 rboolean r_error_p (rsexp obj)
@@ -74,23 +74,23 @@ rboolean r_error_p (rsexp obj)
 rsexp r_error_get_message (rsexp error)
 {
     assert (r_error_p (error));
-    return SEXP_TO_ERROR (error).message;
+    return ERROR_FROM_SEXP (error).message;
 }
 
 rsexp r_error_get_irritants (rsexp error)
 {
     assert (r_error_p (error));
-    return SEXP_TO_ERROR (error).irritants;
+    return ERROR_FROM_SEXP (error).irritants;
 }
 
 void r_error_set_message_x (rsexp error, rsexp message)
 {
     assert (r_error_p (error) && r_string_p (message));
-    SEXP_TO_ERROR (error).message = message;
+    ERROR_FROM_SEXP (error).message = message;
 }
 
 void r_error_set_irritants_x (rsexp error, rsexp irritants)
 {
     assert (r_error_p (error));
-    SEXP_TO_ERROR (error).irritants = irritants;
+    ERROR_FROM_SEXP (error).irritants = irritants;
 }

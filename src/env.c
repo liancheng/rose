@@ -13,24 +13,24 @@ struct REnv{
     RHashTable* bindings;
 };
 
-#define SEXP_TO_ENV(obj)   (*((REnv*) obj))
-#define SEXP_FROM_ENV(env) ((rsexp) env)
+#define ENV_FROM_SEXP(obj)  (*((REnv*) obj))
+#define ENV_TO_SEXP(env)    ((rsexp) env)
 
 static RType* r_env_type_info ();
 
 static inline void env_set_parent_x (rsexp env, rsexp parent)
 {
-    SEXP_TO_ENV (env).parent = parent;
+    ENV_FROM_SEXP (env).parent = parent;
 }
 
 static inline rsexp r_env_get_parent (rsexp env)
 {
-    return SEXP_TO_ENV (env).parent;
+    return ENV_FROM_SEXP (env).parent;
 }
 
 static inline void env_finalize (rpointer obj, rpointer client_data)
 {
-    r_hash_table_free (SEXP_TO_ENV ((rsexp) obj).bindings);
+    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj).bindings);
 }
 
 static void r_env_write (rsexp port, rsexp obj)
@@ -70,7 +70,7 @@ rsexp r_env_new ()
 
     GC_REGISTER_FINALIZER ((rpointer) res, env_finalize, NULL, NULL, NULL);
 
-    return SEXP_FROM_ENV (res);
+    return ENV_TO_SEXP (res);
 }
 
 rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
@@ -92,7 +92,7 @@ static rsexp frame_lookup (rsexp frame, rsexp var)
     RHashTable* bindings;
     rpointer val;
 
-    bindings = SEXP_TO_ENV (frame).bindings;
+    bindings = ENV_FROM_SEXP (frame).bindings;
     val = r_hash_table_get (bindings, (rconstpointer) var);
 
     return val ? (rsexp) val : R_UNDEFINED;
@@ -118,13 +118,13 @@ rsexp r_env_lookup (rsexp env, rsexp var)
 void r_env_define (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
-    RHashTable* bindings = SEXP_TO_ENV (env).bindings;
+    RHashTable* bindings = ENV_FROM_SEXP (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }
 
 void r_env_set_x (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
-    RHashTable* bindings = SEXP_TO_ENV (env).bindings;
+    RHashTable* bindings = ENV_FROM_SEXP (env).bindings;
     r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
 }

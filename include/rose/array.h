@@ -19,6 +19,7 @@ void     r_array_push_front_n  (RArray*  array,
                                 uint     n);
 void     r_array_push_front    (RArray*  array,
                                 rpointer value);
+void     r_array_pop_front     (RArray*  array);
 uint     r_array_size          (RArray*  array);
 rpointer r_array_get_element   (RArray*  array,
                                 uint     index);
