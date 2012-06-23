@@ -1,6 +1,6 @@
 bin/*
 build/*
-lexer/*
+lib/*
 tags
 *.pyc
 *.sconsign.dblite
