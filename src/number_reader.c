@@ -121,9 +121,30 @@ rboolean r_number_reader_rewind (RNumberReader* reader, char const* mark)
     return FALSE;
 }
 
+rboolean r_number_shrink (RFixnum* fixnum, rint* int30)
+{
+    mpz_t real_num;
+    mpz_t real_den;
+    rboolean success = FALSE;
+
+    if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u))
+        return FALSE;
+
+    mpz_init_set (real_num, mpq_numref (fixnum->real));
+    mpz_init_set (real_den, mpq_denref (fixnum->real));
+
+    if (0 == mpz_cmp_ui (real_den, 1u) && mpz_fits_uint_p (real_num)) {
+        *int30 = mpz_get_si (real_num);
+        success = INT30_MIN <= *int30 && *int30 <= INT30_MAX;
+    }
+
+    mpz_clears (real_num, real_den, NULL);
+    return success;
+}
+
 /**
  *  start
- *      : number <EOI>
+ *      : number
  *      ;
  */
 rsexp r_number_read (RNumberReader* reader, char const* text)
@@ -133,9 +154,6 @@ rsexp r_number_read (RNumberReader* reader, char const* text)
     r_number_reader_feed_input (reader, text);
 
     if (!r_number_read_number (reader, &number))
-        return R_UNSPECIFIED;
-
-    if (!r_number_reader_eoi_p (reader))
         return R_UNSPECIFIED;
 
     return number;
@@ -150,6 +168,7 @@ rboolean r_number_read_number (RNumberReader* reader, rsexp* number)
 {
     RFixnum fixnum;
     RFlonum flonum;
+    rint int30;
     rboolean success;
 
     MARK;
@@ -165,9 +184,14 @@ rboolean r_number_read_number (RNumberReader* reader, rsexp* number)
     }
 
     if (r_number_read_rect_complex (reader, &fixnum)) {
-        *number = r_fixnum_new ();
-        r_fixnum_set_real_x (*number, fixnum.real);
-        r_fixnum_set_imag_x (*number, fixnum.imag);
+        if (r_number_shrink (&fixnum, &int30))
+            *number = r_int_to_sexp (int30);
+        else {
+            *number = r_fixnum_new ();
+            r_fixnum_set_real_x (*number, fixnum.real);
+            r_fixnum_set_imag_x (*number, fixnum.imag);
+        }
+
         goto pass;
     }
 
@@ -266,7 +290,7 @@ rboolean r_number_read_exactness (RNumberReader* reader)
 
 /**
  *  polar_complex
- *      : real '@' real
+ *      : real '@' real <EOI>
  *      ;
  */
 rboolean r_number_read_polar_complex (RNumberReader* reader, RFlonum* flonum)
@@ -285,6 +309,9 @@ rboolean r_number_read_polar_complex (RNumberReader* reader, RFlonum* flonum)
         goto fail;
 
     if (!r_number_read_real (reader, theta_q))
+        goto fail;
+
+    if (!r_number_reader_eoi_p (reader))
         goto fail;
 
     double rho = mpq_get_d (rho_q);
@@ -313,12 +340,16 @@ clear:
  */
 rboolean r_number_read_rect_complex (RNumberReader* reader, RFixnum* fixnum)
 {
+    rboolean success;
+
     MARK;
 
-    return r_number_read_rect_i (reader, fixnum)
-        || r_number_read_rect_ri (reader, fixnum)
-        || r_number_read_rect_r (reader, fixnum)
-        || REWIND;
+    success = (r_number_read_rect_i (reader, fixnum)
+            || r_number_read_rect_ri (reader, fixnum)
+            || r_number_read_rect_r (reader, fixnum))
+            && r_number_reader_eoi_p (reader);
+
+    return success || REWIND;
 }
 
 /**

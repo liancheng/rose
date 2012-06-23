@@ -80,6 +80,8 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 #define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
+#define INT30_MAX               ((1 << 29) - 1)
+#define INT30_MIN               (-((1 << 29)))
 
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
