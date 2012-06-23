@@ -17,8 +17,8 @@ struct RCell {
 
 #define R_CELL_TYPE(obj) (((RCell*) (obj))->type)
 
-RType* r_sexp_get_type               (rsexp     obj,
-                                      RContext* context);
-void   r_register_immediate_types    (RContext* context);
+RType* r_sexp_get_type      (rsexp     obj,
+                             RContext* context);
+void   r_register_tc3_types (RContext* context);
 
 #endif  //  __ROSE_DETAIL_SEXP_H__

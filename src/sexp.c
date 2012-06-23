@@ -130,7 +130,7 @@ RType* r_sexp_get_type (rsexp obj, RContext* context)
     return context->tc3_types [tc3];
 }
 
-void r_register_immediate_types (RContext* context)
+void r_register_tc3_types (RContext* context)
 {
     r_register_boolean_type (context);
     r_register_special_const_type (context);

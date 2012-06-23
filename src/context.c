@@ -51,7 +51,7 @@ RContext* r_context_new ()
     context->current_input_port  = r_stdin_port (context);
     context->current_output_port = r_stdout_port (context);
 
-    r_register_immediate_types (context);
+    r_register_tc3_types (context);
     r_register_keywords (context);
 
     return context;
