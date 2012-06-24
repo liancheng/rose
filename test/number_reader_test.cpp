@@ -81,7 +81,7 @@ TEST_F (number_reader_test, next_overflow)
 
 TEST_F (number_reader_test, eoi_p)
 {
-    feed ("ox");
+    feed ("xx");
 
     ASSERT_FALSE (r_number_reader_eoi_p (reader));
 
@@ -99,7 +99,7 @@ TEST_F (number_reader_test, mark_rewind_begin)
 {
     char const* mark;
 
-    feed ("ox");
+    feed ("xx");
     mark = r_number_reader_mark (reader);
     ASSERT_EQ (reader->begin, mark);
 
@@ -155,110 +155,82 @@ TEST_F (number_reader_test, read_digit)
     ASSERT_FALSE (r_number_read_digit (reader, &digit));
 }
 
-TEST_F (number_reader_test, read_decimal_frac)
-{
-    mpq_t decimal;
-
-    feed (".1");
-    mpq_init (decimal);
-    ASSERT_TRUE (r_number_read_real (reader, decimal));
-    ASSERT_TRUE (r_number_reader_eoi_p(reader));
-    ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
-    mpq_clear (decimal);
-}
-
-TEST_F (number_reader_test, read_decimal_int)
-{
-    mpq_t decimal;
-
-    feed ("10.0");
-    mpq_init (decimal);
-    ASSERT_TRUE (r_number_read_real (reader, decimal));
-    ASSERT_TRUE (r_number_reader_eoi_p(reader));
-    ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
-    mpq_clear (decimal);
-}
-
-TEST_F (number_reader_test, read_decimal_with_positive_exponent)
-{
-    mpq_t decimal;
-
-    feed (".1e+2");
-    mpq_init (decimal);
-    ASSERT_TRUE (r_number_read_real (reader, decimal));
-    ASSERT_TRUE (r_number_reader_eoi_p(reader));
-    ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
-    mpq_clear (decimal);
-}
-
-TEST_F (number_reader_test, read_decimal_with_negative_exponent)
-{
-    mpq_t decimal;
-
-    feed ("10e-2");
-    mpq_init (decimal);
-    ASSERT_TRUE (r_number_read_real (reader, decimal));
-    ASSERT_TRUE (r_number_reader_eoi_p(reader));
-    ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
-    mpq_clear (decimal);
-}
-
-TEST_F (number_reader_test, read_rect_i)
-{
-    feed ("+i");
-
-    RFixnum fixnum;
-    r_fixnum_init (&fixnum);
-
-    ASSERT_TRUE (r_number_read_rect_complex (reader, &fixnum));
-    ASSERT_TRUE (r_number_reader_eoi_p (reader));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.real, 0u, 1u));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.imag, 1u, 1u));
-
-    r_fixnum_clear (&fixnum);
-}
-
-TEST_F (number_reader_test, read_rect_ni)
-{
-    feed ("+2i");
-
-    RFixnum fixnum;
-    r_fixnum_init (&fixnum);
-
-    ASSERT_TRUE (r_number_read_rect_complex (reader, &fixnum));
-    ASSERT_TRUE (r_number_reader_eoi_p (reader));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.real, 0u, 1u));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.imag, 2u, 1u));
-
-    r_fixnum_clear (&fixnum);
-}
-
-TEST_F (number_reader_test, read_rect_r)
-{
-    feed ("2");
-
-    RFixnum fixnum;
-    r_fixnum_init (&fixnum);
-
-    ASSERT_TRUE (r_number_read_rect_complex (reader, &fixnum));
-    ASSERT_TRUE (r_number_reader_eoi_p (reader));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.real, 2u, 1u));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.imag, 0u, 1u));
-
-    r_fixnum_clear (&fixnum);
-}
-
-TEST_F (number_reader_test, read_rational)
-{
-    feed ("1/2");
-
-    RFixnum fixnum;
-    r_fixnum_init (&fixnum);
-
-    ASSERT_TRUE (r_number_read_rect_complex (reader, &fixnum));
-    ASSERT_TRUE (r_number_reader_eoi_p (reader));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.real, 1u, 2u));
-    ASSERT_EQ (0, mpq_cmp_ui (fixnum.imag, 0u, 1u));
-
-    r_fixnum_clear (&fixnum);
-}
+// TEST_F (number_reader_test, read_decimal_frac)
+// {
+//     mpq_t decimal;
+// 
+//     feed (".1");
+//     mpq_init (decimal);
+//     ASSERT_TRUE (r_number_read_real (reader, decimal));
+//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
+//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
+//     mpq_clear (decimal);
+// }
+// 
+// TEST_F (number_reader_test, read_decimal_int)
+// {
+//     mpq_t decimal;
+// 
+//     feed ("10.0");
+//     mpq_init (decimal);
+//     ASSERT_TRUE (r_number_read_real (reader, decimal));
+//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
+//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
+//     mpq_clear (decimal);
+// }
+// 
+// TEST_F (number_reader_test, read_decimal_with_positive_exponent)
+// {
+//     mpq_t decimal;
+// 
+//     feed (".1e+2");
+//     mpq_init (decimal);
+//     ASSERT_TRUE (r_number_read_real (reader, decimal));
+//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
+//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
+//     mpq_clear (decimal);
+// }
+// 
+// TEST_F (number_reader_test, read_decimal_with_negative_exponent)
+// {
+//     mpq_t decimal;
+// 
+//     feed ("10e-2");
+//     mpq_init (decimal);
+//     ASSERT_TRUE (r_number_read_real (reader, decimal));
+//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
+//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
+//     mpq_clear (decimal);
+// }
+// 
+// TEST_F (number_reader_test, read_rect_i)
+// {
+//     feed ("+i");
+// 
+//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
+//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
+// }
+// 
+// TEST_F (number_reader_test, read_rect_ni)
+// {
+//     feed ("+2i");
+// 
+//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
+//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
+// }
+// 
+// TEST_F (number_reader_test, read_rect_r)
+// {
+//     feed ("2");
+// 
+//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
+//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
+// }
+// 
+// TEST_F (number_reader_test, read_rational)
+// {
+//     feed ("1/2");
+// 
+//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
+//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
+// }

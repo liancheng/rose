@@ -52,6 +52,29 @@ static void r_fixnum_finalize (rpointer obj, rpointer client_data)
     r_fixnum_clear (fixnum);
 }
 
+static rsexp r_fixnum_to_int30 (mpq_t real, mpq_t imag)
+{
+    rint int30;
+
+    if (0 != mpq_cmp_ui (imag, 0u, 1u))
+        return R_FALSE;
+
+    mpq_canonicalize (real);
+
+    if (0 != mpz_cmp_ui (mpq_denref (real), 1u))
+        return R_FALSE;
+    
+    if (!mpz_fits_sint_p (mpq_numref (real)))
+        return R_FALSE;
+
+    int30 = mpz_get_si (mpq_numref (real));
+
+    if (int30 > INT30_MAX || int30 < INT30_MIN)
+        return R_FALSE;
+
+    return r_int_to_sexp (int30);
+}
+
 void r_register_fixnum_type (RContext* context)
 {
     RType* type = GC_NEW (RType);
@@ -81,22 +104,30 @@ rsexp r_string_to_number (char const* text)
     return r_number_read (r_number_reader_new (), text);
 }
 
-rsexp r_fixnum_new ()
+rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 {
+    rsexp number = r_fixnum_to_int30 (real, imag);
+
+    if (!r_false_p (number))
+        return number;
+
     RFixnum* fixnum = GC_NEW (RFixnum);
 
     r_fixnum_init (fixnum);
+    mpq_set (fixnum->real, real);
+    mpq_set (fixnum->imag, imag);
+
     GC_REGISTER_FINALIZER (fixnum, r_fixnum_finalize, NULL, NULL, NULL);
 
     return FIXNUM_TO_SEXP (fixnum);
 }
 
-rsexp r_flonum_new ()
+rsexp r_flonum_new (double real, double imag)
 {
     RFlonum* flonum = GC_NEW (RFlonum);
 
-    flonum->real = 0.;
-    flonum->imag = 0.;
+    flonum->real = real;
+    flonum->imag = imag;
 
     return FLONUM_TO_SEXP (flonum);
 }

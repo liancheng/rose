@@ -32,21 +32,25 @@ rboolean        r_number_reader_rewind          (RNumberReader* reader,
 
 rsexp           r_number_read                   (RNumberReader* reader,
                                                  char const*    text);
-rboolean        r_number_read_number            (RNumberReader* reader,
-                                                 rsexp*         number);
+rsexp           r_number_read_number            (RNumberReader* reader);
 rboolean        r_number_read_prefix            (RNumberReader* reader);
 rboolean        r_number_read_radix             (RNumberReader* reader);
 rboolean        r_number_read_exactness         (RNumberReader* reader);
 rboolean        r_number_read_polar_complex     (RNumberReader* reader,
-                                                 RFlonum*       flonum);
+                                                 double*        rho,
+                                                 double*        theta);
 rboolean        r_number_read_rect_complex      (RNumberReader* reader,
-                                                 RFixnum*       fixnum);
+                                                 mpq_t          real,
+                                                 mpq_t          imag);
 rboolean        r_number_read_rect_i            (RNumberReader* reader,
-                                                 RFixnum*       fixnum);
+                                                 mpq_t          real,
+                                                 mpq_t          imag);
 rboolean        r_number_read_rect_ri           (RNumberReader* reader,
-                                                 RFixnum*       fixnum);
+                                                 mpq_t          real,
+                                                 mpq_t          imag);
 rboolean        r_number_read_rect_r            (RNumberReader* reader,
-                                                 RFixnum*       fixnum);
+                                                 mpq_t          real,
+                                                 mpq_t          imag);
 rboolean        r_number_read_real              (RNumberReader* reader,
                                                  mpq_t          real);
 rboolean        r_number_read_ureal             (RNumberReader* reader,
@@ -72,8 +76,6 @@ rboolean        r_number_read_digits            (RNumberReader* reader,
 rboolean        r_number_read_digit             (RNumberReader* reader,
                                                  ruint*         digit);
 rboolean        r_number_read_sign              (RNumberReader* reader,
-                                                 rint*          sign);
-rboolean        r_number_read_optional_sign     (RNumberReader* reader,
                                                  rint*          sign);
 
 #endif  //  __ROSE_DETAIL_NUMBER_READER_H__
