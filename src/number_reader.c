@@ -66,13 +66,28 @@ static void apply_exponent (mpq_t real, rint exponent)
 
 static rsexp i_am_feeling_lucky (char const* text)
 {
-    char* end; 
+    char* end;
     rint number = strtol (text, &end, 10);
 
     if ('\0' != *end || number > INT30_MAX || number < INT30_MIN)
         return R_FALSE;
 
     return r_int_to_sexp (number);
+}
+
+static rboolean fix_exactness (rtribool exact,
+                               mpq_t    real,
+                               mpq_t    imag,
+                               double*  real_d,
+                               double*  imag_d)
+{
+    if (TRUE == exact || UNKNOWN == exact)
+        return TRUE;
+
+    *real_d = mpq_get_d (real);
+    *imag_d = mpq_get_d (imag);
+
+    return FALSE;
 }
 
 RNumberReader* r_number_reader_new ()
@@ -85,7 +100,7 @@ RNumberReader* r_number_reader_new ()
     reader->end   = NULL;
     reader->pos   = NULL;
 
-    reader->exact = TRUE;
+    reader->exact = UNKNOWN;
     reader->radix = 10u;
 
     return reader;
@@ -185,7 +200,14 @@ rsexp r_number_read_number (RNumberReader* reader)
     }
 
     if (r_number_read_rect_complex (reader, real, imag)) {
-        number = r_fixnum_new (real, imag);
+        double r;
+        double i;
+
+        if (FALSE == fix_exactness (reader->exact, real, imag, &r, &i))
+            number = r_flonum_new (r, i);
+        else
+            number = r_fixnum_new (real, imag);
+
         goto clear;
     }
 
@@ -193,7 +215,7 @@ rsexp r_number_read_number (RNumberReader* reader)
 
 clear:
     mpq_clears (real, imag, NULL);
-    return number; 
+    return number;
 }
 
 /**
@@ -530,6 +552,7 @@ rboolean r_number_read_decimal_frac (RNumberReader* reader, mpq_t ureal)
     r_number_read_suffix (reader, &exponent);
     apply_exponent (ureal, exponent);
 
+    reader->exact = FALSE;
     success = TRUE;
     goto clear;
 
@@ -578,6 +601,7 @@ rboolean r_number_read_decimal_int_frac (RNumberReader* reader, mpq_t ureal)
     r_number_read_suffix (reader, &exponent);
     apply_exponent (ureal, exponent);
 
+    reader->exact = FALSE;
     success = TRUE;
     goto clear;
 
@@ -614,6 +638,7 @@ rboolean r_number_read_decimal_uint (RNumberReader* reader, mpq_t ureal)
 
     apply_exponent (ureal, exponent);
 
+    reader->exact = FALSE;
     success = TRUE;
     goto clear;
 
@@ -684,6 +709,7 @@ rboolean r_number_read_suffix (RNumberReader* reader, rint* exponent)
     if (sign < 0)
         *exponent = -(*exponent);
 
+    reader->exact = FALSE;
     return TRUE;
 }
 

@@ -10,8 +10,6 @@ typedef struct RFlonum RFlonum;
 
 rsexp   r_fixnum_new        (mpq_t          real,
                              mpq_t          imag);
-void    r_fixnum_init       (RFixnum*       fixnum);
-void    r_fixnum_clear      (RFixnum*       fixnum);
 rsexp   r_flonum_new        (double         real,
                              double         imag);
 void    r_fixnum_set_real_x (rsexp          obj,

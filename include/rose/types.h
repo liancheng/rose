@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define FALSE 0
-#define TRUE  (!FALSE)
+#define FALSE   0
+#define TRUE    (!FALSE)
+#define UNKNOWN (-1)
 
 typedef int          rint;
 typedef unsigned int ruint;
@@ -14,5 +15,6 @@ typedef void*        rpointer;
 typedef void const*  rconstpointer;
 typedef size_t       rsize;
 typedef int          rboolean;
+typedef int          rtribool;
 
 #endif  //  __ROSE_TYPES_H__

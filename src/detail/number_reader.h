@@ -13,7 +13,7 @@ struct RNumberReader {
     char const* begin;
     char const* end;
     char const* pos;
-    rboolean    exact;
+    rtribool    exact;
     ruint       radix;
 };
 

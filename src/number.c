@@ -49,7 +49,7 @@ static void r_flonum_write (rsexp port, rsexp obj)
 static void r_fixnum_finalize (rpointer obj, rpointer client_data)
 {
     RFixnum* fixnum = obj;
-    r_fixnum_clear (fixnum);
+    mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
 static rsexp r_fixnum_to_int30 (mpq_t real, mpq_t imag)
@@ -113,7 +113,7 @@ rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 
     RFixnum* fixnum = GC_NEW (RFixnum);
 
-    r_fixnum_init (fixnum);
+    mpq_inits (fixnum->real, fixnum->imag, NULL);
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
 
@@ -130,16 +130,6 @@ rsexp r_flonum_new (double real, double imag)
     flonum->imag = imag;
 
     return FLONUM_TO_SEXP (flonum);
-}
-
-void r_fixnum_init (RFixnum* fixnum)
-{
-    mpq_inits (fixnum->real, fixnum->imag, NULL);
-}
-
-void r_fixnum_clear (RFixnum* fixnum)
-{
-    mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
 void r_fixnum_set_real_x (rsexp obj, mpq_t real)
