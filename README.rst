@@ -1,33 +1,33 @@
 Naming Conventions
 ==================
 
-These naming conventions are borrowed from GLib.  Summarized as bellow.
+These naming conventions are basically borrowed from GLib, with some personal
+flavor.  Summarized as bellow.
 
 Type Names
 ----------
 
-Simple typedef types
+Simple types
 
-    Should be lowercase with prefix ``r``, no ``_`` between words.  For example::
+    Use lowercase with prefix ``r``, no ``_`` between words.  For example::
 
         rword
         rsexp
         rpointer
         rconstpointer
 
-Compound structure types
+Structure types
 
-    Should be ``CamelCase`` names with the prefix ``R``.  For example::
+    Use ``CamelCase`` with prefix ``R``.  All structures should be typedef'ed
+    For example::
 
-        RContext
-        RError
-        RString
-        RVector
+        typedef struct RContext RContext
+        typedef struct RPair RPair
 
 Variable Names
 --------------
 
-Should be lowercase, words should be separated by ``_``.  For example::
+Use lowercase, words should be separated by ``_``.  For example::
 
     global_env
     hash_value
@@ -35,24 +35,47 @@ Should be lowercase, words should be separated by ``_``.  For example::
 
 .. note::
 
-    No Hungarian notation!  Please!
+    Die Hungarian notation! Die!
 
 Function Names
 --------------
 
-S-Expression functions
+General rule
 
-Operations on compund structured types
+    Function names use lowercase, words should be separated by ``_``.  Public
+    interface function names must be prefixed with ``r_``.
 
-    Use lowercase names, prefixed with ``r_``, and words should be separated by ``_``.  For example::
+"Object methods"
 
-        r_context_new
+    Almost all ADT (abstract data type) structures in ROSE have "method"
+    functions.  For example, the ADT ``RHashTable`` has theses methods::
+
+        RHashTable* r_hash_table_new  ();
+        void        r_hash_table_free (RHashTable*);
+        rpointer    r_hash_table_get  (RHashTable*, rconstpointer);
+        void        r_hash_table_put  (RHashTable*, rpointer, rpointer);
+        ...
+
+    A C++ equivalence for the hash table case can be::
+
+        class RHashTable {
+        public:
+            RHashTable ();
+            ~RHashTable ();
+            rpointer get (rconstpointer);
+            void put (rpointer, rpointer);
+        };
+
+    There, you see the rule:
+
+    *   All functions share a prefix converted directly from the ADT name.
+    *   "Constructor" is named ``<prefix>_new``.
+    *   "Destructor" is named ``<prefixed>_free``.
 
 Macro Names
 -----------
 
-Uppercase names with ``_`` as word separator.
+Use uppercase, with ``_`` as word separator.  Macros that appear as public
+interface must be named with the ``R_`` prefix.
 
-S-Expression macros
-
-.. vim: ft=rst ts=4 sw=4 et wrap
+.. vim: ft=rst ts=4 sw=4 tw=80 et wrap
