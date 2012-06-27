@@ -1,16 +1,14 @@
 from os import environ
 
-base = Environment(tools=['default', 'quex'],
-                   ENV=environ,
-                   LIBS=['gc', 'gmp', 'm'],
-                   CPPFLAGS='-ggdb -Wall',
-                   CPPPATH=['#include/',
-                            '#build/src/',
-                            environ['QUEX_PATH']])
+env = Environment(tools=['default', 'quex'],
+                  ENV=environ,
+                  LIBS=['gc', 'gmp', 'm'],
+                  CPPFLAGS='-ggdb -Wall',
+                  CPPPATH=['#include/',
+                           '#build/src/',
+                           environ['QUEX_PATH']])
 
-clang = base.Clone(CC='clang', CXX='clang++')
-gcc   = base.Clone(CC='gcc',   CXX='g++')
-env   = clang
+env.Replace(CC='clang', CXX='clang++')
 
 rose_lib = env.SConscript(dirs='src',
                           exports='env',

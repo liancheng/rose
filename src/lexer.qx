@@ -3,6 +3,7 @@ token
     TERMINATION;
     FAIL;
 
+    HASH_U8_LP;
     HASH_LP;
     HASH_SEMICOLON;
     LP;
@@ -30,7 +31,8 @@ define
     delimiter                   {whitespace}|[()";]
 
     /* Identifier (symbol) */
-    letter                      [a-z]
+
+    letter                      [a-zA-Z]
     special_initial             [!$%&*/:<=>?^_~]
     digit                       [0-9]
     initial                     {letter}
@@ -41,61 +43,61 @@ define
     peculiar_identifier         "+"|"-"|"..."
     identifier                  {initial}{subsequent}*|{peculiar_identifier}
 
-    exactness                   #[ei]
+    exactness                   #[eiEI]
     sign                        [+\-]
 
-    bin_radix                   #b
+    bin_radix                   #[bB]
     bin_prefix                  {exactness}{bin_radix}
                                 |{bin_radix}{exactness}?
     bin_digit                   0|1
-    bin_uinteger                {bin_digit}+#*
+    bin_uinteger                {bin_digit}+
     bin_ureal                   {bin_uinteger}("/"{bin_uinteger})?
     bin_real                    {sign}?{bin_ureal}
     bin_complex                 {bin_real}@{bin_real}
-                                |{bin_real}?{sign}{bin_ureal}?"i"
+                                |{bin_real}?{sign}{bin_ureal}?[iI]
                                 |{bin_real}
     bin_number                  {bin_prefix}{bin_complex}
 
-    oct_radix                   #o
+    oct_radix                   #[oO]
     oct_prefix                  {exactness}{oct_radix}
                                 |{oct_radix}{exactness}?
     oct_digit                   [0-7]
-    oct_uinteger                {oct_digit}+#*
+    oct_uinteger                {oct_digit}+
     oct_ureal                   {oct_uinteger}("/"{oct_uinteger})?
     oct_real                    {sign}?{oct_ureal}
     oct_complex                 {oct_real}@{oct_real}
-                                |{oct_real}?{sign}{oct_ureal}?"i"
+                                |{oct_real}?{sign}{oct_ureal}?[iI]
                                 |{oct_real}
     oct_number                  {oct_prefix}{oct_complex}
 
-    dec_radix                   #d
+    dec_radix                   #[dD]
     dec_prefix                  {exactness}{dec_radix}?
                                 |{dec_radix}{exactness}?
     dec_digit                   [0-9]
-    dec_uinteger                {dec_digit}+#*
-    exponent_marker             [esfdl]
+    dec_uinteger                {dec_digit}+
+    exponent_marker             [esfdlESFDL]
     suffix                      {exponent_marker}{sign}?{dec_digit}+
-    decimal                     ("."{dec_digit}+#*
-                                 |{dec_digit}+"."{dec_digit}*#*
-                                 |{dec_digit}+#+"."#*
+    decimal                     ("."{dec_digit}+
+                                 |{dec_digit}+"."{dec_digit}*
+                                 |{dec_digit}+"."
                                  |{dec_uinteger}
                                 ){suffix}?
     dec_ureal                   {dec_uinteger}("/"{dec_uinteger})?|{decimal}
     dec_real                    {sign}?{dec_ureal}
     dec_complex                 {dec_real}@{dec_real}
-                                |{dec_real}?{sign}{dec_ureal}?"i"
+                                |{dec_real}?{sign}{dec_ureal}?[iI]
                                 |{dec_real}
     dec_number                  {dec_prefix}?{dec_complex}
 
-    hex_radix                   #x
+    hex_radix                   #[xX]
     hex_prefix                  {exactness}{hex_radix}
                                 |{hex_radix}{exactness}?
-    hex_digit                   [0-9a-f]
-    hex_uinteger                {hex_digit}+"#"*
+    hex_digit                   [0-9a-fA-F]
+    hex_uinteger                {hex_digit}+
     hex_ureal                   {hex_uinteger}("/"{hex_uinteger})?
     hex_real                    {sign}?{hex_ureal}
     hex_complex                 {hex_real}@{hex_real}
-                                |{hex_real}?{sign}{hex_ureal}?"i"
+                                |{hex_real}?{sign}{hex_ureal}?[iI]
                                 |{hex_real}
     hex_number                  {hex_prefix}{hex_complex}
 
@@ -132,6 +134,7 @@ mode MAIN : FAILURE, EOF
 
     /* Punctuations */
     "#;"                        => TKN_HASH_SEMICOLON (Lexeme);
+    "#u8("                      => TKN_HASH_U8_LP (Lexeme);
     "#("                        => TKN_HASH_LP (Lexeme);
     "("                         => TKN_LP (Lexeme);
     ")"                         => TKN_RP (Lexeme);
@@ -173,10 +176,7 @@ mode MAIN : FAILURE, EOF
 mode STRING : EOF, FAILURE
 {
     on_entry                    { self_accumulator_clear (); }
-    on_exit                     {
-                                  self_accumulator_add_character ('\0');
-                                  self_accumulator_flush (TKN_STRING);
-                                }
+    on_exit                     { self_accumulator_flush (TKN_STRING); }
 
     \\a                         { self_accumulator_add_character ('\a'); }
     \\t                         { self_accumulator_add_character ('\t'); }

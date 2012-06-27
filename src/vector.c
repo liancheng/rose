@@ -20,8 +20,6 @@ struct RVector {
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
-rboolean r_vector_p (rsexp obj);
-
 static void output_vector (rsexp           port,
                            rsexp           obj,
                            ROutputFunction output_fn)

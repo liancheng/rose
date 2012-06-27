@@ -47,7 +47,7 @@ static rquark string_to_quark_internal (char const*   symbol,
     rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
 
     if (!quark) {
-        char* str = duplicate ? GC_STRDUP (symbol) : (char*)symbol;
+        char* str = duplicate ? GC_STRDUP (symbol) : (char*) symbol;
         quark = quark_new (str, st);
     }
 

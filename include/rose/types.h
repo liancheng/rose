@@ -16,5 +16,6 @@ typedef void const*  rconstpointer;
 typedef size_t       rsize;
 typedef int          rboolean;
 typedef int          rtribool;
+typedef uint8_t      rbyte;
 
 #endif  //  __ROSE_TYPES_H__

@@ -3,13 +3,16 @@
 %define api.pure
 %error-verbose
 
-%lex-param   {RReaderState* state}
-%parse-param {RReaderState* state}
+%lex-param   {RDatumReader* reader}
+%parse-param {RDatumReader* reader}
 
 %{
 
+#define YYDEBUG 1
+
 #include "detail/context.h"
 #include "detail/reader.h"
+#include "rose/bytevector.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
@@ -19,21 +22,25 @@
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
+#include <alloca.h>
 #include <string.h>
 
 #define YYSTYPE rsexp
 
-#define KEYWORD(name) r_keyword ((name), state->context)
+#define KEYWORD(name) r_keyword ((name), reader->context)
+
+static rboolean byte_p (rsexp number);
 
 int  rose_yylex   (YYSTYPE*      yylval,
-                   RReaderState* state);
-void rose_yyerror (RReaderState* state,
+                   RDatumReader* reader);
+void rose_yyerror (RDatumReader* reader,
                    char const*   message);
 
 %}
 
 %token TKN_FAIL
 
+%token TKN_HASH_U8_LP       "#u8("
 %token TKN_HASH_LP          "#("
 %token TKN_HASH_SEMICOLON   "#;"
 %token TKN_LP               "("
@@ -54,23 +61,13 @@ void rose_yyerror (RReaderState* state,
 %%
 
 start
-    :                           { state->tree = R_EOF; }
-    | datum                     { state->tree = $1; YYACCEPT; }
+    :                           { reader->tree = R_EOF; }
+    | datum                     { reader->tree = $1; YYACCEPT; }
     ;
 
 datum
     : simple_datum              { $$ = $1; }
     | compound_datum            { $$ = $1; }
-    ;
-
-data
-    : datum                     { $$ = r_list (1, $1); }
-    | data datum                { $$ = r_append_x ($1, r_list (1, $2)); }
-    ;
-
-datum_seq
-    :                           { $$ = R_NULL; }
-    | data                      { $$ = $1; }
     ;
 
 simple_datum
@@ -79,6 +76,25 @@ simple_datum
     | TKN_CHARACTER             { $$ = $1; }
     | TKN_STRING                { $$ = $1; }
     | TKN_IDENTIFIER            { $$ = $1; }
+    | bytevector                { $$ = $1; }
+    ;
+
+bytevector
+    : "#u8(" number_seq ")"     {
+                                  $$ = r_list_to_bytevector ($2);
+                                  if (!byte_p ($$))
+                                      YYERROR;
+                                }
+    ;
+
+number_seq
+    :                           { $$ = R_NULL; }
+    | numbers                   { $$ = $1; }
+    ;
+
+numbers
+    : TKN_NUMBER                { $$ = r_list (1, $1); }
+    | numbers TKN_NUMBER        { $$ = r_append_x ($1, r_list (1, $2)); }
     ;
 
 compound_datum
@@ -97,6 +113,16 @@ abbrev_prefix
     | "`"                       { $$ = KEYWORD (R_QUASIQUOTE); }
     | ","                       { $$ = KEYWORD (R_UNQUOTE); }
     | ",@"                      { $$ = KEYWORD (R_UNQUOTE_SPLICING); }
+    ;
+
+datum_seq
+    :                           { $$ = R_NULL; }
+    | data                      { $$ = $1; }
+    ;
+
+data
+    : datum                     { $$ = r_list (1, $1); }
+    | data datum                { $$ = r_append_x ($1, r_list (1, $2)); }
     ;
 
 vector
@@ -168,24 +194,33 @@ static rsexp lexeme_to_char (char const* text)
     return r_char_to_sexp (res);
 }
 
-void rose_yyerror (RReaderState* state, char const* message)
+static rboolean byte_p (rsexp number)
+{
+    if (!r_int30_p (number))
+        return FALSE;
+
+    rint i = r_int_from_sexp (number);
+
+    return 0 <= i && i <= 255;
+}
+
+void rose_yyerror (RDatumReader* reader, char const* message)
 {
     fprintf (stderr, "%s\n", message);
 }
 
-int rose_yylex (YYSTYPE* yylval, RReaderState* state)
+int rose_yylex (YYSTYPE* yylval, RDatumReader* reader)
 {
-    RToken* token;
-    rtokenid id;
-    char* text;
+    RToken*  token = next_token (reader->lexer, reader->input_port);
+    rtokenid id    = token->_id;
+    rsize    size  = QUEX_NAME (strlen) (token->text) + 5;
+    char*    text  = alloca (size);
 
-    token = next_token (state->lexer, state->input_port);
-    id    = token->_id;
-    text  = (char*) token->text;
+    QUEX_NAME_TOKEN (pretty_char_text) (token, text, size);
 
     switch (id) {
         case TKN_IDENTIFIER:
-            *yylval = r_symbol_new (text, state->context);
+            *yylval = r_symbol_new (text, reader->context);
             break;
 
         case TKN_STRING:
@@ -209,3 +244,5 @@ int rose_yylex (YYSTYPE* yylval, RReaderState* state)
 
     return id;
 }
+
+// vim:ft=yacc.c ts=4 sw=4 et

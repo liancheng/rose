@@ -12,7 +12,9 @@ lex_src = env.Quex(source='lexer.qx',
                    QUEXTKNID=File('detail/token-ids.h').abspath,
                    QUEXFLAGS=['--token-id-prefix TKN_',
                               '--token-policy queue',
-                              '--token-class token'])
+                              '--token-class token',
+                              '--codec utf8',
+                              '--buffer-element-size 1'])
 
 parser_src = env.CFile(source='parser.y')
 

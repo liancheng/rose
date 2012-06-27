@@ -40,6 +40,11 @@ static rboolean xdigit_to_uint (char ch, ruint* digit)
         return TRUE;
     }
 
+    if ('A' <= ch && ch <= 'F') {
+        *digit = ch - 'A' + 10;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -251,10 +256,10 @@ rboolean r_number_read_radix (RNumberReader* reader)
         return REWIND;
 
     switch (NEXT) {
-        case 'b': reader->radix =  2; return TRUE;
-        case 'o': reader->radix =  8; return TRUE;
-        case 'd': reader->radix = 10; return TRUE;
-        case 'x': reader->radix = 16; return TRUE;
+        case 'b': case 'B': reader->radix =  2; return TRUE;
+        case 'o': case 'O': reader->radix =  8; return TRUE;
+        case 'd': case 'D': reader->radix = 10; return TRUE;
+        case 'x': case 'X': reader->radix = 16; return TRUE;
     }
 
     return REWIND;
@@ -273,8 +278,8 @@ rboolean r_number_read_exactness (RNumberReader* reader)
         return REWIND;
 
     switch (NEXT) {
-        case 'e': reader->exact = TRUE;  return TRUE;
-        case 'i': reader->exact = FALSE; return TRUE;
+        case 'e': case 'E': reader->exact = TRUE;  return TRUE;
+        case 'i': case 'I': reader->exact = FALSE; return TRUE;
     }
 
     return REWIND;
@@ -340,13 +345,13 @@ rboolean r_number_read_rect_complex (RNumberReader* reader,
 
 /**
  *  rect_i
- *      : sign ureal 'i'
- *      / sign       'i'
+ *      : sign ureal? 'i'
  *      ;
  */
 rboolean r_number_read_rect_i (RNumberReader* reader, mpq_t real, mpq_t imag)
 {
     rint sign = 1;
+    char i;
 
     MARK;
 
@@ -361,7 +366,9 @@ rboolean r_number_read_rect_i (RNumberReader* reader, mpq_t real, mpq_t imag)
     if (sign < 0)
         mpq_neg (imag, imag);
 
-    if ('i' != NEXT)
+    i = NEXT;
+
+    if ('i' != i && 'I' != i)
         return REWIND;
 
     return TRUE;
@@ -369,13 +376,13 @@ rboolean r_number_read_rect_i (RNumberReader* reader, mpq_t real, mpq_t imag)
 
 /**
  *  rect_ri
- *      : real sign ureal 'i'
- *      / real sign       'i'
+ *      : real sign ureal? 'i'
  *      ;
  */
 rboolean r_number_read_rect_ri (RNumberReader* reader, mpq_t real, mpq_t imag)
 {
     rint sign = 1;
+    char i;
 
     MARK;
 
@@ -391,7 +398,9 @@ rboolean r_number_read_rect_ri (RNumberReader* reader, mpq_t real, mpq_t imag)
     if (sign < 0)
         mpq_neg (imag, imag);
 
-    if ('i' != NEXT)
+    i = NEXT;
+
+    if ('i' != i && 'I' != i)
         return REWIND;
 
     return TRUE;

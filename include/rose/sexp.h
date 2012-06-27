@@ -28,8 +28,10 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
  * - #b111: flonum
  */
 
+#define R_TC2_BITS              2
 #define R_TC3_BITS              3
 #define R_TC5_BITS              5
+#define R_TC2_MASK              0x03
 #define R_TC3_MASK              0x07
 #define R_TC5_MASK              0x1f
 
@@ -58,8 +60,10 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 #define R_UNSPECIFIED           R_MAKE_SPECIAL_CONST (2)
 #define R_UNDEFINED             R_MAKE_SPECIAL_CONST (3)
 
+#define R_GET_TC2(obj)          ((obj) & R_TC2_MASK)
 #define R_GET_TC3(obj)          ((obj) & R_TC3_MASK)
 #define R_GET_TC5(obj)          ((obj) & R_TC5_MASK)
+#define R_TC2_EQ_P(obj, tag)    (R_GET_TC2 ((obj)) == (tag))
 #define R_TC3_EQ_P(obj, tag)    (R_GET_TC3 ((obj)) == (tag))
 #define R_TC5_EQ_P(obj, tag)    (R_GET_TC5 ((obj)) == (tag))
 
@@ -78,6 +82,7 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 #define r_int_to_sexp(n)        ((rsexp) (((n) << 2) | R_INT30_TAG))
 #define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
+#define r_int30_p(obj)          R_TC2_EQ_P ((obj), R_INT30_TAG)
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
 #define INT30_MAX               ((1 << 29) - 1)

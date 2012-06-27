@@ -5,8 +5,6 @@
 #include "rose/sexp.h"
 #include "rose/types.h"
 
-#include <setjmp.h>
-
 typedef struct RNumberReader RNumberReader;
 
 struct RNumberReader {

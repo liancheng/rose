@@ -10,7 +10,6 @@
 #define TOMBSTONE_HASH_P(h)      (TOMBSTONE_HASH_VALUE == h)
 #define REAL_HASH_P(h)           ((h) > 1)
 
-
 struct RHashTable {
     rsize          size;
     rsize          n_occupied;
