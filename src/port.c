@@ -183,13 +183,14 @@ void r_format (rsexp port, char const* format, ...)
 {
     va_list args;
     char const* pos;
-    rsexp arg;
 
     va_start (args, format);
 
     for (pos = format; *pos; ++pos) {
-        if ('~' != *pos)
+        if ('~' != *pos) {
             r_write_char (port, *pos);
+            continue;
+        }
 
         switch (*++pos) {
             case '~':
@@ -201,13 +202,11 @@ void r_format (rsexp port, char const* format, ...)
                 break;
 
             case 'a':
-                arg = va_arg (args, rsexp);
-                r_display (port, arg);
+                r_display (port, va_arg (args, rsexp));
                 break;
 
             case 's':
-                arg = va_arg (args, rsexp);
-                r_write (port, arg);
+                r_write (port, va_arg (args, rsexp));
                 break;
         }
     }
