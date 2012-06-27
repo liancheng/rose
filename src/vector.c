@@ -69,7 +69,7 @@ static RType* r_vector_type_info ()
     return type;
 }
 
-rsexp r_vector_new (rsize k)
+rsexp r_vector_new (rsize k, rsexp fill)
 {
     RVector* res = GC_NEW (RVector);
 
@@ -77,22 +77,10 @@ rsexp r_vector_new (rsize k)
     res->length = k;
     res->data   = k ? GC_MALLOC (k * sizeof (rsexp)) : NULL;
 
+    while (k--)
+        res->data [k] = fill;
+
     return VECTOR_TO_SEXP (res);
-}
-
-rsexp r_make_vector (rsize k, rsexp fill)
-{
-    rsexp  res;
-    rsexp* data;
-    rsize  i;
-
-    res  = r_vector_new (k);
-    data = VECTOR_FROM_SEXP (res).data;
-
-    for (i = 0; i < k; ++i)
-        data [i] = fill;
-
-    return res;
 }
 
 rsexp r_vector (rsize k, ...)
@@ -102,7 +90,7 @@ rsexp r_vector (rsize k, ...)
     rsexp   res;
     rsexp*  data;
 
-    res  = r_vector_new (k);
+    res  = r_vector_new (k, R_UNSPECIFIED);
     data = VECTOR_FROM_SEXP (res).data;
 
     va_start (args, k);
@@ -170,7 +158,7 @@ rsize r_vector_length (rsexp vector)
 rsexp r_list_to_vector (rsexp list)
 {
     rsize length = r_length (list);
-    rsexp res = r_make_vector (length, R_UNSPECIFIED);
+    rsexp res = r_vector_new (length, R_UNSPECIFIED);
     rsize k;
 
     for (k = 0; k < length; ++k) {

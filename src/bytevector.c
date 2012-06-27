@@ -49,13 +49,16 @@ static RType* r_bytevector_type_info ()
     return type;
 }
 
-rsexp r_bytevector_new (rsize k)
+rsexp r_bytevector_new (rsize k, rbyte fill)
 {
     RBytevector* res = GC_NEW (RBytevector);
 
     res->type   = r_bytevector_type_info ();
     res->length = k;
     res->data   = k ? GC_MALLOC_ATOMIC (k * sizeof (rbyte)) : NULL;
+
+    while (k--)
+        res->data [k] = fill;
 
     return BYTEVECTOR_TO_SEXP (res);
 }
@@ -66,25 +69,23 @@ rboolean r_bytevector_p (rsexp obj)
            (R_CELL_TYPE (obj) == r_bytevector_type_info ());
 }
 
-rsexp r_make_bytevector (rsize k, rbyte fill)
+rsize r_bytevector_length (rsexp obj)
 {
-    rsexp  res;
-    rbyte* data;
-    rsize  i;
+    assert (r_bytevector_p (obj));
+    return BYTEVECTOR_FROM_SEXP (obj).length;
+}
 
-    res  = r_bytevector_new (k);
-    data = BYTEVECTOR_FROM_SEXP (res).data;
-
-    for (i = 0; i < k; ++i)
-        data [i] = fill;
-
-    return res;
+rbyte r_bytevector_ref (rsexp obj, rsize k)
+{
+    assert (r_bytevector_p (obj));
+    assert (r_bytevector_length (obj) > k);
+    return BYTEVECTOR_FROM_SEXP (obj).data [k];
 }
 
 rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
 {
     assert (r_bytevector_p (obj));
-    assert (BYTEVECTOR_FROM_SEXP (obj).length > k);
+    assert (r_bytevector_length (obj) > k);
 
     BYTEVECTOR_FROM_SEXP (obj).data [k] = byte;
 
@@ -94,7 +95,7 @@ rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
 rsexp r_list_to_bytevector (rsexp list)
 {
     rsize length = r_length (list);
-    rsexp res = r_make_bytevector (length, R_UNSPECIFIED);
+    rsexp res = r_bytevector_new (length, R_UNSPECIFIED);
     rbyte byte;
     rsize k;
 

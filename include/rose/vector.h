@@ -5,8 +5,7 @@
 
 typedef struct RVector RVector;
 
-rsexp    r_vector_new     (rsize k);
-rsexp    r_make_vector    (rsize k,
+rsexp    r_vector_new     (rsize k,
                            rsexp fill);
 rsexp    r_vector         (rsize k,
                            ...);
