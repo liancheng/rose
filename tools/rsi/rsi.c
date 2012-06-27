@@ -21,7 +21,7 @@ void display_syntax_error (rsexp error, RContext* context)
 int main (int argc, char* argv[])
 {
     RContext* context;
-    RReaderState* reader;
+    RDatumReader* reader;
     rsexp input;
     rsexp output;
 
