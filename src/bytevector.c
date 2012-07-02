@@ -1,5 +1,6 @@
 #include "detail/sexp.h"
 #include "rose/bytevector.h"
+#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/writer.h"

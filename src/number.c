@@ -4,16 +4,11 @@
 #include "detail/number_reader.h"
 #include "detail/port.h"
 #include "detail/sexp.h"
+#include "rose/number.h"
 #include "rose/port.h"
 
 #include <gc/gc.h>
 #include <string.h>
-
-#define FIXNUM_TO_SEXP(ptr)     (((rsexp) (ptr)) | R_FIXNUM_TAG)
-#define FIXNUM_FROM_SEXP(obj)   ((RFixnum*) ((obj) & (~R_FIXNUM_TAG)))
-
-#define FLONUM_TO_SEXP(ptr)     (((rsexp) (ptr)) | R_FLONUM_TAG)
-#define FLONUM_FROM_SEXP(obj)   ((RFlonum*) ((obj) & (~R_FLONUM_TAG)))
 
 static void r_fixnum_write (rsexp port, rsexp obj)
 {
@@ -52,7 +47,7 @@ static void r_fixnum_finalize (rpointer obj, rpointer client_data)
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
-static rsexp r_fixnum_to_int30 (mpq_t real, mpq_t imag)
+static rsexp reduce_to_int30 (mpq_t real, mpq_t imag)
 {
     rint int30;
 
@@ -73,6 +68,20 @@ static rsexp r_fixnum_to_int30 (mpq_t real, mpq_t imag)
         return R_FALSE;
 
     return r_int_to_sexp (int30);
+}
+
+rboolean r_number_p (rsexp obj)
+{
+    return r_int30_p (obj)
+        || r_fixnum_p (obj)
+        || r_flonum_p (obj);
+}
+
+rboolean r_byte_p (rsexp obj)
+{
+    return r_int30_p (obj)
+        && r_int_from_sexp (obj) >= 0
+        && r_int_from_sexp (obj) <= 255;
 }
 
 void r_register_fixnum_type (RContext* context)
@@ -106,7 +115,7 @@ rsexp r_string_to_number (char const* text)
 
 rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 {
-    rsexp number = r_fixnum_to_int30 (real, imag);
+    rsexp number = reduce_to_int30 (real, imag);
 
     if (!r_false_p (number))
         return number;

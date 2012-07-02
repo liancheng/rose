@@ -14,7 +14,7 @@ rose_lib = env.SConscript(dirs='src',
                           exports='env',
                           variant_dir='build/src/')
 
-rsi_bin = env.SConscript(dirs='tools/rsi',
+rsi_bin = env.SConscript(dirs='tools/rsi/',
                          exports=['env', 'rose_lib'],
                          variant_dir='build/tools/rsi/')
 

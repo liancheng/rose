@@ -24,6 +24,8 @@ rboolean r_list_p       (rsexp obj);
 rsexp    r_list         (rsize count,
                          ...);
 rsize    r_length       (rsexp list);
+rsexp    r_list_ref     (rsexp list,
+                         rsize k);
 
 #define r_caar(obj)     r_car (r_car (obj))
 #define r_cadr(obj)     r_car (r_cdr (obj))

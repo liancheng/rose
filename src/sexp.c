@@ -1,5 +1,6 @@
 #include "detail/context.h"
 #include "detail/sexp.h"
+#include "rose/number.h"
 #include "rose/port.h"
 
 #include <gc/gc.h>

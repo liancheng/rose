@@ -15,6 +15,8 @@ rsexp     r_open_input_string         (char const* string,
 rsexp     r_stdin_port                (RContext*   context);
 rsexp     r_stdout_port               (RContext*   context);
 
+rsexp     r_port_get_name             (rsexp       port);
+
 void      r_close_input_port          (rsexp       port);
 void      r_close_output_port         (rsexp       port);
 void      r_close_port                (rsexp       port);

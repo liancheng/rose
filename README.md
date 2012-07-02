@@ -31,7 +31,7 @@ Use lowercase, words should be separated by `_`.  For example::
     hash_value
     prompt_string
 
-Die Hungarian notation! Die!
+**Die Hungarian notation! Die!**
 
 ## Function Names
 

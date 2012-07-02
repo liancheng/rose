@@ -80,14 +80,6 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 #define r_cell_p(obj)           R_TC3_EQ_P ((obj), R_CELL_TAG)
 
-#define r_int_to_sexp(n)        ((rsexp) (((n) << 2) | R_INT30_TAG))
-#define r_int_from_sexp(obj)    (((int) (obj)) >> 2)
-#define r_int30_p(obj)          R_TC2_EQ_P ((obj), R_INT30_TAG)
-#define R_ZERO                  r_int_to_sexp (0)
-#define R_ONE                   r_int_to_sexp (1)
-#define INT30_MAX               ((1 << 29) - 1)
-#define INT30_MIN               (-((1 << 29)))
-
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 #define r_char_to_sexp(c)       (((c) << R_TC5_BITS) | R_CHARACTER_TAG)

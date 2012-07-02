@@ -2,7 +2,6 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/reader.h"
-#include "rose/string.h"
 #include "rose/writer.h"
 
 #include <gc/gc.h>
@@ -12,9 +11,10 @@ void display_syntax_error (rsexp error, RContext* context)
     rsexp irritants = r_error_get_irritants (error);
 
     r_format (r_current_input_port (context),
-              "~a:~a ~a~%",
-              r_car (irritants),
-              r_cdr (irritants),
+              "~a:~a:~a: ~a~%",
+              r_list_ref (irritants, 0),
+              r_list_ref (irritants, 1),
+              r_list_ref (irritants, 2),
               r_error_get_message (error));
 }
 
@@ -36,19 +36,19 @@ int main (int argc, char* argv[])
 
     input  = r_current_input_port (context);
     output = r_current_output_port (context);
-    reader = r_reader_from_port (input, context);
+    reader = r_port_reader (input, context);
 
     while (1) {
         rsexp datum = r_read (reader);
+        rsexp error = r_reader_last_error (reader);
 
-        if (r_eof_object_p (datum))
-            break;
-
-        if (r_reader_error_p (reader)) {
-            rsexp error = r_reader_last_error (reader);
+        if (!r_undefined_p (error)) {
             display_syntax_error (error, context);
             break;
         }
+
+        if (r_eof_object_p (datum))
+            break;
 
         r_format (output, "~s~%", datum);
     }

@@ -114,6 +114,11 @@ rsexp r_stdout_port (RContext* context)
                             context);
 }
 
+rsexp r_port_get_name (rsexp port)
+{
+    return PORT_FROM_SEXP (port).name;
+}
+
 void r_close_input_port (rsexp port)
 {
     r_close_port (port);

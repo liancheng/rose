@@ -1,6 +1,7 @@
 #include "detail/math_workaround.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
+#include "rose/number.h"
 #include "rose/string.h"
 
 #include <ctype.h>
@@ -67,6 +68,9 @@ static void apply_exponent (mpq_t real, rint exponent)
 
     mpq_mul (real, real, pow_q);
     mpq_canonicalize (real);
+
+    mpz_clear (pow_z);
+    mpq_clear (pow_q);
 }
 
 static rsexp i_am_feeling_lucky (char const* text)

@@ -9,22 +9,17 @@ lex_src = env.Quex(source='lexer.qx',
                    QUEXENGINE='lexer',
                    QUEXLANG='C',
                    QUEXOUTDIR=Dir('quex').abspath,
-                   QUEXTKNID=File('detail/token-ids.h').abspath,
                    QUEXFLAGS=['--token-id-prefix TKN_',
                               '--token-policy queue',
                               '--token-class token',
                               '--codec utf8',
                               '--buffer-element-size 1'])
 
-parser_src = env.CFile(source='parser.y')
-
 rose_lib = env.StaticLibrary(target='rose',
                              source=[Glob('*.c'),
                                      Glob('quex/*.c')])
 
-env.Depends(target=lex_src, dependency=parser_src)
 env.Depends(target=rose_lib, dependency=lex_src)
-env.Depends(target=rose_lib, dependency=parser_src)
 
 Return('rose_lib')
 

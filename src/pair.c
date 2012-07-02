@@ -54,6 +54,16 @@ static void output_pair (rsexp           port,
     r_port_puts (port, ")");
 }
 
+static void r_pair_write (rsexp port, rsexp obj)
+{
+    output_pair (port, obj, r_write);
+}
+
+static void r_pair_display (rsexp port, rsexp obj)
+{
+    output_pair (port, obj, r_display);
+}
+
 rsexp r_cons (rsexp car, rsexp cdr)
 {
     RPair* pair;
@@ -149,14 +159,12 @@ rsize r_length (rsexp list)
     return r_null_p (list) ? 0 : 1 + r_length (r_cdr (list));
 }
 
-void r_pair_write (rsexp port, rsexp obj)
+rsexp r_list_ref (rsexp list, rsize k)
 {
-    output_pair (port, obj, r_write);
-}
+    while (k--)
+        list = r_cdr (list);
 
-void r_pair_display (rsexp port, rsexp obj)
-{
-    output_pair (port, obj, r_display);
+    return r_car (list);
 }
 
 void r_register_pair_type (RContext* context)

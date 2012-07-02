@@ -10,7 +10,13 @@ extern "C" {
 
 }
 
-class number_reader_test : public testing::Test {
+using std::string;
+using testing::Test;
+using testing::AssertionResult;
+using testing::AssertionSuccess;
+using testing::AssertionFailure;
+
+class number_reader_test : public Test {
 protected:
     virtual void SetUp ()
     {
@@ -25,6 +31,18 @@ protected:
     void feed (char const* text)
     {
         r_number_reader_feed_input (reader, text);
+    }
+
+    AssertionResult exactly_equal (RFixnum const& expected,
+                                   string const&  lexeme)
+    {
+        rsexp    number = r_number_read (this->reader, lexeme.c_str());
+        RFixnum& actual = *FIXNUM_FROM_SEXP (number);
+
+        return mpq_class (expected.real) == mpq_class (actual.real) && 
+               mpq_class (expected.imag) == mpq_class (actual.imag)
+               ? AssertionSuccess ()
+               : AssertionFailure ();
     }
 
     RNumberReader* reader;
@@ -154,83 +172,3 @@ TEST_F (number_reader_test, read_digit)
     ASSERT_EQ (1u, digit);
     ASSERT_FALSE (r_number_read_digit (reader, &digit));
 }
-
-// TEST_F (number_reader_test, read_decimal_frac)
-// {
-//     mpq_t decimal;
-// 
-//     feed (".1");
-//     mpq_init (decimal);
-//     ASSERT_TRUE (r_number_read_real (reader, decimal));
-//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
-//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
-//     mpq_clear (decimal);
-// }
-// 
-// TEST_F (number_reader_test, read_decimal_int)
-// {
-//     mpq_t decimal;
-// 
-//     feed ("10.0");
-//     mpq_init (decimal);
-//     ASSERT_TRUE (r_number_read_real (reader, decimal));
-//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
-//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
-//     mpq_clear (decimal);
-// }
-// 
-// TEST_F (number_reader_test, read_decimal_with_positive_exponent)
-// {
-//     mpq_t decimal;
-// 
-//     feed (".1e+2");
-//     mpq_init (decimal);
-//     ASSERT_TRUE (r_number_read_real (reader, decimal));
-//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
-//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 10u, 1u));
-//     mpq_clear (decimal);
-// }
-// 
-// TEST_F (number_reader_test, read_decimal_with_negative_exponent)
-// {
-//     mpq_t decimal;
-// 
-//     feed ("10e-2");
-//     mpq_init (decimal);
-//     ASSERT_TRUE (r_number_read_real (reader, decimal));
-//     ASSERT_TRUE (r_number_reader_eoi_p(reader));
-//     ASSERT_EQ (0, mpq_cmp_ui (decimal, 1u, 10u));
-//     mpq_clear (decimal);
-// }
-// 
-// TEST_F (number_reader_test, read_rect_i)
-// {
-//     feed ("+i");
-// 
-//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
-//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
-// }
-// 
-// TEST_F (number_reader_test, read_rect_ni)
-// {
-//     feed ("+2i");
-// 
-//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
-//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
-// }
-// 
-// TEST_F (number_reader_test, read_rect_r)
-// {
-//     feed ("2");
-// 
-//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
-//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
-// }
-// 
-// TEST_F (number_reader_test, read_rational)
-// {
-//     feed ("1/2");
-// 
-//     ASSERT_FALSE (r_false_p (r_number_read_rect_complex (reader)));
-//     ASSERT_TRUE (r_number_reader_eoi_p (reader));
-// }
