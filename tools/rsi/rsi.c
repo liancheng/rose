@@ -22,21 +22,16 @@ int main (int argc, char* argv[])
 {
     RContext* context;
     RDatumReader* reader;
-    rsexp input;
-    rsexp output;
 
     GC_INIT ();
 
     context = r_context_new ();
 
-    if (argc > 1) {
-        rsexp port = r_open_input_file (argv [1], context);
-        r_set_current_input_port_x (port, context);
-    }
+    if (argc > 1)
+        r_set_current_input_port_x
+            (r_open_input_file (argv [1], context), context);
 
-    input  = r_current_input_port (context);
-    output = r_current_output_port (context);
-    reader = r_port_reader (input, context);
+    reader = r_port_reader (r_current_input_port (context), context);
 
     while (1) {
         rsexp datum = r_read (reader);
@@ -50,7 +45,7 @@ int main (int argc, char* argv[])
         if (r_eof_object_p (datum))
             break;
 
-        r_format (output, "~s~%", datum);
+        r_format (r_current_output_port (context), "~s~%", datum);
     }
 
     return EXIT_SUCCESS;

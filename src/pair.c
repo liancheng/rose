@@ -169,7 +169,7 @@ rsexp r_list_ref (rsexp list, rsize k)
 
 void r_register_pair_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = sizeof (RPair);
     type->name       = "pair";

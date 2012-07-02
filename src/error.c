@@ -41,7 +41,7 @@ static RType* r_error_type_info ()
     static RType* type = NULL;
 
     if (!type) {
-        type = GC_NEW (RType);
+        type = GC_MALLOC_ATOMIC (sizeof (RType));
 
         type->cell_size  = sizeof (RError);
         type->name       = "port";

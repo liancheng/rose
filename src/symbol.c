@@ -141,7 +141,7 @@ char const* r_symbol_name (rsexp obj, RContext* context)
 
 void r_register_symbol_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "symbol";

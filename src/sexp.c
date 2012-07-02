@@ -17,7 +17,7 @@ static void r_boolean_write (rsexp port, rsexp obj)
 
 static void r_register_boolean_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "boolean";
@@ -46,7 +46,7 @@ static void r_special_const_display (rsexp port, rsexp obj)
 
 static void r_register_special_const_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "special-const";
@@ -63,7 +63,7 @@ static void r_int30_write (rsexp port, rsexp obj)
 
 static void r_register_int30_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "small-integer";
@@ -106,7 +106,7 @@ static void r_character_display (rsexp port, rsexp obj)
 
 static void r_register_character_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "character";

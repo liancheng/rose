@@ -36,8 +36,7 @@
 
 typedef rsexp (*RDatumReaderRule) (RDatumReader*);
 
-rsexp r_read_datum  (RDatumReader* reader);
-rsexp r_read_number (RDatumReader* reader);
+rsexp r_read_datum (RDatumReader* reader);
 
 static rint reload_lexer (RLexer* lexer, rsexp port)
 {

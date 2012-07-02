@@ -86,7 +86,7 @@ rboolean r_byte_p (rsexp obj)
 
 void r_register_fixnum_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "fixnum";
@@ -98,7 +98,7 @@ void r_register_fixnum_type (RContext* context)
 
 void r_register_flonum_type (RContext* context)
 {
-    RType* type = GC_NEW (RType);
+    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
 
     type->cell_size  = 0;
     type->name       = "flonum";
