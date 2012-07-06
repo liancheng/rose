@@ -1,6 +1,7 @@
-#include "detail/context.h"
+#include "detail/state.h"
 #include "detail/port.h"
 #include "rose/error.h"
+#include "rose/port.h"
 #include "rose/string.h"
 #include "rose/writer.h"
 
@@ -10,44 +11,31 @@
 
 static RType* r_port_type_info ();
 
-static void r_port_finalize (void* obj, void* client_data)
-{
-    r_close_port ((rsexp) obj);
-}
-
-static rsexp r_file_port_new (FILE*       file,
+static rsexp r_file_port_new (RState*     state,
+                              FILE*       file,
                               char const* name,
-                              rint        mode,
-                              rboolean    close_on_destroy,
-                              RContext*   context)
+                              rint        mode)
 {
     RPort* port = GC_NEW (RPort);
 
-    port->type    = r_port_type_info ();
-    port->context = context;
-    port->stream  = file;
-    port->name    = r_string_new (name);
-    port->mode    = mode;
-
-    if (close_on_destroy)
-        GC_REGISTER_FINALIZER ((void*) port, r_port_finalize, NULL, NULL, NULL);
+    port->type   = r_port_type_info ();
+    port->state  = state;
+    port->stream = file;
+    port->name   = r_string_new (name);
+    port->mode   = mode;
 
     return PORT_TO_SEXP (port);
 }
 
-static rsexp r_open_file (char const* filename, rint mode, RContext* context)
+static rsexp r_open_file (RState* state, char const* filename, rint mode)
 {
-    FILE* file;
-    char* mode_str;
-
-    mode_str = (INPUT_PORT == mode) ? "r" : "w";
-    file = fopen (filename, mode_str);
+    FILE* file = fopen (filename, (INPUT_PORT == mode) ? "r" : "w");
 
     if (!file)
         return r_error_new (r_string_new ("cannot open file"),
                             r_string_new (filename));
 
-    return r_file_port_new (file, filename, mode, TRUE, context);
+    return r_file_port_new (state, file, filename, mode);
 }
 
 static void r_port_write (rsexp port, rsexp obj)
@@ -60,7 +48,7 @@ static RType* r_port_type_info ()
     static RType* type = NULL;
 
     if (!type) {
-        type = GC_MALLOC_ATOMIC (sizeof (RType));
+        type = GC_NEW_ATOMIC (RType);
 
         type->cell_size  = sizeof (RPort);
         type->name       = "port";
@@ -71,47 +59,35 @@ static RType* r_port_type_info ()
     return type;
 }
 
-RContext* r_port_get_context (rsexp port)
+RState* r_port_get_state (rsexp port)
 {
-    return PORT_FROM_SEXP (port).context;
+    return PORT_FROM_SEXP (port).state;
 }
 
-rsexp r_open_input_file (char const* filename, RContext* context)
+rsexp r_open_input_file (RState* state, char const* filename)
 {
-    return r_open_file (filename, INPUT_PORT, context);
+    return r_open_file (state, filename, INPUT_PORT);
 }
 
-rsexp r_open_output_file (char const* filename, RContext* context)
+rsexp r_open_output_file (RState* state, char const* filename)
 {
-    return r_open_file (filename, OUTPUT_PORT, context);
+    return r_open_file (state, filename, OUTPUT_PORT);
 }
 
-rsexp r_open_input_string (char const* string, RContext* context)
+rsexp r_open_input_string (RState* state, char const* string)
 {
     FILE* file = fmemopen ((void*) string, strlen (string), "r");
-    return r_file_port_new (file,
-                            "(string-input)",
-                            INPUT_PORT,
-                            TRUE,
-                            context);
+    return r_file_port_new (state, file, "(string-input)", INPUT_PORT);
 }
 
-rsexp r_stdin_port (RContext* context)
+rsexp r_stdin_port (RState* state)
 {
-    return r_file_port_new (stdin,
-                            "(standard-input)",
-                            INPUT_PORT,
-                            FALSE,
-                            context);
+    return r_file_port_new (state, stdin, "(standard-input)", INPUT_PORT);
 }
 
-rsexp r_stdout_port (RContext* context)
+rsexp r_stdout_port (RState* state)
 {
-    return r_file_port_new (stdout,
-                            "(standard-output)",
-                            OUTPUT_PORT,
-                            FALSE,
-                            context);
+    return r_file_port_new (state, stdout, "(standard-output)", OUTPUT_PORT);
 }
 
 rsexp r_port_get_name (rsexp port)
@@ -219,22 +195,22 @@ void r_format (rsexp port, char const* format, ...)
     va_end (args);
 }
 
-rsexp r_current_input_port (RContext* context)
+rsexp r_current_input_port (RState* state)
 {
-    return context->current_input_port;
+    return state->current_input_port;
 }
 
-rsexp r_current_output_port (RContext* context)
+rsexp r_current_output_port (RState* state)
 {
-    return context->current_output_port;
+    return state->current_output_port;
 }
 
-void r_set_current_input_port_x (rsexp port, RContext* context)
+void r_set_current_input_port_x (RState* state, rsexp port)
 {
-    context->current_input_port = port;
+    state->current_input_port = port;
 }
 
-void r_set_current_output_port_x (rsexp port, RContext* context)
+void r_set_current_output_port_x (RState* state, rsexp port)
 {
-    context->current_output_port = port;
+    state->current_output_port = port;
 }

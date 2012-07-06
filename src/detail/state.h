@@ -1,8 +1,8 @@
-#ifndef __ROSE_DETAIL_CONTEXT_H__
-#define __ROSE_DETAIL_CONTEXT_H__
+#ifndef __ROSE_DETAIL_STATE_H__
+#define __ROSE_DETAIL_STATE_H__
 
-#include "rose/context.h"
 #include "rose/sexp.h"
+#include "rose/state.h"
 #include "rose/symbol.h"
 
 typedef enum {
@@ -30,7 +30,7 @@ typedef enum {
 }
 RKeyword;
 
-struct RContext {
+struct RState {
     RSymbolTable* symbol_table;
     rsexp         env;
     rsexp         current_input_port;
@@ -40,6 +40,6 @@ struct RContext {
     rsexp         keywords [R_KEYWORD_COUNT];
 };
 
-rsexp r_keyword (ruint index, RContext* context);
+rsexp r_keyword (RState* state, ruint index);
 
-#endif  //  __ROSE_DETAIL_CONTEXT_H__
+#endif  //  __ROSE_DETAIL_STATE_H__

@@ -39,7 +39,7 @@ static RType* r_string_type_info ()
     static RType* type = NULL;
 
     if (!type) {
-        type = GC_MALLOC_ATOMIC (sizeof (RType));
+        type = GC_NEW_ATOMIC (RType);
 
         type->cell_size  = sizeof (RString);
         type->name       = "string";

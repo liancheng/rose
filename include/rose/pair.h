@@ -3,29 +3,33 @@
 
 #include "rose/sexp.h"
 
+#include <stdarg.h>
+
 #define r_pair_p(obj) (((obj) & R_TC3_MASK) == R_PAIR_TAG)
 
 typedef struct RPair RPair;
 
-rsexp    r_cons         (rsexp car,
-                         rsexp cdr);
-rsexp    r_car          (rsexp obj);
-rsexp    r_cdr          (rsexp obj);
-rsexp    r_set_car_x    (rsexp pair,
-                         rsexp obj);
-rsexp    r_set_cdr_x    (rsexp pair,
-                         rsexp obj);
-rboolean r_pair_equal_p (rsexp lhs,
-                         rsexp rhs);
-rsexp    r_reverse      (rsexp list);
-rsexp    r_append_x     (rsexp list,
-                         rsexp value);
-rboolean r_list_p       (rsexp obj);
-rsexp    r_list         (rsize count,
+rsexp    r_cons         (rsexp   car,
+                         rsexp   cdr);
+rsexp    r_car          (rsexp   obj);
+rsexp    r_cdr          (rsexp   obj);
+rsexp    r_set_car_x    (rsexp   pair,
+                         rsexp   obj);
+rsexp    r_set_cdr_x    (rsexp   pair,
+                         rsexp   obj);
+rboolean r_pair_equal_p (rsexp   lhs,
+                         rsexp   rhs);
+rsexp    r_reverse      (rsexp   list);
+rsexp    r_append_x     (rsexp   list,
+                         rsexp   value);
+rboolean r_list_p       (rsexp   obj);
+rsexp    r_list         (rsize   k,
                          ...);
-rsize    r_length       (rsexp list);
-rsexp    r_list_ref     (rsexp list,
-                         rsize k);
+rsexp    r_vlist        (rsize   k,
+                         va_list args);
+rsize    r_length       (rsexp   list);
+rsexp    r_list_ref     (rsexp   list,
+                         rsize   k);
 
 #define r_caar(obj)     r_car (r_car (obj))
 #define r_cadr(obj)     r_car (r_cdr (obj))

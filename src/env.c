@@ -43,7 +43,7 @@ static RType* r_env_type_info ()
     static RType* type = NULL;
 
     if (!type) {
-        type = GC_MALLOC_ATOMIC (sizeof (RType));
+        type = GC_NEW_ATOMIC (RType);
 
         type->cell_size  = sizeof (REnv);
         type->name       = "environment";
@@ -83,17 +83,16 @@ rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
         vals = r_cdr (vals);
     }
 
+    assert (r_null_p (vals));
     env_set_parent_x (env, parent);
+
     return env;
 }
 
 static rsexp frame_lookup (rsexp frame, rsexp var)
 {
-    RHashTable* bindings;
-    rpointer val;
-
-    bindings = ENV_FROM_SEXP (frame).bindings;
-    val = r_hash_table_get (bindings, (rconstpointer) var);
+    rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame).bindings,
+                                     (rconstpointer) var);
 
     return val ? (rsexp) val : R_UNDEFINED;
 }
@@ -118,13 +117,17 @@ rsexp r_env_lookup (rsexp env, rsexp var)
 void r_env_define (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
-    RHashTable* bindings = ENV_FROM_SEXP (env).bindings;
-    r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
+
+    r_hash_table_put (ENV_FROM_SEXP (env).bindings,
+                      (rpointer) var,
+                      (rpointer) val);
 }
 
 void r_env_set_x (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
-    RHashTable* bindings = ENV_FROM_SEXP (env).bindings;
-    r_hash_table_put (bindings, (rpointer) var, (rpointer) val);
+
+    r_hash_table_put (ENV_FROM_SEXP (env).bindings,
+                      (rpointer) var,
+                      (rpointer) val);
 }

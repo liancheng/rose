@@ -1,4 +1,4 @@
-#include "detail/context.h"
+#include "detail/state.h"
 #include "detail/hash.h"
 #include "detail/sexp.h"
 #include "rose/port.h"
@@ -54,26 +54,25 @@ static rquark string_to_quark_internal (char const*   symbol,
     return quark;
 }
 
-static rquark quark_from_symbol (char const* symbol, RContext* context)
+static rquark quark_from_symbol (RState* state, char const* symbol)
 {
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, TRUE, context->symbol_table);
+    return string_to_quark_internal (symbol, TRUE, state->symbol_table);
 }
 
-static rquark static_symbol_to_quark (char const* symbol,
-                                      RContext*   context)
+static rquark static_symbol_to_quark (RState* state, char const* symbol)
 {
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, FALSE, context->symbol_table);
+    return string_to_quark_internal (symbol, FALSE, state->symbol_table);
 }
 
-static char const* r_quark_to_symbol (rquark quark, RContext* context)
+static char const* r_quark_to_symbol (RState* state, rquark quark)
 {
-    RSymbolTable* st = context->symbol_table;
+    RSymbolTable* st = state->symbol_table;
     return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
 }
 
@@ -100,7 +99,7 @@ static rboolean r_str_equal (rconstpointer lhs, rconstpointer rhs)
 
 static void r_symbol_write (rsexp port, rsexp obj)
 {
-    r_port_puts (port, r_symbol_name (obj, r_port_get_context (port)));
+    r_port_puts (port, r_symbol_name (r_port_get_state (port), obj));
 }
 
 RSymbolTable* r_symbol_table_new ()
@@ -121,32 +120,32 @@ RSymbolTable* r_symbol_table_new ()
     return res;
 }
 
-rsexp r_symbol_new (char const* symbol, RContext* context)
+rsexp r_symbol_new (RState* state, char const* symbol)
 {
-    rquark quark = quark_from_symbol (symbol, context);
+    rquark quark = quark_from_symbol (state, symbol);
     return QUARK_TO_SEXP (quark);
 }
 
-rsexp r_symbol_new_static (char const* symbol, RContext* context)
+rsexp r_symbol_new_static (RState* state, char const* symbol)
 {
-    rquark quark = static_symbol_to_quark (symbol, context);
+    rquark quark = static_symbol_to_quark (state, symbol);
     return QUARK_TO_SEXP (quark);
 }
 
-char const* r_symbol_name (rsexp obj, RContext* context)
+char const* r_symbol_name (RState* state, rsexp obj)
 {
     assert (r_symbol_p (obj));
-    return r_quark_to_symbol (QUARK_FROM_SEXP (obj), context);
+    return r_quark_to_symbol (state, QUARK_FROM_SEXP (obj));
 }
 
-void r_register_symbol_type (RContext* context)
+void r_register_symbol_type (RState* state)
 {
-    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
+    RType* type = GC_NEW_ATOMIC (RType);
 
     type->cell_size  = 0;
     type->name       = "symbol";
     type->write_fn   = r_symbol_write;
     type->display_fn = r_symbol_write;
 
-    context->tc5_types [R_SYMBOL_TAG >> R_TC3_BITS] = type;
+    state->tc5_types [R_SYMBOL_TAG >> R_TC3_BITS] = type;
 }

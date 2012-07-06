@@ -1,7 +1,7 @@
 #ifndef __ROSE_SEXP_H__
 #define __ROSE_SEXP_H__
 
-#include "rose/context.h"
+#include "rose/state.h"
 #include "rose/types.h"
 
 typedef rword rsexp;
@@ -15,7 +15,7 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 /*
  * Simple tagging.  Ends in:
  *
- * - #b000: pointer to cell object
+ * - #b000: pointer to cell (heap object)
  * - #b001: int30 (even)
  * - #b010: pair
  * - #b011: fixnum

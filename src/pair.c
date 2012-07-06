@@ -1,4 +1,4 @@
-#include "detail/context.h"
+#include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/eq.h"
 #include "rose/pair.h"
@@ -24,7 +24,7 @@ static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
     return r_null_p (list)
            ? acc
            : r_reverse_internal (r_cdr (list),
-                                r_cons (r_car (list), acc));
+                                 r_cons (r_car (list), acc));
 }
 
 static void output_cdr (rsexp           port,
@@ -138,25 +138,36 @@ rboolean r_list_p (rsexp obj)
            (r_pair_p (obj) && r_list_p (r_cdr (obj)));
 }
 
-rsexp r_list (rsize count, ...)
+rsexp r_list (rsize k, ...)
 {
     va_list args;
-    rsize i;
+    rsexp   res;
 
-    va_start (args, count);
-
-    rsexp res = R_NULL;
-    for (i = 0; i < count; ++i)
-        res = r_cons (va_arg (args, rsexp), res);
-
+    va_start (args, k);
+    res = r_vlist (k, args);
     va_end (args);
+
+    return res;
+}
+
+rsexp r_vlist (rsize k, va_list args)
+{
+    rsexp res = R_NULL;
+
+    while (k--)
+        res = r_cons (va_arg (args, rsexp), res);
 
     return r_reverse (res);
 }
 
 rsize r_length (rsexp list)
 {
-    return r_null_p (list) ? 0 : 1 + r_length (r_cdr (list));
+    rsize n;
+
+    for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
+        ;
+
+    return n;
 }
 
 rsexp r_list_ref (rsexp list, rsize k)
@@ -167,14 +178,14 @@ rsexp r_list_ref (rsexp list, rsize k)
     return r_car (list);
 }
 
-void r_register_pair_type (RContext* context)
+void r_register_pair_type (RState* state)
 {
-    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
+    RType* type = GC_NEW_ATOMIC (RType);
 
     type->cell_size  = sizeof (RPair);
     type->name       = "pair";
     type->write_fn   = r_pair_write;
     type->display_fn = r_pair_display;
 
-    context->tc3_types [R_PAIR_TAG] = type;
+    state->tc3_types [R_PAIR_TAG] = type;
 }

@@ -2,22 +2,22 @@
 #define __ROSE_DETAIL_PORT_H__
 
 #include "detail/sexp.h"
-#include "rose/context.h"
-#include "rose/port.h"
+#include "rose/state.h"
 
 #include <stdio.h>
 
 enum {
     INPUT_PORT,
-    OUTPUT_PORT,
+    OUTPUT_PORT
 };
 
 struct RPort {
-    RType*    type;
-    RContext* context;
-    FILE*     stream;
-    rint      mode;
-    rsexp     name;
+    RType*   type;
+    RState*  state;
+    FILE*    stream;
+    rint     mode;
+    rboolean closed;
+    rsexp    name;
 };
 
 #define PORT_FROM_SEXP(obj) (*((RPort*) (obj)))

@@ -5,13 +5,13 @@
 
 typedef struct RDatumReader RDatumReader;
 
-RDatumReader* r_reader_new         (RContext*     context);
-RDatumReader* r_file_reader        (char const*   filename,
-                                    RContext*     context);
-RDatumReader* r_string_reader      (char const*   string,
-                                    RContext*     context);
-RDatumReader* r_port_reader        (rsexp         port,
-                                    RContext*     context);
+RDatumReader* r_reader_new         (RState*       state);
+RDatumReader* r_file_reader        (RState*       state,
+                                    char const*   filename);
+RDatumReader* r_string_reader      (RState*       state,
+                                    char const*   string);
+RDatumReader* r_port_reader        (RState*       state,
+                                    rsexp         port);
 rsexp         r_reader_last_error  (RDatumReader* reader);
 void          r_reader_clear_error (RDatumReader* reader);
 rsexp         r_read               (RDatumReader* reader);

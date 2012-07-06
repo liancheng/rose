@@ -2,17 +2,18 @@
 #define __ROSE_DETAIL_READER_H__
 
 #include "detail/lexer.h"
-#include "rose/context.h"
+#include "rose/state.h"
 
 #include <setjmp.h>
 
 struct RDatumReader {
-    RContext* context;
-    rsexp     input_port;
-    rsexp     last_error;
-    RLexer*   lexer;
-    RToken*   lookahead;
-    jmp_buf   jmp;
+    RState* state;
+    jmp_buf jmp;
+    rsexp   input_port;
+    rsexp   last_error;
+    RLexer* lexer;
+    RToken* lookahead;
+    RToken  token;
 };
 
 #endif  //  __ROSE_DETAIL_READER_H__

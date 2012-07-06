@@ -58,7 +58,7 @@ static RType* r_vector_type_info ()
     static RType* type = NULL;
 
     if (!type) {
-        type = GC_MALLOC_ATOMIC (sizeof (RType));
+        type = GC_NEW_ATOMIC (RType);
 
         type->cell_size  = sizeof (RVector);
         type->name       = "vector";
@@ -86,21 +86,18 @@ rsexp r_vector_new (rsize k, rsexp fill)
 rsexp r_vector (rsize k, ...)
 {
     va_list args;
-    rsize   i;
     rsexp   res;
-    rsexp*  data;
-
-    res  = r_vector_new (k, R_UNSPECIFIED);
-    data = VECTOR_FROM_SEXP (res).data;
 
     va_start (args, k);
-
-    for (i = 0; i < k; ++i)
-        data [i] = va_arg (args, rsexp);
-
+    res = r_vvector (k, args);
     va_end (args);
 
     return res;
+}
+
+rsexp r_vvector (rsize k, va_list args)
+{
+    return r_list_to_vector (r_vlist (k, args));
 }
 
 rboolean r_vector_p (rsexp obj)
@@ -157,12 +154,11 @@ rsize r_vector_length (rsexp vector)
 
 rsexp r_list_to_vector (rsexp list)
 {
-    rsize length = r_length (list);
-    rsexp res = r_vector_new (length, R_UNSPECIFIED);
-    rsize k;
+    rsexp res = r_vector_new (r_length (list), R_UNSPECIFIED);
+    rsize k   = 0u;
 
-    for (k = 0; k < length; ++k) {
-        r_vector_set_x (res, k, r_car (list));
+    while (!r_null_p (list)) {
+        r_vector_set_x (res, k++, r_car (list));
         list = r_cdr (list);
     }
 

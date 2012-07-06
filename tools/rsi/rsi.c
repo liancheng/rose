@@ -6,11 +6,11 @@
 
 #include <gc/gc.h>
 
-void display_syntax_error (rsexp error, RContext* context)
+void display_syntax_error (RState* state, rsexp error)
 {
     rsexp irritants = r_error_get_irritants (error);
 
-    r_format (r_current_input_port (context),
+    r_format (r_current_output_port (state),
               "~a:~a:~a: ~a~%",
               r_list_ref (irritants, 0),
               r_list_ref (irritants, 1),
@@ -20,32 +20,32 @@ void display_syntax_error (rsexp error, RContext* context)
 
 int main (int argc, char* argv[])
 {
-    RContext* context;
+    RState*       state;
     RDatumReader* reader;
 
     GC_INIT ();
 
-    context = r_context_new ();
+    state = r_state_new ();
 
     if (argc > 1)
         r_set_current_input_port_x
-            (r_open_input_file (argv [1], context), context);
+            (state, r_open_input_file (state, argv [1]));
 
-    reader = r_port_reader (r_current_input_port (context), context);
+    reader = r_port_reader (state, r_current_input_port (state));
 
     while (1) {
         rsexp datum = r_read (reader);
         rsexp error = r_reader_last_error (reader);
 
-        if (!r_undefined_p (error)) {
-            display_syntax_error (error, context);
-            break;
-        }
-
         if (r_eof_object_p (datum))
             break;
 
-        r_format (r_current_output_port (context), "~s~%", datum);
+        if (!r_undefined_p (error)) {
+            display_syntax_error (state, error);
+            r_reader_clear_error (reader);
+        }
+
+        r_format (r_current_output_port (state), "~s~%", datum);
     }
 
     return EXIT_SUCCESS;

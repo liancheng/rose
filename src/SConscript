@@ -1,19 +1,22 @@
 Import('env')
 
 env = env.Clone()
-env.Append(CPPDEFINES=['QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
-                       'QUEX_OPTION_ASSERTS_DISABLED'],
-           YACCFLAGS='-d')
+
+env.Append(YACCFLAGS='-d',
+           CPPDEFINES=['QUEX_OPTION_ASSERTS_DISABLED',
+                       'QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'])
 
 lex_src = env.Quex(source='lexer.qx',
                    QUEXENGINE='lexer',
                    QUEXLANG='C',
                    QUEXOUTDIR=Dir('quex').abspath,
-                   QUEXFLAGS=['--token-id-prefix TKN_',
-                              '--token-policy queue',
-                              '--token-class token',
+                   QUEXFLAGS=['--buffer-element-size 1',
                               '--codec utf8',
-                              '--buffer-element-size 1'])
+                              '--no-warning-on-no-token-queue',
+                              '--token-class token',
+                              '--token-id-prefix TKN_',
+                              '--token-policy single',
+                              '--token-memory-management-by-user'])
 
 rose_lib = env.StaticLibrary(target='rose',
                              source=[Glob('*.c'),

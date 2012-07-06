@@ -1,4 +1,4 @@
-#include "detail/context.h"
+#include "detail/state.h"
 #include "detail/gmp.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
@@ -47,7 +47,7 @@ static void r_fixnum_finalize (rpointer obj, rpointer client_data)
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
-static rsexp reduce_to_int30 (mpq_t real, mpq_t imag)
+static rsexp try_int30 (mpq_t real, mpq_t imag)
 {
     rint int30;
 
@@ -84,28 +84,28 @@ rboolean r_byte_p (rsexp obj)
         && r_int_from_sexp (obj) <= 255;
 }
 
-void r_register_fixnum_type (RContext* context)
+void r_register_fixnum_type (RState* state)
 {
-    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
+    RType* type = GC_NEW_ATOMIC (RType);
 
     type->cell_size  = 0;
     type->name       = "fixnum";
     type->write_fn   = r_fixnum_write;
     type->display_fn = r_fixnum_write;
 
-    context->tc3_types [R_FIXNUM_TAG] = type;
+    state->tc3_types [R_FIXNUM_TAG] = type;
 }
 
-void r_register_flonum_type (RContext* context)
+void r_register_flonum_type (RState* state)
 {
-    RType* type = GC_MALLOC_ATOMIC (sizeof (RType));
+    RType* type = GC_NEW_ATOMIC (RType);
 
     type->cell_size  = 0;
     type->name       = "flonum";
     type->write_fn   = r_flonum_write;
     type->display_fn = r_flonum_write;
 
-    context->tc3_types [R_FLONUM_TAG] = type;
+    state->tc3_types [R_FLONUM_TAG] = type;
 }
 
 rsexp r_string_to_number (char const* text)
@@ -115,12 +115,12 @@ rsexp r_string_to_number (char const* text)
 
 rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 {
-    rsexp number = reduce_to_int30 (real, imag);
+    rsexp number = try_int30 (real, imag);
 
     if (!r_false_p (number))
         return number;
 
-    RFixnum* fixnum = GC_NEW (RFixnum);
+    RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
 
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     mpq_set (fixnum->real, real);
@@ -133,7 +133,7 @@ rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 
 rsexp r_flonum_new (double real, double imag)
 {
-    RFlonum* flonum = GC_NEW (RFlonum);
+    RFlonum* flonum = GC_NEW_ATOMIC (RFlonum);
 
     flonum->real = real;
     flonum->imag = imag;

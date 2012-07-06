@@ -2,7 +2,6 @@
 #include "detail/number.h"
 #include "detail/number_reader.h"
 #include "rose/number.h"
-#include "rose/string.h"
 
 #include <ctype.h>
 #include <gc/gc.h>
