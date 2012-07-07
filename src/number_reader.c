@@ -72,17 +72,6 @@ static void apply_exponent (mpq_t real, rint exponent)
     mpq_clear (pow_q);
 }
 
-static rsexp i_am_feeling_lucky (char const* text)
-{
-    char* end;
-    rint number = strtol (text, &end, 10);
-
-    if ('\0' != *end || number > INT30_MAX || number < INT30_MIN)
-        return R_FALSE;
-
-    return r_int_to_sexp (number);
-}
-
 static rboolean fix_exactness (rtribool exact,
                                mpq_t    real,
                                mpq_t    imag,
@@ -98,40 +87,35 @@ static rboolean fix_exactness (rtribool exact,
     return FALSE;
 }
 
-RNumberReader* r_number_reader_new ()
+static rsexp i_am_feeling_lucky (char const* text)
 {
-    RNumberReader* reader = GC_NEW (RNumberReader);
+    char* end;
+    rint number = strtol (text, &end, 10);
 
-    memset (reader, 0, sizeof (RNumberReader));
+    if ('\0' != *end || number > INT30_MAX || number < INT30_MIN)
+        return R_FALSE;
 
-    reader->begin = NULL;
-    reader->end   = NULL;
-    reader->pos   = NULL;
-
-    reader->exact = UNKNOWN;
-    reader->radix = 10u;
-
-    return reader;
+    return r_int_to_sexp (number);
 }
 
-void r_number_reader_feed_input (RNumberReader* reader, char const* text)
+static void r_number_reader_feed_input (RNumberReader* reader, char const* text)
 {
     reader->begin = text;
     reader->end   = text + strlen (text);
     reader->pos   = text;
 }
 
-char r_number_reader_lookahead (RNumberReader* reader, ruint n)
+static char r_number_reader_lookahead (RNumberReader* reader, ruint n)
 {
     return (reader->pos + n < reader->end) ? *(reader->pos + n) : '\0';
 }
 
-char r_number_reader_next (RNumberReader* reader)
+static char r_number_reader_next (RNumberReader* reader)
 {
     return (reader->pos < reader->end) ? *(reader->pos++) : '\0';
 }
 
-void r_number_reader_consume (RNumberReader* reader, ruint n)
+static void r_number_reader_consume (RNumberReader* reader, ruint n)
 {
     if (reader->pos + n > reader->end)
         reader->pos = reader->end;
@@ -139,111 +123,20 @@ void r_number_reader_consume (RNumberReader* reader, ruint n)
         reader->pos += n;
 }
 
-rboolean r_number_reader_eoi_p (RNumberReader* reader)
+static rboolean r_number_reader_eoi_p (RNumberReader* reader)
 {
     return reader->pos == reader->end;
 }
 
-char const* r_number_reader_mark (RNumberReader* reader)
+static char const* r_number_reader_mark (RNumberReader* reader)
 {
     return reader->pos;
 }
 
-rboolean r_number_reader_rewind (RNumberReader* reader, char const* mark)
+static rboolean r_number_reader_rewind (RNumberReader* reader, char const* mark)
 {
     reader->pos = mark;
     return FALSE;
-}
-
-/**
- *  start
- *      : number <EOI>
- *      ;
- */
-rsexp r_number_read (RNumberReader* reader, char const* text)
-{
-    rsexp number;
-
-    number = i_am_feeling_lucky (text);
-
-    if (!r_false_p (number))
-        return number;
-
-    r_number_reader_feed_input (reader, text);
-
-    MARK;
-
-    number = r_number_read_number (reader);
-
-    if (r_false_p (number))
-        return r_bool_to_sexp (REWIND);
-
-    if (!r_number_reader_eoi_p (reader))
-        return r_bool_to_sexp (REWIND);
-
-    return number;
-}
-
-/**
- *  number
- *      : prefix? (polar_complex / rect_complex)
- *      ;
- */
-rsexp r_number_read_number (RNumberReader* reader)
-{
-    rsexp number;
-    double rho;
-    double theta;
-    mpq_t real;
-    mpq_t imag;
-
-    MARK;
-    mpq_inits (real, imag, NULL);
-
-    r_number_read_prefix (reader);
-
-    if (r_number_read_polar_complex (reader, &rho, &theta)) {
-        number = r_flonum_new (rho * r_cos (theta), rho * r_sin (theta));
-        goto clear;
-    }
-
-    if (r_number_read_rect_complex (reader, real, imag)) {
-        double r;
-        double i;
-
-        if (FALSE == fix_exactness (reader->exact, real, imag, &r, &i))
-            number = r_flonum_new (r, i);
-        else
-            number = r_fixnum_new (real, imag);
-
-        goto clear;
-    }
-
-    number = r_bool_to_sexp (REWIND);
-
-clear:
-    mpq_clears (real, imag, NULL);
-    return number;
-}
-
-/**
- *  prefix
- *      : radix exactness?
- *      / exactness radix?
- *      /
- *      ;
- */
-rboolean r_number_read_prefix (RNumberReader* reader)
-{
-    if (r_number_read_radix (reader)) {
-        r_number_read_exactness (reader);
-        return TRUE;
-    }
-
-    if (r_number_read_exactness (reader))
-        r_number_read_radix (reader);
-
-    return TRUE;
 }
 
 /**
@@ -251,7 +144,7 @@ rboolean r_number_read_prefix (RNumberReader* reader)
  *      : '#' [bodx]
  *      ;
  */
-rboolean r_number_read_radix (RNumberReader* reader)
+static rboolean r_number_read_radix (RNumberReader* reader)
 {
     MARK;
 
@@ -273,7 +166,7 @@ rboolean r_number_read_radix (RNumberReader* reader)
  *      : '#' [ei]
  *      ;
  */
-rboolean r_number_read_exactness (RNumberReader* reader)
+static rboolean r_number_read_exactness (RNumberReader* reader)
 {
     MARK;
 
@@ -289,180 +182,98 @@ rboolean r_number_read_exactness (RNumberReader* reader)
 }
 
 /**
- *  polar_complex
- *      : real '@' real
+ *  prefix
+ *      : radix exactness?
+ *      / exactness radix?
+ *      /
  *      ;
  */
-rboolean r_number_read_polar_complex (RNumberReader* reader,
-                                      double*        rho,
-                                      double*        theta)
+static rboolean r_number_read_prefix (RNumberReader* reader)
 {
-    mpq_t r;
-    mpq_t t;
-    rboolean success;
+    if (r_number_read_radix (reader)) {
+        r_number_read_exactness (reader);
+        return TRUE;
+    }
 
-    MARK;
-    mpq_inits (r, t, NULL);
-
-    if (!r_number_read_real (reader, r))
-        goto fail;
-
-    if ('@' != NEXT)
-        goto fail;
-
-    if (!r_number_read_real (reader, t))
-        goto fail;
-
-    *rho    = mpq_get_d (r);
-    *theta  = mpq_get_d (t);
-    success = TRUE;
-
-    goto clear;
-
-fail:
-    success = REWIND;
-
-clear:
-    mpq_clears (r, t, NULL);
-    return success;
-}
-
-/**
- *  rect_complex
- *      : rect_i
- *      / rect_ri
- *      / rect_r
- *      ;
- */
-rboolean r_number_read_rect_complex (RNumberReader* reader,
-                                     mpq_t          real,
-                                     mpq_t          imag)
-{
-    MARK;
-
-    return r_number_read_rect_i (reader, real, imag)
-        || r_number_read_rect_ri (reader, real, imag)
-        || r_number_read_rect_r (reader, real, imag)
-        || REWIND;
-}
-
-/**
- *  rect_i
- *      : sign ureal? 'i'
- *      ;
- */
-rboolean r_number_read_rect_i (RNumberReader* reader, mpq_t real, mpq_t imag)
-{
-    rint sign = 1;
-    char i;
-
-    MARK;
-
-    mpq_set_ui (real, 0u, 1u);
-
-    if (!r_number_read_sign (reader, &sign))
-        return REWIND;
-
-    if (!r_number_read_ureal (reader, imag))
-        mpq_set_ui (imag, 1u, 1u);
-
-    if (sign < 0)
-        mpq_neg (imag, imag);
-
-    i = NEXT;
-
-    if ('i' != i && 'I' != i)
-        return REWIND;
+    if (r_number_read_exactness (reader))
+        r_number_read_radix (reader);
 
     return TRUE;
 }
 
 /**
- *  rect_ri
- *      : real sign ureal? 'i'
+ *  sign
+ *      : '+'
+ *      / '-'
  *      ;
  */
-rboolean r_number_read_rect_ri (RNumberReader* reader, mpq_t real, mpq_t imag)
+static rboolean r_number_read_sign (RNumberReader* reader, rint* sign)
 {
-    rint sign = 1;
-    char i;
-
     MARK;
 
-    if (!r_number_read_real (reader, real))
+    switch (NEXT) {
+        case '+': *sign =  1; return TRUE;
+        case '-': *sign = -1; return TRUE;
+    }
+
+    return REWIND;
+}
+
+/**
+ *  digit
+ *      : [01]      { when (radix == 2) }
+ *      / [0-7]     { when (radix == 8) }
+ *      / [0-9]     { when (radix == 10) }
+ *      / [0-9a-f]  { when (radix == 16) }
+ *      ;
+ */
+static rboolean r_number_read_digit (RNumberReader* reader, ruint* digit)
+{
+    if (!xdigit_to_uint (LOOKAHEAD, digit))
+        return FALSE;
+
+    if (*digit >= reader->radix)
+        return FALSE;
+
+    CONSUME;
+    return TRUE;
+}
+
+static rboolean r_number_read_digits (RNumberReader* reader, mpz_t digits)
+{
+    MARK;
+
+    ruint digit;
+
+    if (!r_number_read_digit (reader, &digit))
         return REWIND;
 
-    if (!r_number_read_sign (reader, &sign))
-        return REWIND;
+    mpz_set_ui (digits, digit);
 
-    if (!r_number_read_ureal (reader, imag))
-        mpq_set_ui (imag, 1u, 1u);
-
-    if (sign < 0)
-        mpq_neg (imag, imag);
-
-    i = NEXT;
-
-    if ('i' != i && 'I' != i)
-        return REWIND;
+    while (r_number_read_digit (reader, &digit)) {
+        mpz_mul_ui (digits, digits, reader->radix);
+        mpz_add_ui (digits, digits, digit);
+    }
 
     return TRUE;
 }
 
 /**
- *  rect_r
- *      : real
+ *  uinteger
+ *      : digit+ !'.'
  *      ;
  */
-rboolean r_number_read_rect_r (RNumberReader* reader, mpq_t real, mpq_t imag)
+static rboolean r_number_read_uinteger (RNumberReader* reader, mpz_t uinteger)
 {
     MARK;
 
-    if (!r_number_read_real (reader, real))
+    if (!r_number_read_digits (reader, uinteger))
         return REWIND;
 
-    mpq_set_ui (imag, 0u, 1u);
-
-    return TRUE;
-}
-
-/**
- *  real
- *      : sign? ureal
- *      ;
- */
-rboolean r_number_read_real (RNumberReader* reader, mpq_t real)
-{
-    rint sign = 1;
-
-    MARK;
-
-    r_number_read_sign (reader, &sign);
-
-    if (!r_number_read_ureal (reader, real))
+    if ('.' == LOOKAHEAD)
         return REWIND;
 
-    if (sign < 0)
-        mpq_neg (real, real);
-
     return TRUE;
-}
-
-/**
- *  ureal
- *      : rational
- *      / decimal       { when (radix == 10) }
- *      / ureal_uint
- *      ;
- */
-rboolean r_number_read_ureal (RNumberReader* reader, mpq_t ureal)
-{
-    MARK;
-
-    return r_number_read_rational (reader, ureal)
-        || r_number_read_decimal (reader, ureal)
-        || r_number_read_ureal_uint (reader, ureal)
-        || REWIND;
 }
 
 /**
@@ -470,7 +281,7 @@ rboolean r_number_read_ureal (RNumberReader* reader, mpq_t ureal)
  *      : uinteger '/' uinteger
  *      ;
  */
-rboolean r_number_read_rational (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_rational (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     mpz_t denom;
@@ -506,23 +317,36 @@ clear:
 }
 
 /**
- *  decimal
- *      : decimal_frac
- *      / decimal_int_frac
- *      / decimal_uint
+ *  suffix
+ *      : [esfdl] sign digit+
  *      ;
  */
-rboolean r_number_read_decimal (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_suffix (RNumberReader* reader, rint* exponent)
 {
-    if (10 != reader->radix)
-        return FALSE;
+    rint sign = 1;
+    ruint digit;
 
     MARK;
+    *exponent = 0;
 
-    return r_number_read_decimal_frac (reader, ureal)
-        || r_number_read_decimal_int_frac (reader, ureal)
-        || r_number_read_decimal_uint (reader, ureal)
-        || REWIND;
+    if (!strchr ("esfdl", LOOKAHEAD))
+        return REWIND;
+
+    CONSUME;
+
+    r_number_read_sign (reader, &sign);
+
+    if (!r_number_read_digit (reader, &digit))
+        return REWIND;
+
+    for (*exponent = digit; r_number_read_digit (reader, &digit); )
+        *exponent = (*exponent) * 10 + digit;
+
+    if (sign < 0)
+        *exponent = -(*exponent);
+
+    reader->exact = FALSE;
+    return TRUE;
 }
 
 /**
@@ -530,7 +354,7 @@ rboolean r_number_read_decimal (RNumberReader* reader, mpq_t ureal)
  *      : '.' digit+ suffix?
  *      ;
  */
-rboolean r_number_read_decimal_frac (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_decimal_frac (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     mpz_t denom;
@@ -581,7 +405,8 @@ clear:
  *      : digit+ '.' digit* suffix?
  *      ;
  */
-rboolean r_number_read_decimal_int_frac (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_decimal_int_frac (RNumberReader* reader,
+                                                mpq_t          ureal)
 {
     mpz_t numer;
     mpz_t denom;
@@ -630,7 +455,7 @@ clear:
  *      : uinteger suffix
  *      ;
  */
-rboolean r_number_read_decimal_uint (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_decimal_uint (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     rboolean success;
@@ -663,11 +488,31 @@ clear:
 }
 
 /**
+ *  decimal
+ *      : decimal_frac
+ *      / decimal_int_frac
+ *      / decimal_uint
+ *      ;
+ */
+static rboolean r_number_read_decimal (RNumberReader* reader, mpq_t ureal)
+{
+    if (10 != reader->radix)
+        return FALSE;
+
+    MARK;
+
+    return r_number_read_decimal_frac (reader, ureal)
+        || r_number_read_decimal_int_frac (reader, ureal)
+        || r_number_read_decimal_uint (reader, ureal)
+        || REWIND;
+}
+
+/**
  *  ureal_uint
  *      : uinteger
  *      ;
  */
-rboolean r_number_read_ureal_uint (RNumberReader* reader, mpq_t ureal)
+static rboolean r_number_read_ureal_uint (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     rboolean success;
@@ -693,109 +538,271 @@ clear:
 }
 
 /**
- *  suffix
- *      : [esfdl] sign digit+
+ *  ureal
+ *      : rational
+ *      / decimal       { when (radix == 10) }
+ *      / ureal_uint
  *      ;
  */
-rboolean r_number_read_suffix (RNumberReader* reader, rint* exponent)
+static rboolean r_number_read_ureal (RNumberReader* reader, mpq_t ureal)
+{
+    MARK;
+
+    return r_number_read_rational (reader, ureal)
+        || r_number_read_decimal (reader, ureal)
+        || r_number_read_ureal_uint (reader, ureal)
+        || REWIND;
+}
+
+/**
+ *  real
+ *      : sign? ureal
+ *      ;
+ */
+static rboolean r_number_read_real (RNumberReader* reader, mpq_t real)
 {
     rint sign = 1;
-    ruint digit;
 
     MARK;
-    *exponent = 0;
-
-    if (!strchr ("esfdl", LOOKAHEAD))
-        return REWIND;
-
-    CONSUME;
 
     r_number_read_sign (reader, &sign);
 
-    if (!r_number_read_digit (reader, &digit))
+    if (!r_number_read_ureal (reader, real))
         return REWIND;
-
-    for (*exponent = digit; r_number_read_digit (reader, &digit); )
-        *exponent = (*exponent) * 10 + digit;
 
     if (sign < 0)
-        *exponent = -(*exponent);
+        mpq_neg (real, real);
 
-    reader->exact = FALSE;
     return TRUE;
 }
 
 /**
- *  uinteger
- *      : digit+ !'.'
+ *  polar_complex
+ *      : real '@' real
  *      ;
  */
-rboolean r_number_read_uinteger (RNumberReader* reader, mpz_t uinteger)
+static rboolean r_number_read_polar_complex (RNumberReader* reader,
+                                             double*        rho,
+                                             double*        theta)
 {
+    mpq_t r;
+    mpq_t t;
+    rboolean success;
+
+    MARK;
+    mpq_inits (r, t, NULL);
+
+    if (!r_number_read_real (reader, r))
+        goto fail;
+
+    if ('@' != NEXT)
+        goto fail;
+
+    if (!r_number_read_real (reader, t))
+        goto fail;
+
+    *rho    = mpq_get_d (r);
+    *theta  = mpq_get_d (t);
+    success = TRUE;
+
+    goto clear;
+
+fail:
+    success = REWIND;
+
+clear:
+    mpq_clears (r, t, NULL);
+    return success;
+}
+
+/**
+ *  rect_ri
+ *      : real sign ureal? 'i'
+ *      ;
+ */
+static rboolean r_number_read_rect_ri (RNumberReader* reader,
+                                       mpq_t          real,
+                                       mpq_t          imag)
+{
+    rint sign = 1;
+    char i;
+
     MARK;
 
-    if (!r_number_read_digits (reader, uinteger))
+    if (!r_number_read_real (reader, real))
         return REWIND;
 
-    if ('.' == LOOKAHEAD)
+    if (!r_number_read_sign (reader, &sign))
+        return REWIND;
+
+    if (!r_number_read_ureal (reader, imag))
+        mpq_set_ui (imag, 1u, 1u);
+
+    if (sign < 0)
+        mpq_neg (imag, imag);
+
+    i = NEXT;
+
+    if ('i' != i && 'I' != i)
         return REWIND;
 
     return TRUE;
 }
 
-rboolean r_number_read_digits (RNumberReader* reader, mpz_t digits)
+/**
+ *  rect_i
+ *      : sign ureal? 'i'
+ *      ;
+ */
+static rboolean r_number_read_rect_i (RNumberReader* reader,
+                                      mpq_t          real,
+                                      mpq_t          imag)
+{
+    rint sign = 1;
+    char i;
+
+    MARK;
+
+    mpq_set_ui (real, 0u, 1u);
+
+    if (!r_number_read_sign (reader, &sign))
+        return REWIND;
+
+    if (!r_number_read_ureal (reader, imag))
+        mpq_set_ui (imag, 1u, 1u);
+
+    if (sign < 0)
+        mpq_neg (imag, imag);
+
+    i = NEXT;
+
+    if ('i' != i && 'I' != i)
+        return REWIND;
+
+    return TRUE;
+}
+
+/**
+ *  rect_r
+ *      : real
+ *      ;
+ */
+static rboolean r_number_read_rect_r (RNumberReader* reader,
+                                      mpq_t          real,
+                                      mpq_t          imag)
 {
     MARK;
 
-    ruint digit;
-
-    if (!r_number_read_digit (reader, &digit))
+    if (!r_number_read_real (reader, real))
         return REWIND;
 
-    mpz_set_ui (digits, digit);
+    mpq_set_ui (imag, 0u, 1u);
 
-    while (r_number_read_digit (reader, &digit)) {
-        mpz_mul_ui (digits, digits, reader->radix);
-        mpz_add_ui (digits, digits, digit);
+    return TRUE;
+}
+
+/**
+ *  rect_complex
+ *      : rect_i
+ *      / rect_ri
+ *      / rect_r
+ *      ;
+ */
+static rboolean r_number_read_rect_complex (RNumberReader* reader,
+                                            mpq_t          real,
+                                            mpq_t          imag)
+{
+    MARK;
+
+    return r_number_read_rect_i (reader, real, imag)
+        || r_number_read_rect_ri (reader, real, imag)
+        || r_number_read_rect_r (reader, real, imag)
+        || REWIND;
+}
+
+/**
+ *  number
+ *      : prefix? (polar_complex / rect_complex)
+ *      ;
+ */
+static rsexp r_number_read_number (RNumberReader* reader)
+{
+    rsexp number;
+    double rho;
+    double theta;
+    mpq_t real;
+    mpq_t imag;
+
+    MARK;
+    mpq_inits (real, imag, NULL);
+
+    r_number_read_prefix (reader);
+
+    if (r_number_read_polar_complex (reader, &rho, &theta)) {
+        number = r_flonum_new (rho * r_cos (theta), rho * r_sin (theta));
+        goto clear;
     }
 
-    return TRUE;
-}
+    if (r_number_read_rect_complex (reader, real, imag)) {
+        double r;
+        double i;
 
-/**
- *  digit
- *      : [01]      { when (radix == 2) }
- *      / [0-7]     { when (radix == 8) }
- *      / [0-9]     { when (radix == 10) }
- *      / [0-9a-f]  { when (radix == 16) }
- *      ;
- */
-rboolean r_number_read_digit (RNumberReader* reader, ruint* digit)
-{
-    if (!xdigit_to_uint (LOOKAHEAD, digit))
-        return FALSE;
+        if (FALSE == fix_exactness (reader->exact, real, imag, &r, &i))
+            number = r_flonum_new (r, i);
+        else
+            number = r_fixnum_new (real, imag);
 
-    if (*digit >= reader->radix)
-        return FALSE;
-
-    CONSUME;
-    return TRUE;
-}
-
-/**
- *  sign
- *      : '+'
- *      / '-'
- *      ;
- */
-rboolean r_number_read_sign (RNumberReader* reader, rint* sign)
-{
-    MARK;
-
-    switch (NEXT) {
-        case '+': *sign =  1; return TRUE;
-        case '-': *sign = -1; return TRUE;
+        goto clear;
     }
 
-    return REWIND;
+    number = r_bool_to_sexp (REWIND);
+
+clear:
+    mpq_clears (real, imag, NULL);
+    return number;
+}
+
+/**
+ *  start
+ *      : number <EOI>
+ *      ;
+ */
+rsexp r_number_read (RNumberReader* reader, char const* text)
+{
+    rsexp number;
+
+    number = i_am_feeling_lucky (text);
+
+    if (!r_false_p (number))
+        return number;
+
+    r_number_reader_feed_input (reader, text);
+
+    MARK;
+
+    number = r_number_read_number (reader);
+
+    if (r_false_p (number))
+        return r_bool_to_sexp (REWIND);
+
+    if (!r_number_reader_eoi_p (reader))
+        return r_bool_to_sexp (REWIND);
+
+    return number;
+}
+
+RNumberReader* r_number_reader_new ()
+{
+    RNumberReader* reader = GC_NEW (RNumberReader);
+
+    memset (reader, 0, sizeof (RNumberReader));
+
+    reader->begin = NULL;
+    reader->end   = NULL;
+    reader->pos   = NULL;
+
+    reader->exact = UNKNOWN;
+    reader->radix = 10u;
+
+    return reader;
 }
