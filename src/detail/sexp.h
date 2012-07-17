@@ -4,11 +4,18 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+typedef rboolean (*REqvPredicate)   (rsexp, rsexp);
+typedef rboolean (*REqPredicate)    (rsexp, rsexp);
+typedef rboolean (*REqualPredicate) (rsexp, rsexp);
+
 struct RType {
     rsize            cell_size;
     char const*      name;
-    RWriteFunction   write_fn;
-    RDisplayFunction display_fn;
+    RWriteFunction   write;
+    RDisplayFunction display;
+    REqvPredicate    eqv_p;
+    REqPredicate     eq_p;
+    REqualPredicate  equal_p;
 };
 
 struct RCell {

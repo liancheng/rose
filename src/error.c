@@ -38,18 +38,14 @@ static void r_error_display (rsexp port, rsexp obj)
 
 static RType* r_error_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (RError),
+        .name      = "port",
+        .write     = r_error_write,
+        .display   = r_error_display
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (RError);
-        type->name       = "port";
-        type->write_fn   = r_error_write;
-        type->display_fn = r_error_display;
-    }
-
-    return type;
+    return &type;
 }
 
 rsexp r_error_new (rsexp message, rsexp irritants)

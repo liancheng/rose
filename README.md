@@ -19,8 +19,8 @@ Use lowercase with prefix `r`, no `_` between words.  For example:
 Use `CamelCase` with prefix `R`.  All structures should be typedef'ed.  For
 example:
 
-    typedef struct RContext RContext
-    typedef struct RPair RPair
+    typedef struct RPair RPair;
+    typedef struct RHashTable RHashTable;
 
 Variable Names
 --------------
@@ -43,7 +43,7 @@ interface function names must be prefixed with `r_`.
 ### "Object methods"
 
 Almost all ADT (abstract data type) structures in ROSE have "method" functions.
-For example, the ADT `RHashTable` has theses methods:
+For example, the ADT `RHashTable` has these methods:
 
     RHashTable* r_hash_table_new  ();
     void        r_hash_table_free (RHashTable*);

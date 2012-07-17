@@ -19,10 +19,10 @@ static void r_register_boolean_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "boolean";
-    type->write_fn   = r_boolean_write;
-    type->display_fn = r_boolean_write;
+    type->cell_size = 0;
+    type->name      = "boolean";
+    type->write     = r_boolean_write;
+    type->display   = r_boolean_write;
 
     state->tc3_types [R_BOOLEAN_TAG] = type;
 }
@@ -48,10 +48,10 @@ static void r_register_special_const_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "special-const";
-    type->write_fn   = r_special_const_write;
-    type->display_fn = r_special_const_display;
+    type->cell_size = 0;
+    type->name      = "special-const";
+    type->write     = r_special_const_write;
+    type->display   = r_special_const_display;
 
     state->tc5_types [R_SPECIAL_CONST_TAG >> R_TC3_BITS] = type;
 }
@@ -65,10 +65,10 @@ static void r_register_int30_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "small-integer";
-    type->write_fn   = r_int30_write;
-    type->display_fn = r_int30_write;
+    type->cell_size = 0;
+    type->name      = "small-integer";
+    type->write     = r_int30_write;
+    type->display   = r_int30_write;
 
     state->tc3_types [R_INT30_EVEN_TAG] = type;
     state->tc3_types [R_INT30_ODD_TAG] = type;
@@ -108,10 +108,10 @@ static void r_register_character_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "character";
-    type->write_fn   = r_character_write;
-    type->display_fn = r_character_display;
+    type->cell_size = 0;
+    type->name      = "character";
+    type->write     = r_character_write;
+    type->display   = r_character_display;
 
     state->tc5_types [R_CHARACTER_TAG >> R_TC3_BITS] = type;
 }

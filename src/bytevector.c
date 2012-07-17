@@ -36,18 +36,14 @@ static void r_bytevector_write (rsexp port, rsexp obj)
 
 static RType* r_bytevector_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (RBytevector),
+        .name      = "bytevector",
+        .write     = r_bytevector_write,
+        .display   = r_bytevector_write
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (RBytevector);
-        type->name       = "bytevector";
-        type->write_fn   = r_bytevector_write;
-        type->display_fn = r_bytevector_write;
-    }
-
-    return type;
+    return &type;
 }
 
 rsexp r_bytevector_new (rsize k, rbyte fill)

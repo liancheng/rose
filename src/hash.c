@@ -27,7 +27,7 @@ struct RHashTable {
     rpointer*      values;
 };
 
-static const size_t prime_mod [] = {
+static const rsize prime_mod [] = {
     1,
     2,
     3,

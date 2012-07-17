@@ -40,18 +40,14 @@ static void r_env_write (rsexp port, rsexp obj)
 
 static RType* r_env_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (REnv),
+        .name      = "environment",
+        .write     = r_env_write,
+        .display   = r_env_write
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (REnv);
-        type->name       = "environment";
-        type->write_fn   = r_env_write;
-        type->display_fn = r_env_write;
-    }
-
-    return type;
+    return &type;
 }
 
 rboolean r_env_p (rsexp obj)

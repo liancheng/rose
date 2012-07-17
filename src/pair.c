@@ -182,10 +182,10 @@ void r_register_pair_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = sizeof (RPair);
-    type->name       = "pair";
-    type->write_fn   = r_pair_write;
-    type->display_fn = r_pair_display;
+    type->cell_size = sizeof (RPair);
+    type->name      = "pair";
+    type->write     = r_pair_write;
+    type->display   = r_pair_display;
 
     state->tc3_types [R_PAIR_TAG] = type;
 }

@@ -55,18 +55,14 @@ static void r_vector_display (rsexp port, rsexp obj)
 
 static RType* r_vector_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (RVector),
+        .name      = "vector",
+        .write     = r_vector_write,
+        .display   = r_vector_display
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (RVector);
-        type->name       = "vector";
-        type->write_fn   = r_vector_write;
-        type->display_fn = r_vector_display;
-    }
-
-    return type;
+    return &type;
 }
 
 rsexp r_vector_new (rsize k, rsexp fill)

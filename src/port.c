@@ -45,18 +45,14 @@ static void r_port_write (rsexp port, rsexp obj)
 
 static RType* r_port_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (RPort),
+        .name      = "port",
+        .write     = r_port_write,
+        .display   = r_port_write
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (RPort);
-        type->name       = "port";
-        type->write_fn   = r_port_write;
-        type->display_fn = r_port_write;
-    }
-
-    return type;
+    return &type;
 }
 
 RState* r_port_get_state (rsexp port)

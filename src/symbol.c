@@ -142,10 +142,10 @@ void r_register_symbol_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "symbol";
-    type->write_fn   = r_symbol_write;
-    type->display_fn = r_symbol_write;
+    type->cell_size = 0;
+    type->name      = "symbol";
+    type->write     = r_symbol_write;
+    type->display   = r_symbol_write;
 
     state->tc5_types [R_SYMBOL_TAG >> R_TC3_BITS] = type;
 }

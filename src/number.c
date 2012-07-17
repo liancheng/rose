@@ -88,10 +88,10 @@ void r_register_fixnum_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "fixnum";
-    type->write_fn   = r_fixnum_write;
-    type->display_fn = r_fixnum_write;
+    type->cell_size = 0;
+    type->name      = "fixnum";
+    type->write     = r_fixnum_write;
+    type->display   = r_fixnum_write;
 
     state->tc3_types [R_FIXNUM_TAG] = type;
 }
@@ -100,10 +100,10 @@ void r_register_flonum_type (RState* state)
 {
     RType* type = GC_NEW_ATOMIC (RType);
 
-    type->cell_size  = 0;
-    type->name       = "flonum";
-    type->write_fn   = r_flonum_write;
-    type->display_fn = r_flonum_write;
+    type->cell_size = 0;
+    type->name      = "flonum";
+    type->write     = r_flonum_write;
+    type->display   = r_flonum_write;
 
     state->tc3_types [R_FLONUM_TAG] = type;
 }

@@ -36,18 +36,14 @@ static void r_display_string (rsexp port, rsexp obj)
 
 static RType* r_string_type_info ()
 {
-    static RType* type = NULL;
+    static RType type = {
+        .cell_size = sizeof (RString),
+        .name      = "string",
+        .write     = r_write_string,
+        .display   = r_display_string
+    };
 
-    if (!type) {
-        type = GC_NEW_ATOMIC (RType);
-
-        type->cell_size  = sizeof (RString);
-        type->name       = "string";
-        type->write_fn   = r_write_string;
-        type->display_fn = r_display_string;
-    }
-
-    return type;
+    return &type;
 }
 
 rsexp r_string_new (char const* str)
