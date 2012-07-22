@@ -13,7 +13,7 @@ struct RError {
     rsexp  irritants;
 };
 
-#define ERROR_FROM_SEXP(obj) (*((RError*) obj))
+#define ERROR_FROM_SEXP(obj) ((RError*) (obj))
 #define ERROR_TO_SEXP(error) ((rsexp) error)
 
 static void r_error_write (rsexp port, rsexp obj)
@@ -39,10 +39,10 @@ static void r_error_display (rsexp port, rsexp obj)
 static RType* r_error_type_info ()
 {
     static RType type = {
-        .cell_size = sizeof (RError),
-        .name      = "port",
-        .write     = r_error_write,
-        .display   = r_error_display
+        .size    = sizeof (RError),
+        .name    = "port",
+        .write   = r_error_write,
+        .display = r_error_display
     };
 
     return &type;
@@ -61,32 +61,32 @@ rsexp r_error_new (rsexp message, rsexp irritants)
     return ERROR_TO_SEXP (res);
 }
 
-rboolean r_error_p (rsexp obj)
+rbool r_error_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           R_CELL_TYPE (obj) == r_error_type_info ();
+           R_SEXP_TYPE (obj) == r_error_type_info ();
 }
 
 rsexp r_error_get_message (rsexp error)
 {
     assert (r_error_p (error));
-    return ERROR_FROM_SEXP (error).message;
+    return ERROR_FROM_SEXP (error)->message;
 }
 
 rsexp r_error_get_irritants (rsexp error)
 {
     assert (r_error_p (error));
-    return ERROR_FROM_SEXP (error).irritants;
+    return ERROR_FROM_SEXP (error)->irritants;
 }
 
 void r_error_set_message_x (rsexp error, rsexp message)
 {
     assert (r_error_p (error) && r_string_p (message));
-    ERROR_FROM_SEXP (error).message = message;
+    ERROR_FROM_SEXP (error)->message = message;
 }
 
 void r_error_set_irritants_x (rsexp error, rsexp irritants)
 {
     assert (r_error_p (error));
-    ERROR_FROM_SEXP (error).irritants = irritants;
+    ERROR_FROM_SEXP (error)->irritants = irritants;
 }

@@ -9,8 +9,8 @@
 #include <string.h>
 
 #define QUARK_BLOCK_SIZE     1024
-#define QUARK_TO_SEXP(quark) ((rsexp) ((quark << R_TC5_BITS) | R_SYMBOL_TAG))
-#define QUARK_FROM_SEXP(obj) (obj >> R_TC5_BITS)
+#define QUARK_TO_SEXP(quark) ((rsexp) ((quark << R_TAG_BITS) | R_SYMBOL_TAG))
+#define QUARK_FROM_SEXP(obj) (obj >> R_TAG_BITS)
 
 typedef rword rquark;
 
@@ -41,7 +41,7 @@ static rquark quark_new (char* symbol, RSymbolTable* st)
 }
 
 static rquark string_to_quark_internal (char const*   symbol,
-                                        rboolean      duplicate,
+                                        rbool         duplicate,
                                         RSymbolTable* st)
 {
     rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
@@ -92,7 +92,7 @@ static ruint r_str_hash (rconstpointer str)
     return h;
 }
 
-static rboolean r_str_equal (rconstpointer lhs, rconstpointer rhs)
+static rbool r_str_equal (rconstpointer lhs, rconstpointer rhs)
 {
     return 0 == strcmp ((char const*) lhs, (char const*) rhs);
 }
@@ -140,12 +140,12 @@ char const* r_symbol_name (RState* state, rsexp obj)
 
 void r_register_symbol_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = 0,
+        .name    = "symbol",
+        .write   = r_symbol_write,
+        .display = r_symbol_write,
+    };
 
-    type->cell_size = 0;
-    type->name      = "symbol";
-    type->write     = r_symbol_write;
-    type->display   = r_symbol_write;
-
-    state->tc5_types [R_SYMBOL_TAG >> R_TC3_BITS] = type;
+    state->types [R_SYMBOL_TAG] = &type;
 }

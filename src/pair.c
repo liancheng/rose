@@ -101,7 +101,7 @@ rsexp r_set_cdr_x (rsexp pair, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-rboolean r_pair_equal_p (rsexp lhs, rsexp rhs)
+rbool r_pair_equal_p (rsexp lhs, rsexp rhs)
 {
     return r_pair_p (lhs) &&
            r_pair_p (rhs) &&
@@ -132,7 +132,7 @@ rsexp r_append_x (rsexp list, rsexp obj)
     return list;
 }
 
-rboolean r_list_p (rsexp obj)
+rbool r_list_p (rsexp obj)
 {
     return r_null_p (obj) ||
            (r_pair_p (obj) && r_list_p (r_cdr (obj)));
@@ -180,12 +180,12 @@ rsexp r_list_ref (rsexp list, rsize k)
 
 void r_register_pair_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = sizeof (RPair),
+        .name    = "pair",
+        .write   = r_pair_write,
+        .display = r_pair_display,
+    };
 
-    type->cell_size = sizeof (RPair);
-    type->name      = "pair";
-    type->write     = r_pair_write;
-    type->display   = r_pair_display;
-
-    state->tc3_types [R_PAIR_TAG] = type;
+    state->types [R_PAIR_TAG] = &type;
 }

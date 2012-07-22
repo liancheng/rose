@@ -335,8 +335,8 @@ static void r_hash_table_delete_node (RHashTable*   hash_table,
         hash_table->value_destructor (old_value);
 }
 
-rboolean r_hash_table_delete (RHashTable*   hash_table,
-                              rconstpointer key)
+rbool r_hash_table_delete (RHashTable*   hash_table,
+                           rconstpointer key)
 {
     ruint node_hash;
     rsize node_index;

@@ -14,13 +14,13 @@ struct RBytevector {
     rbyte* data;
 };
 
-#define BYTEVECTOR_FROM_SEXP(obj)   (*((RBytevector*) (obj)))
+#define BYTEVECTOR_FROM_SEXP(obj)   ((RBytevector*) (obj))
 #define BYTEVECTOR_TO_SEXP(bytevec) ((rsexp) (bytevec))
 
 static void r_bytevector_write (rsexp port, rsexp obj)
 {
     rsize i;
-    RBytevector* vec = &BYTEVECTOR_FROM_SEXP (obj);
+    RBytevector* vec = BYTEVECTOR_FROM_SEXP (obj);
 
     r_port_puts (port, "#u8(");
 
@@ -37,10 +37,10 @@ static void r_bytevector_write (rsexp port, rsexp obj)
 static RType* r_bytevector_type_info ()
 {
     static RType type = {
-        .cell_size = sizeof (RBytevector),
-        .name      = "bytevector",
-        .write     = r_bytevector_write,
-        .display   = r_bytevector_write
+        .size    = sizeof (RBytevector),
+        .name    = "bytevector",
+        .write   = r_bytevector_write,
+        .display = r_bytevector_write
     };
 
     return &type;
@@ -60,23 +60,23 @@ rsexp r_bytevector_new (rsize k, rbyte fill)
     return BYTEVECTOR_TO_SEXP (res);
 }
 
-rboolean r_bytevector_p (rsexp obj)
+rbool r_bytevector_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           (R_CELL_TYPE (obj) == r_bytevector_type_info ());
+           (R_SEXP_TYPE (obj) == r_bytevector_type_info ());
 }
 
 rsize r_bytevector_length (rsexp obj)
 {
     assert (r_bytevector_p (obj));
-    return BYTEVECTOR_FROM_SEXP (obj).length;
+    return BYTEVECTOR_FROM_SEXP (obj)->length;
 }
 
 rbyte r_bytevector_ref (rsexp obj, rsize k)
 {
     assert (r_bytevector_p (obj));
     assert (r_bytevector_length (obj) > k);
-    return BYTEVECTOR_FROM_SEXP (obj).data [k];
+    return BYTEVECTOR_FROM_SEXP (obj)->data [k];
 }
 
 rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
@@ -84,7 +84,7 @@ rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
     assert (r_bytevector_p (obj));
     assert (r_bytevector_length (obj) > k);
 
-    BYTEVECTOR_FROM_SEXP (obj).data [k] = byte;
+    BYTEVECTOR_FROM_SEXP (obj)->data [k] = byte;
 
     return R_UNSPECIFIED;
 }

@@ -47,9 +47,9 @@ static void r_fixnum_finalize (rpointer obj, rpointer client_data)
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
-static rsexp try_int30 (mpq_t real, mpq_t imag)
+static rsexp try_small_int (mpq_t real, mpq_t imag)
 {
-    rint int30;
+    rint smi;
 
     if (0 != mpq_cmp_ui (imag, 0u, 1u))
         return R_FALSE;
@@ -58,54 +58,66 @@ static rsexp try_int30 (mpq_t real, mpq_t imag)
 
     if (0 != mpz_cmp_ui (mpq_denref (real), 1u))
         return R_FALSE;
-    
+
     if (!mpz_fits_sint_p (mpq_numref (real)))
         return R_FALSE;
 
-    int30 = mpz_get_si (mpq_numref (real));
+    smi = mpz_get_si (mpq_numref (real));
 
-    if (int30 > INT30_MAX || int30 < INT30_MIN)
+    if (smi > SMI_MAX || smi < SMI_MIN)
         return R_FALSE;
 
-    return r_int_to_sexp (int30);
+    return r_int_to_sexp (smi);
 }
 
-rboolean r_number_p (rsexp obj)
+static RType* r_fixnum_type_info ()
 {
-    return r_int30_p (obj)
+    static RType type = {
+        .size    = sizeof (RFixnum),
+        .name    = "fixnum",
+        .write   = r_fixnum_write,
+        .display = r_fixnum_write,
+    };
+
+    return &type;
+}
+
+static RType* r_flonum_type_info ()
+{
+    static RType type = {
+        .size    = sizeof (RFlonum),
+        .name    = "flonum",
+        .write   = r_flonum_write,
+        .display = r_flonum_write,
+    };
+
+    return &type;
+}
+
+rbool r_number_p (rsexp obj)
+{
+    return r_smi_p (obj)
         || r_fixnum_p (obj)
         || r_flonum_p (obj);
 }
 
-rboolean r_byte_p (rsexp obj)
+rbool r_byte_p (rsexp obj)
 {
-    return r_int30_p (obj)
+    return r_smi_p (obj)
         && r_int_from_sexp (obj) >= 0
         && r_int_from_sexp (obj) <= 255;
 }
 
-void r_register_fixnum_type (RState* state)
+rbool r_fixnum_p (rsexp obj)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
-
-    type->cell_size = 0;
-    type->name      = "fixnum";
-    type->write     = r_fixnum_write;
-    type->display   = r_fixnum_write;
-
-    state->tc3_types [R_FIXNUM_TAG] = type;
+    return r_cell_p (obj) &&
+           R_SEXP_TYPE (obj) == r_fixnum_type_info ();
 }
 
-void r_register_flonum_type (RState* state)
+rbool r_flonum_p (rsexp obj)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
-
-    type->cell_size = 0;
-    type->name      = "flonum";
-    type->write     = r_flonum_write;
-    type->display   = r_flonum_write;
-
-    state->tc3_types [R_FLONUM_TAG] = type;
+    return r_cell_p (obj) &&
+           R_SEXP_TYPE (obj) == r_flonum_type_info ();
 }
 
 rsexp r_string_to_number (char const* text)
@@ -115,13 +127,14 @@ rsexp r_string_to_number (char const* text)
 
 rsexp r_fixnum_new (mpq_t real, mpq_t imag)
 {
-    rsexp number = try_int30 (real, imag);
+    rsexp number = try_small_int (real, imag);
 
     if (!r_false_p (number))
         return number;
 
     RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
 
+    fixnum->type = r_fixnum_type_info ();
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
@@ -135,6 +148,7 @@ rsexp r_flonum_new (double real, double imag)
 {
     RFlonum* flonum = GC_NEW_ATOMIC (RFlonum);
 
+    flonum->type = r_flonum_type_info ();
     flonum->real = real;
     flonum->imag = imag;
 

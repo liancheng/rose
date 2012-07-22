@@ -35,8 +35,7 @@ struct RState {
     rsexp         env;
     rsexp         current_input_port;
     rsexp         current_output_port;
-    RType*        tc3_types [1 << R_TC3_BITS];
-    RType*        tc5_types [1 << (R_TC5_BITS - R_TC3_BITS)];
+    RType**       types;
     rsexp         keywords [R_KEYWORD_COUNT];
 };
 

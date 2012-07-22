@@ -3,7 +3,7 @@
 
 #include "rose/sexp.h"
 
-#define r_symbol_p(obj) R_TC5_EQ_P ((obj), R_SYMBOL_TAG)
+#define r_symbol_p(obj)     (R_GET_TAG (obj) == R_SYMBOL_TAG)
 
 typedef struct RSymbolTable RSymbolTable;
 

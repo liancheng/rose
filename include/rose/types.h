@@ -14,7 +14,7 @@ typedef uintptr_t    rword;
 typedef void*        rpointer;
 typedef void const*  rconstpointer;
 typedef size_t       rsize;
-typedef int          rboolean;
+typedef int          rbool;
 typedef int          rtribool;
 typedef uint8_t      rbyte;
 

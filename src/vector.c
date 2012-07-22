@@ -15,7 +15,7 @@ struct RVector {
     rsexp* data;
 };
 
-#define VECTOR_FROM_SEXP(obj)   (*((RVector*) (obj)))
+#define VECTOR_FROM_SEXP(obj)   ((RVector*) (obj))
 #define VECTOR_TO_SEXP(vector)  ((rsexp) (vector))
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
@@ -56,10 +56,10 @@ static void r_vector_display (rsexp port, rsexp obj)
 static RType* r_vector_type_info ()
 {
     static RType type = {
-        .cell_size = sizeof (RVector),
-        .name      = "vector",
-        .write     = r_vector_write,
-        .display   = r_vector_display
+        .size    = sizeof (RVector),
+        .name    = "vector",
+        .write   = r_vector_write,
+        .display = r_vector_display
     };
 
     return &type;
@@ -96,13 +96,13 @@ rsexp r_vvector (rsize k, va_list args)
     return r_list_to_vector (r_vlist (k, args));
 }
 
-rboolean r_vector_p (rsexp obj)
+rbool r_vector_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           (R_CELL_TYPE (obj) == r_vector_type_info ());
+           (R_SEXP_TYPE (obj) == r_vector_type_info ());
 }
 
-rboolean r_vector_equal_p (rsexp lhs, rsexp rhs)
+rbool r_vector_equal_p (rsexp lhs, rsexp rhs)
 {
     rsize length;
     rsize k;
@@ -110,13 +110,13 @@ rboolean r_vector_equal_p (rsexp lhs, rsexp rhs)
     if (!r_vector_p (rhs))
         return FALSE;
 
-    length = VECTOR_FROM_SEXP (lhs).length;
+    length = VECTOR_FROM_SEXP (lhs)->length;
 
-    if (VECTOR_FROM_SEXP (rhs).length != length)
+    if (VECTOR_FROM_SEXP (rhs)->length != length)
         return FALSE;
 
-    rsexp* lhs_data = VECTOR_FROM_SEXP (lhs).data;
-    rsexp* rhs_data = VECTOR_FROM_SEXP (rhs).data;
+    rsexp* lhs_data = VECTOR_FROM_SEXP (lhs)->data;
+    rsexp* rhs_data = VECTOR_FROM_SEXP (rhs)->data;
 
     for (k = 0; k < length; ++k)
         if (!r_equal_p (lhs_data [k], rhs_data [k]))
@@ -129,15 +129,15 @@ rsexp r_vector_ref (rsexp vector, rsize k)
 {
     assert (r_vector_p (vector));
     assert (r_vector_length (vector) > k);
-    return VECTOR_FROM_SEXP (vector).data [k];
+    return VECTOR_FROM_SEXP (vector)->data [k];
 }
 
 rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
 {
     assert (r_vector_p (vector));
-    assert (VECTOR_FROM_SEXP (vector).length > k);
+    assert (VECTOR_FROM_SEXP (vector)->length > k);
 
-    VECTOR_FROM_SEXP (vector).data [k] = obj;
+    VECTOR_FROM_SEXP (vector)->data [k] = obj;
 
     return R_UNSPECIFIED;
 }
@@ -145,7 +145,7 @@ rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
 rsize r_vector_length (rsexp vector)
 {
     assert (r_vector_p (vector));
-    return VECTOR_FROM_SEXP (vector).length;
+    return VECTOR_FROM_SEXP (vector)->length;
 }
 
 rsexp r_list_to_vector (rsexp list)

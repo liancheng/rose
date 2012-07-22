@@ -13,24 +13,24 @@ struct REnv{
     RHashTable* bindings;
 };
 
-#define ENV_FROM_SEXP(obj)  (*((REnv*) obj))
+#define ENV_FROM_SEXP(obj)  ((REnv*) (obj))
 #define ENV_TO_SEXP(env)    ((rsexp) env)
 
 static RType* r_env_type_info ();
 
 static inline void env_set_parent_x (rsexp env, rsexp parent)
 {
-    ENV_FROM_SEXP (env).parent = parent;
+    ENV_FROM_SEXP (env)->parent = parent;
 }
 
 static inline rsexp r_env_get_parent (rsexp env)
 {
-    return ENV_FROM_SEXP (env).parent;
+    return ENV_FROM_SEXP (env)->parent;
 }
 
 static inline void env_finalize (rpointer obj, rpointer client_data)
 {
-    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj).bindings);
+    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
 }
 
 static void r_env_write (rsexp port, rsexp obj)
@@ -41,19 +41,19 @@ static void r_env_write (rsexp port, rsexp obj)
 static RType* r_env_type_info ()
 {
     static RType type = {
-        .cell_size = sizeof (REnv),
-        .name      = "environment",
-        .write     = r_env_write,
-        .display   = r_env_write
+        .size    = sizeof (REnv),
+        .name    = "environment",
+        .write   = r_env_write,
+        .display = r_env_write
     };
 
     return &type;
 }
 
-rboolean r_env_p (rsexp obj)
+rbool r_env_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           R_CELL_TYPE (obj) == r_env_type_info ();
+           R_SEXP_TYPE (obj) == r_env_type_info ();
 }
 
 rsexp r_env_new ()
@@ -87,7 +87,7 @@ rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
 
 static rsexp frame_lookup (rsexp frame, rsexp var)
 {
-    rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame).bindings,
+    rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame)->bindings,
                                      (rconstpointer) var);
 
     return val ? (rsexp) val : R_UNDEFINED;
@@ -114,7 +114,7 @@ void r_env_define (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
 
-    r_hash_table_put (ENV_FROM_SEXP (env).bindings,
+    r_hash_table_put (ENV_FROM_SEXP (env)->bindings,
                       (rpointer) var,
                       (rpointer) val);
 }
@@ -123,7 +123,7 @@ void r_env_set_x (rsexp env, rsexp var, rsexp val)
 {
     assert (r_env_p (env));
 
-    r_hash_table_put (ENV_FROM_SEXP (env).bindings,
+    r_hash_table_put (ENV_FROM_SEXP (env)->bindings,
                       (rpointer) var,
                       (rpointer) val);
 }

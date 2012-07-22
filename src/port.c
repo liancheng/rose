@@ -40,16 +40,16 @@ static rsexp r_open_file (RState* state, char const* filename, rint mode)
 
 static void r_port_write (rsexp port, rsexp obj)
 {
-    r_port_printf (port, "#<port %s>", PORT_FROM_SEXP (obj).name);
+    r_port_printf (port, "#<port %s>", PORT_FROM_SEXP (obj)->name);
 }
 
 static RType* r_port_type_info ()
 {
     static RType type = {
-        .cell_size = sizeof (RPort),
-        .name      = "port",
-        .write     = r_port_write,
-        .display   = r_port_write
+        .size    = sizeof (RPort),
+        .name    = "port",
+        .write   = r_port_write,
+        .display = r_port_write
     };
 
     return &type;
@@ -57,7 +57,7 @@ static RType* r_port_type_info ()
 
 RState* r_port_get_state (rsexp port)
 {
-    return PORT_FROM_SEXP (port).state;
+    return PORT_FROM_SEXP (port)->state;
 }
 
 rsexp r_open_input_file (RState* state, char const* filename)
@@ -88,7 +88,7 @@ rsexp r_stdout_port (RState* state)
 
 rsexp r_port_get_name (rsexp port)
 {
-    return PORT_FROM_SEXP (port).name;
+    return PORT_FROM_SEXP (port)->name;
 }
 
 void r_close_input_port (rsexp port)
@@ -106,27 +106,27 @@ void r_close_port (rsexp port)
     fclose (PORT_TO_FILE (port));
 }
 
-rboolean r_eof_p (rsexp port)
+rbool r_eof_p (rsexp port)
 {
     return 0 != feof (PORT_TO_FILE (port));
 }
 
-rboolean r_port_p (rsexp obj)
+rbool r_port_p (rsexp obj)
 {
     return r_cell_p (obj) &&
-           R_CELL_TYPE (obj) == r_port_type_info ();
+           R_SEXP_TYPE (obj) == r_port_type_info ();
 }
 
-rboolean r_input_port_p (rsexp obj)
+rbool r_input_port_p (rsexp obj)
 {
     return r_port_p (obj) &&
-           PORT_FROM_SEXP (obj).mode == INPUT_PORT;
+           PORT_FROM_SEXP (obj)->mode == INPUT_PORT;
 }
 
-rboolean r_output_port_p (rsexp obj)
+rbool r_output_port_p (rsexp obj)
 {
     return r_port_p (obj) &&
-           PORT_FROM_SEXP (obj).mode == OUTPUT_PORT;
+           PORT_FROM_SEXP (obj)->mode == OUTPUT_PORT;
 }
 
 rint r_port_printf (rsexp port, char const* format, ...)

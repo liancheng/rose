@@ -7,24 +7,22 @@
 
 void r_register_pair_type   (RState* state);
 void r_register_symbol_type (RState* state);
-void r_register_fixnum_type (RState* state);
-void r_register_flonum_type (RState* state);
 
-static void r_boolean_write (rsexp port, rsexp obj)
+static void r_bool_write (rsexp port, rsexp obj)
 {
     r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
 }
 
-static void r_register_boolean_type (RState* state)
+static void r_register_bool_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = 0,
+        .name    = "boolean",
+        .write   = r_bool_write,
+        .display = r_bool_write,
+    };
 
-    type->cell_size = 0;
-    type->name      = "boolean";
-    type->write     = r_boolean_write;
-    type->display   = r_boolean_write;
-
-    state->tc3_types [R_BOOLEAN_TAG] = type;
+    state->types [R_BOOL_TAG] = &type;
 }
 
 static void r_special_const_write (rsexp port, rsexp obj)
@@ -36,7 +34,7 @@ static void r_special_const_write (rsexp port, rsexp obj)
         "#<unspecified>",
     };
 
-    r_port_puts (port, str [obj >> R_TC5_BITS]);
+    r_port_puts (port, str [obj >> R_TAG_BITS]);
 }
 
 static void r_special_const_display (rsexp port, rsexp obj)
@@ -46,35 +44,35 @@ static void r_special_const_display (rsexp port, rsexp obj)
 
 static void r_register_special_const_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = 0,
+        .name    = "special-const",
+        .write   = r_special_const_write,
+        .display = r_special_const_display,
+    };
 
-    type->cell_size = 0;
-    type->name      = "special-const";
-    type->write     = r_special_const_write;
-    type->display   = r_special_const_display;
-
-    state->tc5_types [R_SPECIAL_CONST_TAG >> R_TC3_BITS] = type;
+    state->types [R_SPECIAL_CONST_TAG] = &type;
 }
 
-static void r_int30_write (rsexp port, rsexp obj)
+static void r_smi_write (rsexp port, rsexp obj)
 {
     r_port_printf (port, "%d", r_int_from_sexp (obj));
 }
 
-static void r_register_int30_type (RState* state)
+static void r_register_smi_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = 0,
+        .name    = "small-integer",
+        .write   = r_smi_write,
+        .display = r_smi_write,
+    };
 
-    type->cell_size = 0;
-    type->name      = "small-integer";
-    type->write     = r_int30_write;
-    type->display   = r_int30_write;
-
-    state->tc3_types [R_INT30_EVEN_TAG] = type;
-    state->tc3_types [R_INT30_ODD_TAG] = type;
+    state->types [R_SMI_EVEN_TAG] = &type;
+    state->types [R_SMI_ODD_TAG]  = &type;
 }
 
-static void r_character_write (rsexp port, rsexp obj)
+static void r_char_write (rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
     char* name = NULL;
@@ -99,46 +97,36 @@ static void r_character_write (rsexp port, rsexp obj)
         r_write_char (port, ch);
 }
 
-static void r_character_display (rsexp port, rsexp obj)
+static void r_char_display (rsexp port, rsexp obj)
 {
     r_write_char (port, r_char_from_sexp (obj));
 }
 
-static void r_register_character_type (RState* state)
+static void r_register_char_type (RState* state)
 {
-    RType* type = GC_NEW_ATOMIC (RType);
+    static RType type = {
+        .size    = 0,
+        .name    = "character",
+        .write   = r_char_write,
+        .display = r_char_display,
+    };
 
-    type->cell_size = 0;
-    type->name      = "character";
-    type->write     = r_character_write;
-    type->display   = r_character_display;
-
-    state->tc5_types [R_CHARACTER_TAG >> R_TC3_BITS] = type;
+    state->types [R_CHAR_TAG] = &type;
 }
 
 RType* r_sexp_get_type (RState* state, rsexp obj)
 {
-    rint tc3 = (obj & R_TC3_MASK);
-
-    if (R_CELL_TAG == tc3)
-        return R_CELL_TYPE (obj);
-
-    if (R_TC5_TAG == tc3) {
-        rint tc5 = (obj & R_TC5_MASK);
-        return state->tc5_types [tc5 >> R_TC3_BITS];
-    }
-
-    return state->tc3_types [tc3];
+    return (r_cell_p (obj))
+           ? R_SEXP_TYPE (obj)
+           : state->types [R_GET_TAG (obj)];
 }
 
-void r_register_tc3_types (RState* state)
+void r_register_types (RState* state)
 {
-    r_register_boolean_type (state);
+    r_register_bool_type (state);
     r_register_special_const_type (state);
     r_register_pair_type (state);
     r_register_symbol_type (state);
-    r_register_int30_type (state);
-    r_register_character_type (state);
-    r_register_fixnum_type (state);
-    r_register_flonum_type (state);
+    r_register_smi_type (state);
+    r_register_char_type (state);
 }

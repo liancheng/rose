@@ -5,8 +5,8 @@
 
 typedef struct RHashTable RHashTable;
 
-typedef ruint    (*RHashFunction)  (rconstpointer data);
-typedef rboolean (*REqualFunction) (rconstpointer lhs,
+typedef ruint (*RHashFunction)  (rconstpointer data);
+typedef rbool (*REqualFunction) (rconstpointer lhs,
                                     rconstpointer rhs);
 typedef void     (*RDestructor)    (rconstpointer data);
 
@@ -22,7 +22,7 @@ rpointer    r_hash_table_get      (RHashTable*    hash_table,
 void        r_hash_table_put      (RHashTable*    hash_table,
                                    rpointer       key,
                                    rpointer       value);
-rboolean    r_hash_table_delete   (RHashTable*    hash_table,
+rbool       r_hash_table_delete   (RHashTable*    hash_table,
                                    rconstpointer  key);
 void        r_hash_table_clear    (RHashTable*    hash_table);
 
