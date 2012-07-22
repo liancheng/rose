@@ -110,13 +110,13 @@ rbool r_byte_p (rsexp obj)
 
 rbool r_fixnum_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            R_SEXP_TYPE (obj) == r_fixnum_type_info ();
 }
 
 rbool r_flonum_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            R_SEXP_TYPE (obj) == r_flonum_type_info ();
 }
 

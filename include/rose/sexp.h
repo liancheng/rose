@@ -15,9 +15,9 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
  *  Tagged Pointer Patterns
  *  =======================
  *
- *  Non-immediate types
+ *  Non-immediate types (end with #b00)
  *
- *  - #b000: pointer to cells (heap objects)
+ *  - #b000: pointer to boxed heap object
  *  - #b100: pair
  *
  *  Immediate types
@@ -25,21 +25,21 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
  *  - #b001: boolean
  *  - #b010: character
  *  - #b011: even small integer
- *  - #b101: special constants ('(), eof, unspecified, undefined)
- *  - #b110: symbols
+ *  - #b101: special constant ('(), eof, unspecified, undefined)
+ *  - #b110: symbol
  *  - #b111: odd small integer
  */
 
 #define R_TAG_BITS              3
 #define R_SMI_BITS              2
-#define R_HEAP_BITS             2
+#define R_HEAP_OBJ_BITS         2
 #define R_TAG_MASK              0x07
 #define R_SMI_MASK              0x03
-#define R_HEAP_MASK             0x03
+#define R_HEAP_OBJ_MASK         0x03
 
-#define R_CELL_TAG              0x00
+#define R_BOXED_TAG             0x00
 #define R_PAIR_TAG              0x04
-#define R_HEAP_TAG              0x00
+#define R_HEAP_OBJ_TAG          0x00
 
 #define R_BOOL_TAG              0x01
 #define R_CHAR_TAG              0x02
@@ -61,9 +61,9 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 #define R_GET_TAG(obj)          ((obj) & R_TAG_MASK)
 
-#define r_cell_p(obj)           (R_GET_TAG (obj) == R_CELL_TAG)
-#define r_heap_p(obj)           (((obj) & R_HEAP_MASK) == R_HEAP_TAG)
-#define r_immediate_p(obj)      (!(r_heap_p (obj)))
+#define r_boxed_p(obj)          (R_GET_TAG (obj) == R_BOXED_TAG)
+#define r_heap_obj_p(obj)       (((obj) & R_HEAP_OBJ_MASK) == R_HEAP_OBJ_TAG)
+#define r_immediate_p(obj)      (!(R_HEAP_OBJ_p (obj)))
 
 #define r_bool_p(obj)           (R_GET_TAG (obj) == R_BOOL_TAG)
 #define r_false_p(obj)          ((obj) == R_FALSE)

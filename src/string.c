@@ -59,7 +59,7 @@ rsexp r_string_new (char const* str)
 
 rbool r_string_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            (R_SEXP_TYPE (obj) == r_string_type_info ());
 }
 

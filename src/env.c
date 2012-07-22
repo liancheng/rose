@@ -52,7 +52,7 @@ static RType* r_env_type_info ()
 
 rbool r_env_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            R_SEXP_TYPE (obj) == r_env_type_info ();
 }
 

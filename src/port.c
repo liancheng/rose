@@ -113,7 +113,7 @@ rbool r_eof_p (rsexp port)
 
 rbool r_port_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            R_SEXP_TYPE (obj) == r_port_type_info ();
 }
 

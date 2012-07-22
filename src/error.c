@@ -63,7 +63,7 @@ rsexp r_error_new (rsexp message, rsexp irritants)
 
 rbool r_error_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            R_SEXP_TYPE (obj) == r_error_type_info ();
 }
 

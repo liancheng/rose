@@ -98,7 +98,7 @@ rsexp r_vvector (rsize k, va_list args)
 
 rbool r_vector_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            (R_SEXP_TYPE (obj) == r_vector_type_info ());
 }
 

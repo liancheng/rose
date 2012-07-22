@@ -62,7 +62,7 @@ rsexp r_bytevector_new (rsize k, rbyte fill)
 
 rbool r_bytevector_p (rsexp obj)
 {
-    return r_cell_p (obj) &&
+    return r_boxed_p (obj) &&
            (R_SEXP_TYPE (obj) == r_bytevector_type_info ());
 }
 

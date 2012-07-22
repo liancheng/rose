@@ -116,7 +116,7 @@ static void r_register_char_type (RState* state)
 
 RType* r_sexp_get_type (RState* state, rsexp obj)
 {
-    return (r_cell_p (obj))
+    return (r_boxed_p (obj))
            ? R_SEXP_TYPE (obj)
            : state->types [R_GET_TAG (obj)];
 }
