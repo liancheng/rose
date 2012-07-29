@@ -71,7 +71,7 @@ static rsexp i_am_feeling_lucky (char const* text)
     char* end;
     rint number = strtol (text, &end, 10);
 
-    if ('\0' != *end || number > SMI_MAX || number < SMI_MIN)
+    if ('\0' != *end || number > R_SMI_MAX || number < R_SMI_MIN)
         return R_FALSE;
 
     return r_int_to_sexp (number);
@@ -724,10 +724,9 @@ static rsexp read_number (RNumberReader* reader)
         double r;
         double i;
 
-        if (FALSE == fix_exactness (reader->exact, real, imag, &r, &i))
-            number = r_flonum_new (r, i);
-        else
-            number = r_fixnum_new (real, imag);
+        number = fix_exactness (reader->exact, real, imag, &r, &i)
+               ? r_fixnum_new (real, imag)
+               : r_flonum_new (r, i);
 
         goto clear;
     }

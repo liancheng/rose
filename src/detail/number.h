@@ -4,17 +4,19 @@
 #include "detail/gmp.h"
 #include "rose/sexp.h"
 
-struct RFixnum {
+typedef struct {
     RType* type;
     mpq_t  real;
     mpq_t  imag;
-};
+}
+RFixnum;
 
-struct RFlonum {
+typedef struct {
     RType* type;
     double real;
     double imag;
-};
+}
+RFlonum;
 
 #define FIXNUM_TO_SEXP(fixnum)  ((rsexp) (fixnum))
 #define FIXNUM_FROM_SEXP(obj)   ((RFixnum*) (obj))

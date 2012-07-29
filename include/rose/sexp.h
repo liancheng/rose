@@ -12,22 +12,31 @@ typedef void (*RWriteFunction)   (rsexp, rsexp);
 typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 /**
- *  Tagged Pointer Patterns
- *  =======================
+ * \defgroup TaggedPointer Tagged pointer
  *
- *  Non-immediate types (end with #b00)
+ * \{
  *
- *  - #b000: pointer to boxed heap object
- *  - #b100: pair
+ * \section Tagged Pointer Patterns
  *
- *  Immediate types
+ * Rose uses tagged pointers to represent Scheme objects.  This representation
+ * is based on the assumption that heap allocated data must be aligned on an
+ * 8-byte boundary, which is true for almost all operating systems.  In this
+ * case, the lower three bits of the pointer are known to be zero, and we can
+ * store type information within these bits.
  *
- *  - #b001: boolean
- *  - #b010: character
- *  - #b011: even small integer
- *  - #b101: special constant ('(), eof, unspecified, undefined)
- *  - #b110: symbol
- *  - #b111: odd small integer
+ * Non-immediate types (end with #b00):
+ *
+ * - #b000: pointer to boxed heap object
+ * - #b100: pair
+ *
+ * Immediate types:
+ *
+ * - #b001: boolean
+ * - #b010: character (see below)
+ * - #b011: even small integer (SMI)
+ * - #b101: special constant (see below)
+ * - #b110: symbol
+ * - #b111: odd small integer (SMI)
  */
 
 #define R_TAG_BITS              3
@@ -80,5 +89,7 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 #define r_char_to_sexp(c)       (((c) << R_TAG_BITS) | R_CHAR_TAG)
 #define r_char_from_sexp(obj)   ((obj) >> R_TAG_BITS)
+
+/** \} */
 
 #endif  //  __ROSE_SEXP_H__

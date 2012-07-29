@@ -3,38 +3,100 @@
 
 #include "rose/sexp.h"
 
+#include <limits.h>
+
+#include <stdio.h>
 #include <gmp.h>
 
-#define r_int_to_sexp(n)        ((rsexp) (((n) << R_SMI_BITS) | R_SMI_TAG))
-#define r_int_from_sexp(obj)    (((rint) (obj)) >> R_SMI_BITS)
-#define r_smi_p(obj)            (((obj) & R_SMI_MASK) == R_SMI_TAG)
+/// Parses a number from string \a text.
+rsexp r_string_to_number (char const* text);
 
-#define R_ZERO                  r_int_to_sexp (0)
-#define R_ONE                   r_int_to_sexp (1)
-#define SMI_MAX                 ((1 << (sizeof (rsexp) - 2)) - 1)
-#define SMI_MIN                 (-((1 << (sizeof (rsexp) - 2))))
+/// \defgroup Flonum Float pointer number
+/// \{
 
-typedef struct RFixnum RFixnum;
-typedef struct RFlonum RFlonum;
+/// Creates a flonum, whose real part is \a real, imaginary part is \a imag.
+rsexp r_flonum_new (double real, double imag);
 
-rsexp r_fixnum_new        (mpq_t       real,
-                           mpq_t       imag);
-rsexp r_flonum_new        (double      real,
-                           double      imag);
+/// Predicates whether \a obj is a flonum.
+rbool r_flonum_p (rsexp obj);
 
-rbool r_number_p          (rsexp       obj);
-rbool r_byte_p            (rsexp       obj);
-rbool r_fixnum_p          (rsexp       obj);
-rbool r_flonum_p          (rsexp       obj);
+/// Sets the real part of flonum \a obj to \a real.
+void  r_flonum_set_real_x (rsexp obj, double real);
 
-void  r_fixnum_set_real_x (rsexp       obj,
-                           mpq_t       real);
-void  r_fixnum_set_imag_x (rsexp       obj,
-                           mpq_t       imag);
-void  r_flonum_set_real_x (rsexp       obj,
-                           double      real);
-void  r_flonum_set_imag_x (rsexp       obj,
-                           double      imag);
-rsexp r_string_to_number  (char const* text);
+/// Sets the imaginary part of flonum \a obj to \a imag.
+void r_flonum_set_imag_x (rsexp obj, double imag);
+
+/// \}
+
+/// \defgroup Fixnum Fixed pointer number
+/// \{
+
+/// Creates a fixnum, whose real part is \a real, imaginary part is \a imag.
+rsexp r_fixnum_new (mpq_t real, mpq_t imag);
+
+/// Creates a fixnum, whose real part is \a real, imaginary part is 0.
+rsexp r_fixreal_new (mpq_t real);
+
+/// Converts fixnum \a obj to small integer if possible.
+rsexp r_fixnum_normalize (rsexp obj);
+
+/// Predicates whether \a obj is a fixnum.
+rbool r_fixnum_p (rsexp obj);
+
+/// Sets the imaginary part of fixnum \a obj to \a imag.
+void r_fixnum_set_real_x (rsexp obj, mpq_t real);
+
+/// Sets the real part of fixnum \a obj to \a real.
+void r_fixnum_set_imag_x (rsexp obj, mpq_t imag);
+
+/// Boxes small integer \a n into an s-expression.
+rsexp r_int_to_sexp (rint n);
+
+/// Unboxes a small integer from s-expression \a obj.
+static inline rint r_int_from_sexp (rsexp obj)
+{
+    return ((rint) obj) >> R_SMI_BITS;
+}
+
+/// \def r_small_int_p(obj)
+/// Predicates whether \a obj is a small integer.
+#define r_small_int_p(obj)  (((obj) & R_SMI_MASK) == R_SMI_TAG)
+
+/// Predicates whether \a obj represents an unsigned byte.
+static inline rbool r_byte_p (rsexp obj)
+{
+    if (!r_small_int_p (obj))
+        return FALSE;
+
+    rint i = r_int_from_sexp (obj);
+
+    return i >= 0 && i <= 255;
+}
+
+/// Predicates whether \a obj is a fixnum, a flonum or a small integer.
+inline rbool r_number_p (rsexp obj)
+{
+    return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj);
+}
+
+/// \def R_ZERO
+/// Small integer
+#define R_ZERO r_int_to_sexp (0)
+
+/// \def R_ONE
+/// Small integer constant 1.
+#define R_ONE r_int_to_sexp (1)
+
+#define R_SEXP_BITS (sizeof (rsexp) * CHAR_BIT)
+
+/// \def R_SMI_MAX
+/// Maximum value of signed small integer.
+#define R_SMI_MAX ((1 << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
+
+/// \def R_SMI_MAX
+/// Minimum value of signed small integer.
+#define R_SMI_MIN (-R_SMI_MAX - 1)
+
+/// \}
 
 #endif  //  __ROSE_NUMBER_H__

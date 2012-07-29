@@ -7,6 +7,7 @@
 #include "rose/number.h"
 #include "rose/port.h"
 
+#include <assert.h>
 #include <gc/gc.h>
 #include <string.h>
 
@@ -64,7 +65,7 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
 
     smi = mpz_get_si (mpq_numref (real));
 
-    if (smi > SMI_MAX || smi < SMI_MIN)
+    if (smi > R_SMI_MAX || smi < R_SMI_MIN)
         return R_FALSE;
 
     return r_int_to_sexp (smi);
@@ -94,18 +95,15 @@ static RType* r_flonum_type_info ()
     return &type;
 }
 
-rbool r_number_p (rsexp obj)
+static RFixnum* fixnum_new ()
 {
-    return r_smi_p (obj)
-        || r_fixnum_p (obj)
-        || r_flonum_p (obj);
-}
+    RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
 
-rbool r_byte_p (rsexp obj)
-{
-    return r_smi_p (obj)
-        && r_int_from_sexp (obj) >= 0
-        && r_int_from_sexp (obj) <= 255;
+    fixnum->type = r_fixnum_type_info ();
+    mpq_inits (fixnum->real, fixnum->imag, NULL);
+    GC_REGISTER_FINALIZER (fixnum, r_fixnum_finalize, NULL, NULL, NULL);
+
+    return fixnum;
 }
 
 rbool r_fixnum_p (rsexp obj)
@@ -132,16 +130,28 @@ rsexp r_fixnum_new (mpq_t real, mpq_t imag)
     if (!r_false_p (number))
         return number;
 
-    RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
-
-    fixnum->type = r_fixnum_type_info ();
-    mpq_inits (fixnum->real, fixnum->imag, NULL);
+    RFixnum* fixnum = fixnum_new ();
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
 
-    GC_REGISTER_FINALIZER (fixnum, r_fixnum_finalize, NULL, NULL, NULL);
-
     return FIXNUM_TO_SEXP (fixnum);
+}
+
+rsexp r_fixreal_new (mpq_t real)
+{
+    RFixnum* fixnum = fixnum_new ();
+    mpq_set (fixnum->real, real);
+    return FIXNUM_TO_SEXP (fixnum);
+}
+
+rsexp r_fixnum_normalize (rsexp obj)
+{
+    assert (r_fixnum_p (obj));
+
+    rsexp smi = try_small_int (FIXNUM_FROM_SEXP (obj)->real,
+                               FIXNUM_FROM_SEXP (obj)->imag);
+
+    return r_false_p (smi) ? obj : smi;
 }
 
 rsexp r_flonum_new (double real, double imag)
@@ -173,4 +183,16 @@ void r_flonum_set_real_x (rsexp obj, double real)
 void r_flonum_set_imag_x (rsexp obj, double imag)
 {
     FLONUM_FROM_SEXP (obj)->imag = imag;
+}
+
+rsexp r_int_to_sexp (rint n)
+{
+    if (n >= R_SMI_MIN && n <= R_SMI_MAX)
+        return (n << R_SMI_BITS) | R_SMI_TAG;
+
+    mpq_t real;
+    mpq_init (real);
+    mpq_set_si (real, n, 1);
+
+    return r_fixreal_new (real);
 }
