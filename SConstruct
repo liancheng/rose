@@ -2,13 +2,12 @@ from os import environ
 
 env = Environment(tools=['default', 'quex'],
                   ENV=environ,
+                  CC='clang',
                   LIBS=['gc', 'gmp', 'm'],
                   CPPFLAGS='-ggdb -Wall',
                   CPPPATH=['#include/',
                            '#build/src/',
                            environ['QUEX_PATH']])
-
-env.Replace(CC='clang', CXX='clang++')
 
 rose_lib = env.SConscript(dirs='src',
                           exports='env',

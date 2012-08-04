@@ -1,12 +1,15 @@
+from os import environ, path
+
 Import('env')
 Import('rose_lib')
 
 env = env.Clone()
 
-env.Prepend(LIBS=[rose_lib, 'gtest', 'pthread'])
+env.Prepend(LIBS=[rose_lib])
+env.MergeFlags('!pkg-config --cflags --libs glib-2.0')
 
 test = env.Program(target='test',
-                   source=env.Glob('*.cpp'))
+                   source=env.Glob('*.c'))
 
 env.Command(target='run-test',
             source=test[0],
