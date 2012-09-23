@@ -1,6 +1,7 @@
 .exrc
 bin/*
 build/*
+doc/html/
 lib/*
 tags
 *.pyc

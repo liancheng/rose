@@ -38,7 +38,8 @@ Use lowercase, words should be separated by `_`.  For example::
 ### General rule
 
 Function names use lowercase, words should be separated by `_`.  Public
-interface function names must be prefixed with `r_`.
+interface function names must be prefixed with `r_`, while private (static)
+functions should not.
 
 ### "Object methods"
 
