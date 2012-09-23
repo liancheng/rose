@@ -9,16 +9,16 @@
 #include <stdarg.h>
 #include <string.h>
 
-static RType* r_port_type_info ();
+static RType* port_type_info ();
 
-static rsexp r_file_port_new (RState*     state,
-                              FILE*       file,
-                              char const* name,
-                              rint        mode)
+static rsexp file_port_new (RState*     state,
+                            FILE*       file,
+                            char const* name,
+                            rint        mode)
 {
     RPort* port = GC_NEW (RPort);
 
-    port->type   = r_port_type_info ();
+    port->type   = port_type_info ();
     port->state  = state;
     port->stream = file;
     port->name   = r_string_new (name);
@@ -27,7 +27,7 @@ static rsexp r_file_port_new (RState*     state,
     return PORT_TO_SEXP (port);
 }
 
-static rsexp r_open_file (RState* state, char const* filename, rint mode)
+static rsexp open_file (RState* state, char const* filename, rint mode)
 {
     FILE* file = fopen (filename, (INPUT_PORT == mode) ? "r" : "w");
 
@@ -35,21 +35,21 @@ static rsexp r_open_file (RState* state, char const* filename, rint mode)
         return r_error_new (r_string_new ("cannot open file"),
                             r_string_new (filename));
 
-    return r_file_port_new (state, file, filename, mode);
+    return file_port_new (state, file, filename, mode);
 }
 
-static void r_port_write (rsexp port, rsexp obj)
+static void write_port (rsexp port, rsexp obj)
 {
     r_port_printf (port, "#<port %s>", PORT_FROM_SEXP (obj)->name);
 }
 
-static RType* r_port_type_info ()
+static RType* port_type_info ()
 {
     static RType type = {
         .size    = sizeof (RPort),
         .name    = "port",
-        .write   = r_port_write,
-        .display = r_port_write
+        .write   = write_port,
+        .display = write_port
     };
 
     return &type;
@@ -62,28 +62,28 @@ RState* r_port_get_state (rsexp port)
 
 rsexp r_open_input_file (RState* state, char const* filename)
 {
-    return r_open_file (state, filename, INPUT_PORT);
+    return open_file (state, filename, INPUT_PORT);
 }
 
 rsexp r_open_output_file (RState* state, char const* filename)
 {
-    return r_open_file (state, filename, OUTPUT_PORT);
+    return open_file (state, filename, OUTPUT_PORT);
 }
 
 rsexp r_open_input_string (RState* state, char const* string)
 {
     FILE* file = fmemopen ((void*) string, strlen (string), "r");
-    return r_file_port_new (state, file, "(string-input)", INPUT_PORT);
+    return file_port_new (state, file, "(string-input)", INPUT_PORT);
 }
 
 rsexp r_stdin_port (RState* state)
 {
-    return r_file_port_new (state, stdin, "(standard-input)", INPUT_PORT);
+    return file_port_new (state, stdin, "(standard-input)", INPUT_PORT);
 }
 
 rsexp r_stdout_port (RState* state)
 {
-    return r_file_port_new (state, stdout, "(standard-output)", OUTPUT_PORT);
+    return file_port_new (state, stdout, "(standard-output)", OUTPUT_PORT);
 }
 
 rsexp r_port_get_name (rsexp port)
@@ -114,7 +114,7 @@ rbool r_eof_p (rsexp port)
 rbool r_port_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == r_port_type_info ();
+           R_SEXP_TYPE (obj) == port_type_info ();
 }
 
 rbool r_input_port_p (rsexp obj)

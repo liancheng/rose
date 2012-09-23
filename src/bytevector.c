@@ -17,7 +17,7 @@ struct RBytevector {
 #define BYTEVECTOR_FROM_SEXP(obj)   ((RBytevector*) (obj))
 #define BYTEVECTOR_TO_SEXP(bytevec) ((rsexp) (bytevec))
 
-static void r_bytevector_write (rsexp port, rsexp obj)
+static void write_bytevector (rsexp port, rsexp obj)
 {
     rsize i;
     RBytevector* vec = BYTEVECTOR_FROM_SEXP (obj);
@@ -34,13 +34,13 @@ static void r_bytevector_write (rsexp port, rsexp obj)
     r_write_char (port, ')');
 }
 
-static RType* r_bytevector_type_info ()
+static RType* bytevector_type_info ()
 {
     static RType type = {
         .size    = sizeof (RBytevector),
         .name    = "bytevector",
-        .write   = r_bytevector_write,
-        .display = r_bytevector_write
+        .write   = write_bytevector,
+        .display = write_bytevector
     };
 
     return &type;
@@ -50,7 +50,7 @@ rsexp r_bytevector_new (rsize k, rbyte fill)
 {
     RBytevector* res = GC_NEW (RBytevector);
 
-    res->type   = r_bytevector_type_info ();
+    res->type   = bytevector_type_info ();
     res->length = k;
     res->data   = k ? GC_MALLOC_ATOMIC (k * sizeof (rbyte)) : NULL;
 
@@ -63,7 +63,7 @@ rsexp r_bytevector_new (rsize k, rbyte fill)
 rbool r_bytevector_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           (R_SEXP_TYPE (obj) == r_bytevector_type_info ());
+           (R_SEXP_TYPE (obj) == bytevector_type_info ());
 }
 
 rsize r_bytevector_length (rsexp obj)

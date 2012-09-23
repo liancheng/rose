@@ -19,12 +19,12 @@ struct RPair {
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
-static inline rsexp r_reverse_internal (rsexp list, rsexp acc)
+static inline rsexp reverse_internal (rsexp list, rsexp acc)
 {
     return r_null_p (list)
            ? acc
-           : r_reverse_internal (r_cdr (list),
-                                 r_cons (r_car (list), acc));
+           : reverse_internal (r_cdr (list),
+                               r_cons (r_car (list), acc));
 }
 
 static void output_cdr (rsexp           port,
@@ -54,12 +54,12 @@ static void output_pair (rsexp           port,
     r_port_puts (port, ")");
 }
 
-static void r_pair_write (rsexp port, rsexp obj)
+static void write_pair (rsexp port, rsexp obj)
 {
     output_pair (port, obj, r_write);
 }
 
-static void r_pair_display (rsexp port, rsexp obj)
+static void display_pair (rsexp port, rsexp obj)
 {
     output_pair (port, obj, r_display);
 }
@@ -112,7 +112,7 @@ rbool r_pair_equal_p (rsexp lhs, rsexp rhs)
 rsexp r_reverse (rsexp list)
 {
     assert (r_null_p (list) || r_pair_p (list));
-    return r_reverse_internal (list, R_NULL);
+    return reverse_internal (list, R_NULL);
 }
 
 rsexp r_append_x (rsexp list, rsexp obj)
@@ -178,13 +178,13 @@ rsexp r_list_ref (rsexp list, rsize k)
     return r_car (list);
 }
 
-void r_register_pair_type (RState* state)
+void register_pair_type (RState* state)
 {
     static RType type = {
         .size    = sizeof (RPair),
         .name    = "pair",
-        .write   = r_pair_write,
-        .display = r_pair_display,
+        .write   = write_pair,
+        .display = display_pair,
     };
 
     state->types [R_PAIR_TAG] = &type;

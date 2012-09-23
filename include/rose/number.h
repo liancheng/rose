@@ -80,7 +80,7 @@ inline rbool r_number_p (rsexp obj)
 }
 
 /// \def R_ZERO
-/// Small integer
+/// Small integer constant 0.
 #define R_ZERO r_int_to_sexp (0)
 
 /// \def R_ONE

@@ -3,16 +3,12 @@
 
 #include "rose/sexp.h"
 
-#include <stdarg.h>
-
 typedef struct RVector RVector;
 
 rsexp r_vector_new     (rsize   k,
                         rsexp   fill);
 rsexp r_vector         (rsize   k,
                         ...);
-rsexp r_vvector        (rsize   k,
-                        va_list args);
 rbool r_vector_p       (rsexp   obj);
 rbool r_vector_equal_p (rsexp   lhs,
                         rsexp   rhs);

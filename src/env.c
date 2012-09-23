@@ -16,14 +16,14 @@ struct REnv{
 #define ENV_FROM_SEXP(obj)  ((REnv*) (obj))
 #define ENV_TO_SEXP(env)    ((rsexp) env)
 
-static RType* r_env_type_info ();
+static RType* env_type_info ();
 
-static inline void env_set_parent_x (rsexp env, rsexp parent)
+static inline void set_parent_frame_x (rsexp env, rsexp parent)
 {
     ENV_FROM_SEXP (env)->parent = parent;
 }
 
-static inline rsexp r_env_get_parent (rsexp env)
+static inline rsexp get_parent_frame (rsexp env)
 {
     return ENV_FROM_SEXP (env)->parent;
 }
@@ -33,18 +33,18 @@ static inline void env_finalize (rpointer obj, rpointer client_data)
     r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
 }
 
-static void r_env_write (rsexp port, rsexp obj)
+static void write_env (rsexp port, rsexp obj)
 {
-    r_port_printf (port, "#<%s>", r_env_type_info ()->name);
+    r_port_printf (port, "#<%s>", env_type_info ()->name);
 }
 
-static RType* r_env_type_info ()
+static RType* env_type_info ()
 {
     static RType type = {
         .size    = sizeof (REnv),
         .name    = "environment",
-        .write   = r_env_write,
-        .display = r_env_write
+        .write   = write_env,
+        .display = write_env
     };
 
     return &type;
@@ -53,14 +53,14 @@ static RType* r_env_type_info ()
 rbool r_env_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == r_env_type_info ();
+           R_SEXP_TYPE (obj) == env_type_info ();
 }
 
 rsexp r_env_new ()
 {
     REnv* res = GC_NEW (REnv);
 
-    res->type     = r_env_type_info ();
+    res->type     = env_type_info ();
     res->parent   = R_UNDEFINED;
     res->bindings = r_hash_table_new (NULL, NULL);
 
@@ -80,7 +80,7 @@ rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
     }
 
     assert (r_null_p (vals));
-    env_set_parent_x (env, parent);
+    set_parent_frame_x (env, parent);
 
     return env;
 }
@@ -104,7 +104,7 @@ rsexp r_env_lookup (rsexp env, rsexp var)
         val = frame_lookup (frame, var);
 
         if (r_undefined_p (val))
-            frame = r_env_get_parent (frame);
+            frame = get_parent_frame (frame);
     }
 
     return val;

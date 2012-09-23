@@ -9,35 +9,35 @@
 #include <gc/gc.h>
 #include <string.h>
 
-static void r_register_keyword (RState*     state,
-                                ruint       index,
-                                char const* symbol)
+static void register_keyword (RState*     state,
+                              ruint       index,
+                              char const* symbol)
 {
     state->keywords [index] = r_symbol_new_static (state, symbol);
 }
 
-static void r_register_keywords (RState* state)
+static void register_keywords (RState* state)
 {
-    r_register_keyword (state, R_QUOTE,            "quote");
-    r_register_keyword (state, R_LAMBDA,           "lambda");
-    r_register_keyword (state, R_IF,               "if");
-    r_register_keyword (state, R_SET_X,            "set!");
-    r_register_keyword (state, R_BEGIN,            "begin");
-    r_register_keyword (state, R_COND,             "cond");
-    r_register_keyword (state, R_AND,              "and");
-    r_register_keyword (state, R_OR,               "or");
-    r_register_keyword (state, R_CASE,             "case");
-    r_register_keyword (state, R_LET,              "let");
-    r_register_keyword (state, R_LET_S,            "let*");
-    r_register_keyword (state, R_LETREC,           "letrec");
-    r_register_keyword (state, R_DO,               "do");
-    r_register_keyword (state, R_DELAY,            "delay");
-    r_register_keyword (state, R_QUASIQUOTE,       "quasiquote");
-    r_register_keyword (state, R_ELSE,             "else");
-    r_register_keyword (state, R_ARROW,            "=>");
-    r_register_keyword (state, R_DEFINE,           "define");
-    r_register_keyword (state, R_UNQUOTE,          "unquote");
-    r_register_keyword (state, R_UNQUOTE_SPLICING, "unquote-splicing");
+    register_keyword (state, R_QUOTE,            "quote");
+    register_keyword (state, R_LAMBDA,           "lambda");
+    register_keyword (state, R_IF,               "if");
+    register_keyword (state, R_SET_X,            "set!");
+    register_keyword (state, R_BEGIN,            "begin");
+    register_keyword (state, R_COND,             "cond");
+    register_keyword (state, R_AND,              "and");
+    register_keyword (state, R_OR,               "or");
+    register_keyword (state, R_CASE,             "case");
+    register_keyword (state, R_LET,              "let");
+    register_keyword (state, R_LET_S,            "let*");
+    register_keyword (state, R_LETREC,           "letrec");
+    register_keyword (state, R_DO,               "do");
+    register_keyword (state, R_DELAY,            "delay");
+    register_keyword (state, R_QUASIQUOTE,       "quasiquote");
+    register_keyword (state, R_ELSE,             "else");
+    register_keyword (state, R_ARROW,            "=>");
+    register_keyword (state, R_DEFINE,           "define");
+    register_keyword (state, R_UNQUOTE,          "unquote");
+    register_keyword (state, R_UNQUOTE_SPLICING, "unquote-splicing");
 }
 
 RState* r_state_new ()
@@ -53,7 +53,7 @@ RState* r_state_new ()
     state->types               = GC_MALLOC_ATOMIC (sizeof (RType*) * 8);
 
     r_register_types (state);
-    r_register_keywords (state);
+    register_keywords (state);
 
     return state;
 }

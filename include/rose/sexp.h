@@ -13,7 +13,6 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 /**
  * \defgroup TaggedPointer Tagged pointer
- *
  * \{
  *
  * \section Tagged Pointer Patterns

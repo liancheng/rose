@@ -16,7 +16,7 @@ struct RError {
 #define ERROR_FROM_SEXP(obj) ((RError*) (obj))
 #define ERROR_TO_SEXP(error) ((rsexp) error)
 
-static void r_error_write (rsexp port, rsexp obj)
+static void write_error (rsexp port, rsexp obj)
 {
     assert (r_error_p (obj));
 
@@ -26,7 +26,7 @@ static void r_error_write (rsexp port, rsexp obj)
               r_error_get_irritants (obj));
 }
 
-static void r_error_display (rsexp port, rsexp obj)
+static void display_error (rsexp port, rsexp obj)
 {
     assert (r_error_p (obj));
 
@@ -36,13 +36,13 @@ static void r_error_display (rsexp port, rsexp obj)
               r_error_get_irritants (obj));
 }
 
-static RType* r_error_type_info ()
+static RType* error_type_info ()
 {
     static RType type = {
         .size    = sizeof (RError),
         .name    = "port",
-        .write   = r_error_write,
-        .display = r_error_display
+        .write   = write_error,
+        .display = display_error
     };
 
     return &type;
@@ -54,7 +54,7 @@ rsexp r_error_new (rsexp message, rsexp irritants)
 
     RError* res = GC_NEW (RError);
 
-    res->type      = r_error_type_info ();
+    res->type      = error_type_info ();
     res->message   = message;
     res->irritants = irritants;
 
@@ -64,7 +64,7 @@ rsexp r_error_new (rsexp message, rsexp irritants)
 rbool r_error_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == r_error_type_info ();
+           R_SEXP_TYPE (obj) == error_type_info ();
 }
 
 rsexp r_error_get_message (rsexp error)

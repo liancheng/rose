@@ -11,7 +11,7 @@
 #include <gc/gc.h>
 #include <string.h>
 
-static void r_fixnum_write (rsexp port, rsexp obj)
+static void write_fixnum (rsexp port, rsexp obj)
 {
     RFixnum* fixnum = FIXNUM_FROM_SEXP (obj);
     FILE*    stream = PORT_TO_FILE (port);
@@ -27,7 +27,7 @@ static void r_fixnum_write (rsexp port, rsexp obj)
     }
 }
 
-static void r_flonum_write (rsexp port, rsexp obj)
+static void write_flonum (rsexp port, rsexp obj)
 {
     RFlonum* flonum = FLONUM_FROM_SEXP (obj);
 
@@ -42,7 +42,7 @@ static void r_flonum_write (rsexp port, rsexp obj)
     }
 }
 
-static void r_fixnum_finalize (rpointer obj, rpointer client_data)
+static void fixnum_finalize (rpointer obj, rpointer client_data)
 {
     RFixnum* fixnum = obj;
     mpq_clears (fixnum->real, fixnum->imag, NULL);
@@ -71,25 +71,25 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
     return r_int_to_sexp (smi);
 }
 
-static RType* r_fixnum_type_info ()
+static RType* fixnum_type_info ()
 {
     static RType type = {
         .size    = sizeof (RFixnum),
         .name    = "fixnum",
-        .write   = r_fixnum_write,
-        .display = r_fixnum_write,
+        .write   = write_fixnum,
+        .display = write_fixnum,
     };
 
     return &type;
 }
 
-static RType* r_flonum_type_info ()
+static RType* flonum_type_info ()
 {
     static RType type = {
         .size    = sizeof (RFlonum),
         .name    = "flonum",
-        .write   = r_flonum_write,
-        .display = r_flonum_write,
+        .write   = write_flonum,
+        .display = write_flonum,
     };
 
     return &type;
@@ -99,9 +99,9 @@ static RFixnum* fixnum_new ()
 {
     RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
 
-    fixnum->type = r_fixnum_type_info ();
+    fixnum->type = fixnum_type_info ();
     mpq_inits (fixnum->real, fixnum->imag, NULL);
-    GC_REGISTER_FINALIZER (fixnum, r_fixnum_finalize, NULL, NULL, NULL);
+    GC_REGISTER_FINALIZER (fixnum, fixnum_finalize, NULL, NULL, NULL);
 
     return fixnum;
 }
@@ -109,13 +109,13 @@ static RFixnum* fixnum_new ()
 rbool r_fixnum_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == r_fixnum_type_info ();
+           R_SEXP_TYPE (obj) == fixnum_type_info ();
 }
 
 rbool r_flonum_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == r_flonum_type_info ();
+           R_SEXP_TYPE (obj) == flonum_type_info ();
 }
 
 rsexp r_string_to_number (char const* text)
@@ -158,7 +158,7 @@ rsexp r_flonum_new (double real, double imag)
 {
     RFlonum* flonum = GC_NEW_ATOMIC (RFlonum);
 
-    flonum->type = r_flonum_type_info ();
+    flonum->type = flonum_type_info ();
     flonum->real = real;
     flonum->imag = imag;
 

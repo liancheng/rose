@@ -5,27 +5,27 @@
 
 #include <gc/gc.h>
 
-void r_register_pair_type   (RState* state);
-void r_register_symbol_type (RState* state);
+void register_pair_type   (RState* state);
+void register_symbol_type (RState* state);
 
-static void r_bool_write (rsexp port, rsexp obj)
+static void write_bool (rsexp port, rsexp obj)
 {
     r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
 }
 
-static void r_register_bool_type (RState* state)
+static void register_bool_type (RState* state)
 {
     static RType type = {
         .size    = 0,
         .name    = "boolean",
-        .write   = r_bool_write,
-        .display = r_bool_write,
+        .write   = write_bool,
+        .display = write_bool,
     };
 
     state->types [R_BOOL_TAG] = &type;
 }
 
-static void r_special_const_write (rsexp port, rsexp obj)
+static void write_special_const (rsexp port, rsexp obj)
 {
     static char* str[] = {
         "()",
@@ -37,42 +37,42 @@ static void r_special_const_write (rsexp port, rsexp obj)
     r_port_puts (port, str [obj >> R_TAG_BITS]);
 }
 
-static void r_special_const_display (rsexp port, rsexp obj)
+static void display_special_const (rsexp port, rsexp obj)
 {
     r_port_puts (port, r_null_p (obj) ? "()" : "");
 }
 
-static void r_register_special_const_type (RState* state)
+static void register_special_const_type (RState* state)
 {
     static RType type = {
         .size    = 0,
         .name    = "special-const",
-        .write   = r_special_const_write,
-        .display = r_special_const_display,
+        .write   = write_special_const,
+        .display = display_special_const,
     };
 
     state->types [R_SPECIAL_CONST_TAG] = &type;
 }
 
-static void r_smi_write (rsexp port, rsexp obj)
+static void write_smi (rsexp port, rsexp obj)
 {
     r_port_printf (port, "%d", r_int_from_sexp (obj));
 }
 
-static void r_register_smi_type (RState* state)
+static void register_smi_type (RState* state)
 {
     static RType type = {
         .size    = 0,
         .name    = "small-integer",
-        .write   = r_smi_write,
-        .display = r_smi_write,
+        .write   = write_smi,
+        .display = write_smi,
     };
 
     state->types [R_SMI_EVEN_TAG] = &type;
     state->types [R_SMI_ODD_TAG]  = &type;
 }
 
-static void r_char_write (rsexp port, rsexp obj)
+static void write_char (rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
     char* name = NULL;
@@ -97,18 +97,18 @@ static void r_char_write (rsexp port, rsexp obj)
         r_write_char (port, ch);
 }
 
-static void r_char_display (rsexp port, rsexp obj)
+static void display_char (rsexp port, rsexp obj)
 {
     r_write_char (port, r_char_from_sexp (obj));
 }
 
-static void r_register_char_type (RState* state)
+static void register_char_type (RState* state)
 {
     static RType type = {
         .size    = 0,
         .name    = "character",
-        .write   = r_char_write,
-        .display = r_char_display,
+        .write   = write_char,
+        .display = display_char,
     };
 
     state->types [R_CHAR_TAG] = &type;
@@ -123,10 +123,10 @@ RType* r_sexp_get_type (RState* state, rsexp obj)
 
 void r_register_types (RState* state)
 {
-    r_register_bool_type (state);
-    r_register_special_const_type (state);
-    r_register_pair_type (state);
-    r_register_symbol_type (state);
-    r_register_smi_type (state);
-    r_register_char_type (state);
+    register_bool_type (state);
+    register_special_const_type (state);
+    register_pair_type (state);
+    register_symbol_type (state);
+    register_smi_type (state);
+    register_char_type (state);
 }

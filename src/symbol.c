@@ -70,7 +70,7 @@ static rquark static_symbol_to_quark (RState* state, char const* symbol)
     return string_to_quark_internal (symbol, FALSE, state->symbol_table);
 }
 
-static char const* r_quark_to_symbol (RState* state, rquark quark)
+static char const* quark_to_symbol (RState* state, rquark quark)
 {
     RSymbolTable* st = state->symbol_table;
     return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
@@ -81,7 +81,7 @@ static void symbol_table_finalize (rpointer obj, rpointer client_data)
     r_hash_table_free (((RSymbolTable*) obj)->quark_ht);
 }
 
-static ruint r_str_hash (rconstpointer str)
+static ruint str_hash (rconstpointer str)
 {
     ruint h = 5381;
     char const* p;
@@ -92,12 +92,12 @@ static ruint r_str_hash (rconstpointer str)
     return h;
 }
 
-static rbool r_str_equal (rconstpointer lhs, rconstpointer rhs)
+static rbool str_equal (rconstpointer lhs, rconstpointer rhs)
 {
     return 0 == strcmp ((char const*) lhs, (char const*) rhs);
 }
 
-static void r_symbol_write (rsexp port, rsexp obj)
+static void write_symbol (rsexp port, rsexp obj)
 {
     r_port_puts (port, r_symbol_name (r_port_get_state (port), obj));
 }
@@ -110,7 +110,7 @@ RSymbolTable* r_symbol_table_new ()
     res  = GC_NEW (RSymbolTable);
     size = sizeof (rquark) * QUARK_BLOCK_SIZE;
 
-    res->quark_ht     = r_hash_table_new (r_str_hash, r_str_equal);
+    res->quark_ht     = r_hash_table_new (str_hash, str_equal);
     res->quarks       = GC_MALLOC_ATOMIC (size);
     res->quark_seq_id = 1;
 
@@ -135,16 +135,16 @@ rsexp r_symbol_new_static (RState* state, char const* symbol)
 char const* r_symbol_name (RState* state, rsexp obj)
 {
     assert (r_symbol_p (obj));
-    return r_quark_to_symbol (state, QUARK_FROM_SEXP (obj));
+    return quark_to_symbol (state, QUARK_FROM_SEXP (obj));
 }
 
-void r_register_symbol_type (RState* state)
+void register_symbol_type (RState* state)
 {
     static RType type = {
         .size    = 0,
         .name    = "symbol",
-        .write   = r_symbol_write,
-        .display = r_symbol_write,
+        .write   = write_symbol,
+        .display = write_symbol,
     };
 
     state->types [R_SYMBOL_TAG] = &type;

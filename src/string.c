@@ -14,7 +14,7 @@ struct RString {
 #define STRING_FROM_SEXP(obj)   ((RString*) (obj))
 #define STRING_TO_SEXP(string)  ((rsexp) (string))
 
-static void r_write_string (rsexp port, rsexp obj)
+static void write_string (rsexp port, rsexp obj)
 {
     char* p;
 
@@ -29,7 +29,7 @@ static void r_write_string (rsexp port, rsexp obj)
     r_write_char (port, '"');
 }
 
-static void r_display_string (rsexp port, rsexp obj)
+static void display_string (rsexp port, rsexp obj)
 {
     r_port_puts (port, STRING_FROM_SEXP (obj)->data);
 }
@@ -39,8 +39,8 @@ static RType* r_string_type_info ()
     static RType type = {
         .size    = sizeof (RString),
         .name    = "string",
-        .write   = r_write_string,
-        .display = r_display_string
+        .write   = write_string,
+        .display = display_string
     };
 
     return &type;

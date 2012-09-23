@@ -43,33 +43,38 @@ static void output_vector (rsexp           port,
     r_port_puts (port, ")");
 }
 
-static void r_vector_write (rsexp port, rsexp obj)
+static void write_vector (rsexp port, rsexp obj)
 {
     output_vector (port, obj, r_write);
 }
 
-static void r_vector_display (rsexp port, rsexp obj)
+static void display_vector (rsexp port, rsexp obj)
 {
     output_vector (port, obj, r_display);
 }
 
-static RType* r_vector_type_info ()
+static RType* vector_type_info ()
 {
     static RType type = {
         .size    = sizeof (RVector),
         .name    = "vector",
-        .write   = r_vector_write,
-        .display = r_vector_display
+        .write   = write_vector,
+        .display = display_vector
     };
 
     return &type;
+}
+
+static rsexp vvector (rsize k, va_list args)
+{
+    return r_list_to_vector (r_vlist (k, args));
 }
 
 rsexp r_vector_new (rsize k, rsexp fill)
 {
     RVector* res = GC_NEW (RVector);
 
-    res->type   = r_vector_type_info ();
+    res->type   = vector_type_info ();
     res->length = k;
     res->data   = k ? GC_MALLOC (k * sizeof (rsexp)) : NULL;
 
@@ -85,21 +90,16 @@ rsexp r_vector (rsize k, ...)
     rsexp   res;
 
     va_start (args, k);
-    res = r_vvector (k, args);
+    res = vvector (k, args);
     va_end (args);
 
     return res;
 }
 
-rsexp r_vvector (rsize k, va_list args)
-{
-    return r_list_to_vector (r_vlist (k, args));
-}
-
 rbool r_vector_p (rsexp obj)
 {
     return r_boxed_p (obj) &&
-           (R_SEXP_TYPE (obj) == r_vector_type_info ());
+           (R_SEXP_TYPE (obj) == vector_type_info ());
 }
 
 rbool r_vector_equal_p (rsexp lhs, rsexp rhs)
