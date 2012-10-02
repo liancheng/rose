@@ -51,15 +51,24 @@ static void apply_exponent (mpq_t real, rint exponent)
     mpq_clear (pow_q);
 }
 
-static rbool fix_exactness (rtribool exact,
-                            mpq_t    real,
-                            mpq_t    imag,
-                            double*  real_d,
-                            double*  imag_d)
+static rbool fix_exactness (RNumberReader* reader,
+                            mpq_t          real,
+                            mpq_t          imag,
+                            double*        real_d,
+                            double*        imag_d)
 {
-    if (TRUE == exact || UNKNOWN == exact)
+    /* If exactness prefix `#e' exists, then the number is exact. */
+    if (TRUE == reader->exact)
         return TRUE;
 
+    /*
+     * Neither `#e' nor `#i' exists, and this isn't a decimal number, then the
+     * number is also exact.
+     */
+    if (UNKNOWN == reader->exact && TRUE != reader->decimal)
+        return TRUE;
+
+    /* Otherwise, the number is inexact. */
     *real_d = mpq_get_d (real);
     *imag_d = mpq_get_d (imag);
 
@@ -151,8 +160,13 @@ static rbool read_exactness (RNumberReader* reader)
         return reset (reader, pos);
 
     switch (next_char (reader)) {
-        case 'e': case 'E': reader->exact = TRUE;  return TRUE;
-        case 'i': case 'I': reader->exact = FALSE; return TRUE;
+        case 'e':
+            reader->exact = TRUE;
+            return TRUE;
+
+        case 'i':
+            reader->exact = FALSE;
+            return TRUE;
     }
 
     return reset (reader, pos);
@@ -323,7 +337,6 @@ static rbool read_suffix (RNumberReader* reader, rint* exponent)
     if (sign < 0)
         *exponent = -(*exponent);
 
-    reader->exact = FALSE;
     return TRUE;
 }
 
@@ -366,7 +379,7 @@ static rbool read_decimal_frac (RNumberReader* reader, mpq_t ureal)
     read_suffix (reader, &exponent);
     apply_exponent (ureal, exponent);
 
-    reader->exact = FALSE;
+    reader->decimal = TRUE;
     success = TRUE;
     goto clear;
 
@@ -416,7 +429,7 @@ static rbool read_decimal_int_frac (RNumberReader* reader,
     read_suffix (reader, &exponent);
     apply_exponent (ureal, exponent);
 
-    reader->exact = FALSE;
+    reader->decimal = TRUE;
     success = TRUE;
     goto clear;
 
@@ -453,7 +466,7 @@ static rbool read_decimal_uint (RNumberReader* reader, mpq_t ureal)
 
     apply_exponent (ureal, exponent);
 
-    reader->exact = FALSE;
+    reader->decimal = TRUE;
     success = TRUE;
     goto clear;
 
@@ -724,7 +737,7 @@ static rsexp read_number (RNumberReader* reader)
         double r;
         double i;
 
-        number = fix_exactness (reader->exact, real, imag, &r, &i)
+        number = fix_exactness (reader, real, imag, &r, &i)
                ? r_fixnum_new (real, imag)
                : r_flonum_new (r, i);
 
@@ -778,8 +791,9 @@ RNumberReader* r_number_reader_new ()
     reader->end   = NULL;
     reader->pos   = NULL;
 
-    reader->exact = UNKNOWN;
-    reader->radix = 10u;
+    reader->exact   = UNKNOWN;
+    reader->decimal = UNKNOWN;
+    reader->radix   = 10u;
 
     return reader;
 }

@@ -11,7 +11,9 @@ struct RNumberReader {
     char const* begin;
     char const* end;
     char const* pos;
+
     rtribool    exact;
+    rtribool    decimal;
     ruint       radix;
 };
 
