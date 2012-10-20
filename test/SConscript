@@ -13,6 +13,6 @@ test = env.Program(target='test',
 
 env.Command(target='run-test',
             source=test[0],
-            action=test[0].abspath)
+            action='gtester ' + test[0].abspath)
 
 # vim:ft=python
