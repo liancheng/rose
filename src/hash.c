@@ -64,7 +64,7 @@ static const rsize prime_mod [] = {
 
 static ruint direct_hash (rconstpointer data)
 {
-    return (ruint)data;
+    return (ruint) data;
 }
 
 static rint direct_euqal (rconstpointer lhs, rconstpointer rhs)
@@ -135,7 +135,7 @@ static rsize get_node (RHashTable*   hash_table,
             have_tombstone = 1;
         }
 
-        // Linear probing
+        /* Linear probing */
         ++step;
         node_index += step;
         node_index &= hash_table->mask;

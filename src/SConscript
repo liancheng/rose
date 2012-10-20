@@ -4,7 +4,8 @@ env = env.Clone()
 
 env.Append(YACCFLAGS='-d',
            CPPDEFINES=['QUEX_OPTION_ASSERTS_DISABLED',
-                       'QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'])
+                       'QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED',
+                       '__USE_XOPEN2K8'])
 
 lex_src = env.Quex(source='lexer.qx',
                    QUEXENGINE='lexer',

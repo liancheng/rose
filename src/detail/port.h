@@ -24,4 +24,4 @@ struct RPort {
 #define PORT_TO_SEXP(port)  ((rsexp) (port))
 #define PORT_TO_FILE(obj)   ((FILE*) (PORT_FROM_SEXP (obj)->stream))
 
-#endif  //  __ROSE_DETAIL_PORT_H__
+#endif  /* __ROSE_DETAIL_PORT_H__ */

@@ -23,19 +23,19 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
  * case, the lower three bits of the pointer are known to be zero, and we can
  * store type information within these bits.
  *
- * Non-immediate types (end with #b00):
+ * Non-immediate types (end with \c #b00):
  *
- * - #b000: pointer to boxed heap object
- * - #b100: pair
+ * - \c #b000: pointer to boxed heap object
+ * - \c #b100: pair
  *
  * Immediate types:
  *
- * - #b001: boolean
- * - #b010: character (see below)
- * - #b011: even small integer (SMI)
- * - #b101: special constant (see below)
- * - #b110: symbol
- * - #b111: odd small integer (SMI)
+ * - \c #b001: boolean
+ * - \c #b010: character (see below)
+ * - \c #b011: even small integer (SMI)
+ * - \c #b101: special constant (see below)
+ * - \c #b110: symbol
+ * - \c #b111: odd small integer (SMI)
  */
 
 #define R_TAG_BITS              3
@@ -91,4 +91,4 @@ typedef void (*RDisplayFunction) (rsexp, rsexp);
 
 /** \} */
 
-#endif  //  __ROSE_SEXP_H__
+#endif  /* __ROSE_SEXP_H__ */

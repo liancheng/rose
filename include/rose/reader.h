@@ -16,4 +16,4 @@ rsexp         r_reader_last_error  (RDatumReader* reader);
 void          r_reader_clear_error (RDatumReader* reader);
 rsexp         r_read               (RDatumReader* reader);
 
-#endif  //  __ROSE_READER_H__
+#endif  /* __ROSE_READER_H__ */

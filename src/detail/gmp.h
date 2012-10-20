@@ -9,4 +9,4 @@
 #include <stdio.h>
 #include <gmp.h>
 
-#endif  //  __ROSE_DETAIL_GMP_H__
+#endif  /* __ROSE_DETAIL_GMP_H__ */

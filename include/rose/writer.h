@@ -6,4 +6,4 @@
 void r_write   (rsexp port, rsexp obj);
 void r_display (rsexp port, rsexp obj);
 
-#endif  //  __ROSE_WRITE_H__
+#endif  /* __ROSE_WRITE_H__ */

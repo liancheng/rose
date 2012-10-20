@@ -15,4 +15,4 @@ rsexp   r_bytevector_u8_set_x (rsexp obj,
                                rbyte byte);
 rsexp   r_list_to_bytevector  (rsexp list);
 
-#endif  //  __ROSE_BYTEVECTOR_H__
+#endif  /* __ROSE_BYTEVECTOR_H__ */

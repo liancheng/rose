@@ -1,5 +1,6 @@
-#include "detail/state.h"
+#include "detail/raise.h"
 #include "detail/reader.h"
+#include "detail/state.h"
 #include "rose/bytevector.h"
 #include "rose/error.h"
 #include "rose/number.h"
@@ -13,23 +14,9 @@
 #include <gc/gc.h>
 #include <stdarg.h>
 
-#define MATCH_OR_RETURN_UNSPECIFIED(id)\
-        do {\
-            if (lookahead (reader)->_id != id)\
-                return R_UNSPECIFIED;\
-        }\
-        while (0)
-
-#define SOURCE_LOCATION(line, column)\
-        do {\
-            (line)   = lookahead (reader)->_line_n;\
-            (column) = lookahead (reader)->_column_n;\
-        }\
-        while (0)
-
 static rsexp read_datum (RDatumReader* reader);
 
-static rint reload_lexer (RDatumReader* reader)
+static rint feed_lexer (RDatumReader* reader)
 {
     QUEX_NAME (buffer_fill_region_prepare) (reader->lexer);
 
@@ -49,7 +36,7 @@ static RToken* next_token (RDatumReader* reader)
 
     do
         id = QUEX_NAME (receive) (reader->lexer);
-    while (TKN_TERMINATION == id && reload_lexer (reader));
+    while (TKN_TERMINATION == id && feed_lexer (reader));
 
     return QUEX_NAME (token_p) (reader->lexer);
 }
@@ -66,6 +53,16 @@ static RToken* lookahead (RDatumReader* reader)
         reader->lookahead = next_token (reader);
 
     return reader->lookahead;
+}
+
+static rbool match (RDatumReader* reader, rtokenid id)
+{
+    if (id == lookahead (reader)->_id) {
+        consume (reader);
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 static void lexer_finalize (rpointer obj, rpointer client_data)
@@ -85,10 +82,9 @@ static RLexer* lexer_new ()
 
 static rsexp lexeme_to_char (char const* text)
 {
-    rint len = strlen (text);
     char res = *text;
 
-    if (len > 1) {
+    if ('\0' != text [1]) {
         if      (0 == strncmp (text, "space",      6u)) res = ' ';
         else if (0 == strncmp (text, "tab",        4u)) res = '\t';
         else if (0 == strncmp (text, "newline",    8u)) res = '\n';
@@ -103,7 +99,7 @@ static rsexp lexeme_to_char (char const* text)
     return r_char_to_sexp (res);
 }
 
-static void raise_reader_error (RDatumReader* reader,
+static void raise_syntax_error (RDatumReader* reader,
                                 rsize         line,
                                 rsize         column,
                                 char const*   message)
@@ -115,12 +111,15 @@ static void raise_reader_error (RDatumReader* reader,
                              r_int_to_sexp (line),
                              r_int_to_sexp (column)));
 
-    longjmp (reader->jmp, 1);
+    R_THROW (reader->state);
 }
 
-void r_reader_clear_error (RDatumReader* reader)
+static void record_source_location (RDatumReader* reader,
+                                    rsize*        line,
+                                    rsize*        column)
 {
-    reader->last_error = R_UNDEFINED;
+    *line   = lookahead (reader)->_line_n;
+    *column = lookahead (reader)->_column_n;
 }
 
 static rsexp read_vector (RDatumReader* reader)
@@ -130,17 +129,16 @@ static rsexp read_vector (RDatumReader* reader)
     rsize line;
     rsize column;
 
-    MATCH_OR_RETURN_UNSPECIFIED (TKN_HASH_LP);
+    if (!match (reader, TKN_HASH_LP))
+        return R_UNSPECIFIED;
 
-    consume (reader);
-
-    SOURCE_LOCATION (line, column);
+    record_source_location (reader, &line, &column);
 
     for (list = R_NULL; lookahead (reader)->_id != TKN_RP; ) {
         datum = read_datum (reader);
 
         if (r_unspecified_p (datum))
-            raise_reader_error (reader, line, column, "bad syntax");
+            raise_syntax_error (reader, line, column, "bad syntax");
 
         list = r_cons (datum, list);
     }
@@ -157,59 +155,44 @@ static rsexp read_full_list (RDatumReader* reader)
     rsize line;
     rsize column;
 
-    MATCH_OR_RETURN_UNSPECIFIED (TKN_LP);
-    consume (reader);
+    if (!match (reader, TKN_LP))
+        return R_UNSPECIFIED;
 
-    if (lookahead (reader)->_id == TKN_RP) {
-        consume (reader);
+    if (match (reader, TKN_RP))
         return R_NULL;
-    }
 
-    SOURCE_LOCATION (line, column);
+    record_source_location (reader, &line, &column);
 
-    datum = read_datum (reader);
+    if (r_unspecified_p ((datum = read_datum (reader))))
+        raise_syntax_error (reader, line, column, "bad syntax");
 
-    if (r_unspecified_p (datum))
-        raise_reader_error (reader, line, column, "bad syntax");
-
-    list = r_cons (datum, R_NULL);
-
-    while (1) {
+    for (list = r_cons (datum, R_NULL); ; list = r_cons (datum, list)) {
         rtokenid id = lookahead (reader)->_id;
 
         if (id == TKN_DOT || id == TKN_RP)
             break;
 
-        SOURCE_LOCATION (line, column);
+        record_source_location (reader, &line, &column);
 
-        datum = read_datum (reader);
-
-        if (r_unspecified_p (datum))
-            raise_reader_error (reader, line, column, "bad syntax");
-
-        list = r_cons (datum, list);
+        if (r_unspecified_p ((datum = read_datum (reader))))
+            raise_syntax_error (reader, line, column, "bad syntax");
     }
 
     list = r_reverse (list);
 
-    if (lookahead (reader)->_id == TKN_DOT) {
-        consume (reader);
-        SOURCE_LOCATION (line, column);
+    if (match (reader, TKN_DOT)) {
+        record_source_location (reader, &line, &column);
 
-        datum = read_datum (reader);
-
-        if (r_unspecified_p (datum))
-            raise_reader_error (reader, line, column, "missing close parenthesis");
+        if (r_unspecified_p ((datum = read_datum (reader))))
+            raise_syntax_error (reader, line, column, "datum expected");
 
         list = r_append_x (list, datum);
     }
 
-    SOURCE_LOCATION (line, column);
+    record_source_location (reader, &line, &column);
 
-    if (lookahead (reader)->_id != TKN_RP)
-        raise_reader_error (reader, line, column, "bad syntax");
-
-    consume (reader);
+    if (!match (reader, TKN_RP))
+        raise_syntax_error (reader, line, column, "missing close parenthesis");
 
     return list;
 }
@@ -243,28 +226,26 @@ static rsexp read_abbreviation (RDatumReader* reader)
     }
 
     consume (reader);
-    SOURCE_LOCATION (line, column);
+    record_source_location (reader, &line, &column);
 
-    datum = read_datum (reader);
-
-    if (r_unspecified_p (datum))
-        raise_reader_error (reader, line, column, "bad syntax");
+    if (r_unspecified_p ((datum = read_datum (reader))))
+        raise_syntax_error (reader, line, column, "bad syntax");
 
     return r_list (2, prefix, datum);
 }
 
 static rsexp read_list (RDatumReader* reader)
 {
-    rsexp obj = read_abbreviation (reader);
-
-    return r_unspecified_p (obj) ? read_full_list (reader) : obj;
+    return TKN_LP == lookahead (reader)->_id
+           ? read_full_list (reader)
+           : read_abbreviation (reader);
 }
 
 static rsexp read_compound_datum (RDatumReader* reader)
 {
-    rsexp obj = read_list (reader);
-
-    return r_unspecified_p (obj) ? read_vector (reader) : obj;
+    return TKN_HASH_LP == lookahead (reader)->_id
+           ? read_vector (reader)
+           : read_list (reader);
 }
 
 static rsexp read_bytevector (RDatumReader* reader)
@@ -274,24 +255,22 @@ static rsexp read_bytevector (RDatumReader* reader)
     rsize line;
     rsize column;
 
-    MATCH_OR_RETURN_UNSPECIFIED (TKN_HASH_U8_LP);
-    consume (reader);
+    if (!match (reader, TKN_HASH_U8_LP))
+        return R_UNSPECIFIED;
 
     bytes = R_NULL;
 
     while (lookahead (reader)->_id != TKN_RP) {
-        SOURCE_LOCATION (line, column);
+        record_source_location (reader, &line, &column);
 
-        datum = read_datum (reader);
-
-        if (!r_byte_p (datum))
-            raise_reader_error (reader, line, column, "value out of range");
+        if (!r_byte_p ((datum = read_datum (reader))))
+            raise_syntax_error (reader, line, column, "value out of range");
 
         bytes = r_cons (datum, bytes);
     }
 
-    MATCH_OR_RETURN_UNSPECIFIED (TKN_RP);
-    consume (reader);
+    if (!match (reader, TKN_RP))
+        return R_UNSPECIFIED;
 
     return r_list_to_bytevector (r_reverse (bytes));
 }
@@ -310,8 +289,12 @@ static rsexp read_simple_datum (RDatumReader* reader)
     QUEX_NAME_TOKEN (pretty_char_text) (token, text, size);
 
     switch (token->_id) {
-        case TKN_BOOLEAN:
-            datum = (token->text [0] == 't') ? R_TRUE : R_FALSE;
+        case TKN_TRUE:
+            datum = R_TRUE;
+            break;
+
+        case TKN_FALSE:
+            datum = R_FALSE;
             break;
 
         case TKN_NUMBER:
@@ -345,30 +328,34 @@ static rsexp read_simple_datum (RDatumReader* reader)
 
 static rsexp read_datum (RDatumReader* reader)
 {
+    rsexp datum;
+
     if (lookahead (reader)->_id == TKN_TERMINATION)
         return R_EOF;
 
-    if (lookahead (reader)->_id == TKN_HASH_SEMICOLON) {
-        consume (reader);
+    if (match (reader, TKN_HASH_SEMICOLON))
         if (r_unspecified_p (read_datum (reader)))
             return R_UNSPECIFIED;
-    }
 
-    rsexp obj = read_simple_datum (reader);
-
-    return r_unspecified_p (obj) ? read_compound_datum (reader) : obj;
+    return r_unspecified_p ((datum = read_simple_datum (reader)))
+           ? read_compound_datum (reader)
+           : datum;
 }
 
 rsexp r_read (RDatumReader* reader)
 {
     rsexp datum;
+    RErrorJmp jmp;
 
-    if (setjmp (reader->jmp))
-        return R_UNSPECIFIED;
+    jmp.previous = reader->state->error_jmp;
+    reader->state->error_jmp = &jmp;
 
-    datum = read_datum (reader);
+    R_TRY (reader->state) {
+        datum = read_datum (reader);
+        return r_unspecified_p (datum) ? R_EOF : datum;
+    }
 
-    return r_unspecified_p (datum) ? R_EOF : datum;
+    return R_UNSPECIFIED;
 }
 
 RDatumReader* r_reader_new (RState* state)
@@ -408,4 +395,9 @@ RDatumReader* r_port_reader (RState* state, rsexp port)
 rsexp r_reader_last_error (RDatumReader* reader)
 {
     return reader->last_error;
+}
+
+void r_reader_clear_error (RDatumReader* reader)
+{
+    reader->last_error = R_UNDEFINED;
 }

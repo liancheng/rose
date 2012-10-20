@@ -5,4 +5,4 @@ typedef struct RState RState;
 
 RState* r_state_new ();
 
-#endif  //  __ROSE_STATE_H__
+#endif  /* __ROSE_STATE_H__ */

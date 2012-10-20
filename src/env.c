@@ -18,17 +18,17 @@ struct REnv{
 
 static RType* env_type_info ();
 
-static inline void set_parent_frame_x (rsexp env, rsexp parent)
+static void set_parent_frame_x (rsexp env, rsexp parent)
 {
     ENV_FROM_SEXP (env)->parent = parent;
 }
 
-static inline rsexp get_parent_frame (rsexp env)
+static rsexp get_parent_frame (rsexp env)
 {
     return ENV_FROM_SEXP (env)->parent;
 }
 
-static inline void env_finalize (rpointer obj, rpointer client_data)
+static void env_finalize (rpointer obj, rpointer client_data)
 {
     r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
 }
@@ -48,6 +48,14 @@ static RType* env_type_info ()
     };
 
     return &type;
+}
+
+static rsexp frame_lookup (rsexp frame, rsexp var)
+{
+    rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame)->bindings,
+                                     (rconstpointer) var);
+
+    return val ? (rsexp) val : R_UNDEFINED;
 }
 
 rbool r_env_p (rsexp obj)
@@ -83,14 +91,6 @@ rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
     set_parent_frame_x (env, parent);
 
     return env;
-}
-
-static rsexp frame_lookup (rsexp frame, rsexp var)
-{
-    rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame)->bindings,
-                                     (rconstpointer) var);
-
-    return val ? (rsexp) val : R_UNDEFINED;
 }
 
 rsexp r_env_lookup (rsexp env, rsexp var)

@@ -67,19 +67,30 @@ static RType* vector_type_info ()
 
 static rsexp vvector (rsize k, va_list args)
 {
-    return r_list_to_vector (r_vlist (k, args));
+    rsexp res;
+    rsize i;
+
+    res = r_vector_new (k, R_FALSE);
+
+    for (i = 0; i < k; ++i)
+        r_vector_set_x (res, i, va_arg (args, rsexp));
+
+    return res;
 }
 
 rsexp r_vector_new (rsize k, rsexp fill)
 {
-    RVector* res = GC_NEW (RVector);
+    RVector* res;
+    rsize i;
+
+    res = GC_NEW (RVector);
 
     res->type   = vector_type_info ();
     res->length = k;
     res->data   = k ? GC_MALLOC (k * sizeof (rsexp)) : NULL;
 
-    while (k--)
-        res->data [k] = fill;
+    for (i = 0; i < k; ++i)
+        res->data [i] = fill;
 
     return VECTOR_TO_SEXP (res);
 }
@@ -87,7 +98,7 @@ rsexp r_vector_new (rsize k, rsexp fill)
 rsexp r_vector (rsize k, ...)
 {
     va_list args;
-    rsexp   res;
+    rsexp res;
 
     va_start (args, k);
     res = vvector (k, args);
@@ -106,6 +117,8 @@ rbool r_vector_equal_p (rsexp lhs, rsexp rhs)
 {
     rsize length;
     rsize k;
+    rsexp* lhs_data;
+    rsexp* rhs_data;
 
     if (!r_vector_p (rhs))
         return FALSE;
@@ -115,8 +128,8 @@ rbool r_vector_equal_p (rsexp lhs, rsexp rhs)
     if (VECTOR_FROM_SEXP (rhs)->length != length)
         return FALSE;
 
-    rsexp* lhs_data = VECTOR_FROM_SEXP (lhs)->data;
-    rsexp* rhs_data = VECTOR_FROM_SEXP (rhs)->data;
+    lhs_data = VECTOR_FROM_SEXP (lhs)->data;
+    rhs_data = VECTOR_FROM_SEXP (rhs)->data;
 
     for (k = 0; k < length; ++k)
         if (!r_equal_p (lhs_data [k], rhs_data [k]))
@@ -150,13 +163,26 @@ rsize r_vector_length (rsexp vector)
 
 rsexp r_list_to_vector (rsexp list)
 {
-    rsexp res = r_vector_new (r_length (list), R_UNSPECIFIED);
-    rsize k   = 0u;
+    rsexp res;
+    rsize i;
 
-    while (!r_null_p (list)) {
-        r_vector_set_x (res, k++, r_car (list));
+    res = r_vector_new (r_length (list), R_UNSPECIFIED);
+
+    for (i = 0; !r_null_p (list); ++i) {
+        r_vector_set_x (res, i, r_car (list));
         list = r_cdr (list);
     }
+
+    return res;
+}
+
+rsexp r_vector_to_list (rsexp vector)
+{
+    rsize i;
+    rsexp res;
+
+    for (i = r_vector_length (vector), res = R_NULL; i > 0; --i)
+        res = r_cons (r_vector_ref (vector, i - 1), res);
 
     return res;
 }

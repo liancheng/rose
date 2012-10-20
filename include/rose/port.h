@@ -34,6 +34,7 @@ char*   r_port_gets                 (rsexp       port,
                                      rint        size);
 rint    r_port_puts                 (rsexp       port,
                                      char const* str);
+char    r_read_char                 (rsexp       port);
 void    r_write_char                (rsexp       port,
                                      char        ch);
 void    r_format                    (rsexp       port,
@@ -47,4 +48,4 @@ void    r_set_current_input_port_x  (RState*     state,
 void    r_set_current_output_port_x (RState*     state,
                                      rsexp       port);
 
-#endif  //  __ROSE_PORT_H__
+#endif  /* __ROSE_PORT_H__ */

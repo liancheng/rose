@@ -24,4 +24,4 @@ RType* r_sexp_get_type  (RState* state,
                          rsexp   obj);
 void   r_register_types (RState* state);
 
-#endif  //  __ROSE_DETAIL_SEXP_H__
+#endif  /* __ROSE_DETAIL_SEXP_H__ */

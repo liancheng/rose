@@ -7,14 +7,15 @@
 
 #include <gc/gc.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
 
 static RType* port_type_info ();
 
-static rsexp file_port_new (RState*     state,
-                            FILE*       file,
-                            char const* name,
-                            rint        mode)
+static rsexp make_file_port (RState*     state,
+                             FILE*       file,
+                             char const* name,
+                             rint        mode)
 {
     RPort* port = GC_NEW (RPort);
 
@@ -35,7 +36,7 @@ static rsexp open_file (RState* state, char const* filename, rint mode)
         return r_error_new (r_string_new ("cannot open file"),
                             r_string_new (filename));
 
-    return file_port_new (state, file, filename, mode);
+    return make_file_port (state, file, filename, mode);
 }
 
 static void write_port (rsexp port, rsexp obj)
@@ -73,17 +74,17 @@ rsexp r_open_output_file (RState* state, char const* filename)
 rsexp r_open_input_string (RState* state, char const* string)
 {
     FILE* file = fmemopen ((void*) string, strlen (string), "r");
-    return file_port_new (state, file, "(string-input)", INPUT_PORT);
+    return make_file_port (state, file, "(string-input)", INPUT_PORT);
 }
 
 rsexp r_stdin_port (RState* state)
 {
-    return file_port_new (state, stdin, "(standard-input)", INPUT_PORT);
+    return make_file_port (state, stdin, "(standard-input)", INPUT_PORT);
 }
 
 rsexp r_stdout_port (RState* state)
 {
-    return file_port_new (state, stdout, "(standard-output)", OUTPUT_PORT);
+    return make_file_port (state, stdout, "(standard-output)", OUTPUT_PORT);
 }
 
 rsexp r_port_get_name (rsexp port)
@@ -149,6 +150,11 @@ char* r_port_gets (rsexp port, char* dest, rint size)
 rint r_port_puts (rsexp port, char const* str)
 {
     return fputs (str, PORT_TO_FILE (port));
+}
+
+char r_read_char (rsexp port)
+{
+    return (char) fgetc (PORT_TO_FILE (PORT_FROM_SEXP (port)));
 }
 
 void r_write_char (rsexp port, char ch)

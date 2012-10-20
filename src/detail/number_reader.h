@@ -21,4 +21,4 @@ RNumberReader*  r_number_reader_new ();
 rsexp           r_number_read       (RNumberReader* reader,
                                      char const*    text);
 
-#endif  //  __ROSE_DETAIL_NUMBER_READER_H__
+#endif  /* __ROSE_DETAIL_NUMBER_READER_H__ */

@@ -8,6 +8,7 @@
 #x10
 #e#b10
 #e#d10
+#e1.2
 .1                  ; decimals
 1.0
 0/1                 ; rationals

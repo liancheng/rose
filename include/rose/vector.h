@@ -19,5 +19,6 @@ rsexp r_vector_set_x   (rsexp   vector,
                         rsexp   obj);
 rsize r_vector_length  (rsexp   vector);
 rsexp r_list_to_vector (rsexp   list);
+rsexp r_vector_to_list (rsexp   vector);
 
-#endif  //  __ROSE_VECTOR_H__
+#endif  /* __ROSE_VECTOR_H__ */

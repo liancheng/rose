@@ -7,4 +7,4 @@ rbool r_eqv_p   (rsexp lhs, rsexp rhs);
 rbool r_eq_p    (rsexp lhs, rsexp rhs);
 rbool r_equal_p (rsexp lhs, rsexp rhs);
 
-#endif  //  __ROSE_EQ_H__
+#endif  /* __ROSE_EQ_H__ */

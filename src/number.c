@@ -52,19 +52,23 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
 {
     rint smi;
 
+    /* If imaginary part is not 0... */
     if (0 != mpq_cmp_ui (imag, 0u, 1u))
         return R_FALSE;
 
     mpq_canonicalize (real);
 
+    /* If the denominator is not 1... */
     if (0 != mpz_cmp_ui (mpq_denref (real), 1u))
         return R_FALSE;
 
+    /* If the number is too large (to fit into a signed int)... */
     if (!mpz_fits_sint_p (mpq_numref (real)))
         return R_FALSE;
 
     smi = mpz_get_si (mpq_numref (real));
 
+    /* If the number doesn't fit into the range of small integers... */
     if (smi > R_SMI_MAX || smi < R_SMI_MIN)
         return R_FALSE;
 
@@ -195,4 +199,24 @@ rsexp r_int_to_sexp (rint n)
     mpq_set_si (real, n, 1);
 
     return r_fixreal_new (real);
+}
+
+rint r_int_from_sexp (rsexp obj)
+{
+    return ((rint) obj) >> R_SMI_BITS;
+}
+
+rbool r_byte_p (rsexp obj)
+{
+    if (!r_small_int_p (obj))
+        return FALSE;
+
+    rint i = r_int_from_sexp (obj);
+
+    return i >= 0 && i <= 255;
+}
+
+rbool r_number_p (rsexp obj)
+{
+    return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj);
 }

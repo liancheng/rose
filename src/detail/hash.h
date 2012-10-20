@@ -26,4 +26,4 @@ rbool       r_hash_table_delete   (RHashTable*    hash_table,
                                    rconstpointer  key);
 void        r_hash_table_clear    (RHashTable*    hash_table);
 
-#endif  //  __ROSE_HASH_TABLE_H__
+#endif  /* __ROSE_HASH_TABLE_H__ */

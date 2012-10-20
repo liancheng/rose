@@ -19,4 +19,4 @@ void  r_env_set_x  (rsexp env,
                     rsexp var,
                     rsexp val);
 
-#endif  //  __ROSE_ENV_H__
+#endif  /* __ROSE_ENV_H__ */

@@ -19,7 +19,7 @@ struct RPair {
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
-static inline rsexp reverse_internal (rsexp list, rsexp acc)
+static rsexp reverse_internal (rsexp list, rsexp acc)
 {
     return r_null_p (list)
            ? acc
@@ -62,6 +62,16 @@ static void write_pair (rsexp port, rsexp obj)
 static void display_pair (rsexp port, rsexp obj)
 {
     output_pair (port, obj, r_display);
+}
+
+static rsexp vlist (rsize k, va_list args)
+{
+    rsexp res = R_NULL;
+
+    while (k--)
+        res = r_cons (va_arg (args, rsexp), res);
+
+    return r_reverse (res);
 }
 
 rsexp r_cons (rsexp car, rsexp cdr)
@@ -144,20 +154,10 @@ rsexp r_list (rsize k, ...)
     rsexp   res;
 
     va_start (args, k);
-    res = r_vlist (k, args);
+    res = vlist (k, args);
     va_end (args);
 
     return res;
-}
-
-rsexp r_vlist (rsize k, va_list args)
-{
-    rsexp res = R_NULL;
-
-    while (k--)
-        res = r_cons (va_arg (args, rsexp), res);
-
-    return r_reverse (res);
 }
 
 rsize r_length (rsexp list)

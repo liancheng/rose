@@ -24,4 +24,4 @@ RFlonum;
 #define FLONUM_TO_SEXP(flonum)  ((rsexp) (flonum))
 #define FLONUM_FROM_SEXP(obj)   ((RFlonum*) (obj))
 
-#endif  //  __ROSE_DETAIL_NUMBER_H__
+#endif  /* __ROSE_DETAIL_NUMBER_H__ */

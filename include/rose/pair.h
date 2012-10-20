@@ -25,24 +25,22 @@ rsexp r_append_x     (rsexp   list,
 rbool r_list_p       (rsexp   obj);
 rsexp r_list         (rsize   k,
                       ...);
-rsexp r_vlist        (rsize   k,
-                      va_list args);
 rsize r_length       (rsexp   list);
 rsexp r_list_ref     (rsexp   list,
                       rsize   k);
 
-#define r_caar(obj)     r_car (r_car (obj))
-#define r_cadr(obj)     r_car (r_cdr (obj))
-#define r_cdar(obj)     r_cdr (r_car (obj))
-#define r_cddr(obj)     r_cdr (r_cdr (obj))
-#define r_caaar(obj)    r_car (r_caar (obj))
-#define r_caadr(obj)    r_car (r_cadr (obj))
-#define r_cadar(obj)    r_car (r_cdar (obj))
-#define r_caddr(obj)    r_car (r_cddr (obj))
-#define r_cdaar(obj)    r_cdr (r_caar (obj))
-#define r_cdadr(obj)    r_cdr (r_cadr (obj))
-#define r_cddar(obj)    r_cdr (r_cdar (obj))
-#define r_cdddr(obj)    r_cdr (r_cddr (obj))
+#define r_caar(obj)     r_car (r_car   (obj))
+#define r_cadr(obj)     r_car (r_cdr   (obj))
+#define r_cdar(obj)     r_cdr (r_car   (obj))
+#define r_cddr(obj)     r_cdr (r_cdr   (obj))
+#define r_caaar(obj)    r_car (r_caar  (obj))
+#define r_caadr(obj)    r_car (r_cadr  (obj))
+#define r_cadar(obj)    r_car (r_cdar  (obj))
+#define r_caddr(obj)    r_car (r_cddr  (obj))
+#define r_cdaar(obj)    r_cdr (r_caar  (obj))
+#define r_cdadr(obj)    r_cdr (r_cadr  (obj))
+#define r_cddar(obj)    r_cdr (r_cdar  (obj))
+#define r_cdddr(obj)    r_cdr (r_cddr  (obj))
 #define r_caaaar(obj)   r_car (r_caaar (obj))
 #define r_caaadr(obj)   r_car (r_caadr (obj))
 #define r_caadar(obj)   r_car (r_cadar (obj))
@@ -60,4 +58,4 @@ rsexp r_list_ref     (rsexp   list,
 #define r_cdddar(obj)   r_cdr (r_cddar (obj))
 #define r_cddddr(obj)   r_cdr (r_cdddr (obj))
 
-#endif  //  __ROSE_PAIR_H__
+#endif  /* __ROSE_PAIR_H__ */

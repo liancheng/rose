@@ -15,4 +15,4 @@ rsexp         r_symbol_new_static (RState*     state,
 char const*   r_symbol_name       (RState*     state,
                                    rsexp       obj);
 
-#endif  //  __ROSE_SYMBOL_H__
+#endif  /* __ROSE_SYMBOL_H__ */

@@ -15,4 +15,4 @@ void  r_error_set_message_x   (rsexp error,
 void  r_error_set_irritants_x (rsexp error,
                                rsexp irritants);
 
-#endif  //  __ROSE_ERROR_H__
+#endif  /* __ROSE_ERROR_H__ */

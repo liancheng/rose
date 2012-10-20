@@ -15,7 +15,8 @@ token
     QUOTE;
     BACKTICK;
     IDENTIFIER;
-    BOOLEAN;
+    TRUE;
+    FALSE;
     STRING;
     CHARACTER;
     NUMBER;
@@ -31,8 +32,7 @@ define
     delimiter                   {whitespace}|[()";]
 
     /* Identifier (symbol) */
-
-    letter                      [a-zA-Z]
+    letter                      [a-z]
     special_initial             [!$%&*/:<=>?^_~]
     digit                       [0-9]
     initial                     {letter}
@@ -43,10 +43,19 @@ define
     peculiar_identifier         "+"|"-"|"..."
     identifier                  {initial}{subsequent}*|{peculiar_identifier}
 
-    exactness                   #[eiEI]
+    /* Character */
+    character_name              "space"|"newline"
+    character                   #\\{character_name}|#\\.
+
+    /* Boolean */
+    true                        #t
+    false                       #f
+
+    /* Number */
+    exactness                   #[ei]
     sign                        [+\-]
 
-    bin_radix                   #[bB]
+    bin_radix                   #b
     bin_prefix                  {exactness}{bin_radix}
                                 |{bin_radix}{exactness}?
     bin_digit                   0|1
@@ -58,7 +67,7 @@ define
                                 |{bin_real}
     bin_number                  {bin_prefix}{bin_complex}
 
-    oct_radix                   #[oO]
+    oct_radix                   #o
     oct_prefix                  {exactness}{oct_radix}
                                 |{oct_radix}{exactness}?
     oct_digit                   [0-7]
@@ -70,12 +79,12 @@ define
                                 |{oct_real}
     oct_number                  {oct_prefix}{oct_complex}
 
-    dec_radix                   #[dD]
+    dec_radix                   #d
     dec_prefix                  {exactness}{dec_radix}?
                                 |{dec_radix}{exactness}?
     dec_digit                   [0-9]
     dec_uinteger                {dec_digit}+
-    exponent_marker             [esfdlESFDL]
+    exponent_marker             [esfdl]
     suffix                      {exponent_marker}{sign}?{dec_digit}+
     decimal                     ("."{dec_digit}+
                                  |{dec_digit}+"."{dec_digit}*
@@ -89,10 +98,10 @@ define
                                 |{dec_real}
     dec_number                  {dec_prefix}?{dec_complex}
 
-    hex_radix                   #[xX]
+    hex_radix                   #x
     hex_prefix                  {exactness}{hex_radix}
                                 |{hex_radix}{exactness}?
-    hex_digit                   [0-9a-fA-F]
+    hex_digit                   [0-9a-f]
     hex_uinteger                {hex_digit}+
     hex_ureal                   {hex_uinteger}("/"{hex_uinteger})?
     hex_real                    {sign}?{hex_ureal}
@@ -101,18 +110,10 @@ define
                                 |{hex_real}
     hex_number                  {hex_prefix}{hex_complex}
 
-    /* Number */
     number                      {bin_number}
                                 |{oct_number}
                                 |{dec_number}
                                 |{hex_number}
-
-    /* Character */
-    character_name              "space"|"newline"
-    character                   #\\{character_name}|#\\.
-
-    /* Boolean */
-    boolean                     #[tf]
 }
 
 start = MAIN;
@@ -150,12 +151,6 @@ mode MAIN : FAILURE, EOF
     /* Symbols */
     {identifier}/{delimiter}    => TKN_IDENTIFIER (Lexeme);
 
-    /* Number */
-    {number}/{delimiter}        => TKN_NUMBER (Lexeme);
-
-    /* Booleans */
-    {boolean}/{delimiter}       => TKN_BOOLEAN (LexemeBegin + 1, LexemeEnd);
-
     /* Characters */
     #\\null/{delimiter}         => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
     #\\alarm/{delimiter}        => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
@@ -166,11 +161,17 @@ mode MAIN : FAILURE, EOF
     #\\space/{delimiter}        => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
     #\\escape/{delimiter}       => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
     #\\delete/{delimiter}       => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
-
     #\\./{delimiter}            => TKN_CHARACTER (Lexeme + 2, LexemeEnd);
+
+    /* Booleans */
+    {true}/{delimiter}          => TKN_TRUE (Lexeme);
+    {false}/{delimiter}         => TKN_FALSE (Lexeme);
 
     /* Strings */
     "\""                        => GOSUB (STRING);
+
+    /* Number */
+    {number}/{delimiter}        => TKN_NUMBER (Lexeme);
 }
 
 mode STRING : EOF, FAILURE

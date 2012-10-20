@@ -57,13 +57,13 @@ static rbool fix_exactness (RNumberReader* reader,
                             double*        real_d,
                             double*        imag_d)
 {
-    /* If exactness prefix `#e' exists, then the number is exact. */
+    /* If there exists the exactness prefix `#e', then the number is exact. */
     if (TRUE == reader->exact)
         return TRUE;
 
     /*
-     * Neither `#e' nor `#i' exists, and this isn't a decimal number, then the
-     * number is also exact.
+     * If neither `#e' nor `#i' exists, and this isn't a decimal number, then
+     * the number is also exact.
      */
     if (UNKNOWN == reader->exact && TRUE != reader->decimal)
         return TRUE;
@@ -181,12 +181,9 @@ static rbool read_exactness (RNumberReader* reader)
  */
 static rbool read_prefix (RNumberReader* reader)
 {
-    if (read_radix (reader)) {
+    if (read_radix (reader))
         read_exactness (reader);
-        return TRUE;
-    }
-
-    if (read_exactness (reader))
+    else if (read_exactness (reader))
         read_radix (reader);
 
     return TRUE;

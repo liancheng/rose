@@ -1,6 +1,7 @@
 #ifndef __ROSE_DETAIL_STATE_H__
 #define __ROSE_DETAIL_STATE_H__
 
+#include "rose/raise.h"
 #include "rose/sexp.h"
 #include "rose/state.h"
 #include "rose/symbol.h"
@@ -35,10 +36,11 @@ struct RState {
     rsexp         env;
     rsexp         current_input_port;
     rsexp         current_output_port;
+    RErrorJmp*    error_jmp;
     RType**       types;
     rsexp         keywords [R_KEYWORD_COUNT];
 };
 
 rsexp r_keyword (RState* state, ruint index);
 
-#endif  //  __ROSE_DETAIL_STATE_H__
+#endif  /* __ROSE_DETAIL_STATE_H__ */

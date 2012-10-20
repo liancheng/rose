@@ -18,4 +18,4 @@ typedef int          rbool;
 typedef int          rtribool;
 typedef uint8_t      rbyte;
 
-#endif  //  __ROSE_TYPES_H__
+#endif  /* __ROSE_TYPES_H__ */

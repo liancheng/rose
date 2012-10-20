@@ -50,6 +50,7 @@ RState* r_state_new ()
     state->env                 = r_env_new ();
     state->current_input_port  = r_stdin_port (state);
     state->current_output_port = r_stdout_port (state);
+    state->error_jmp           = NULL;
     state->types               = GC_MALLOC_ATOMIC (sizeof (RType*) * 8);
 
     r_register_types (state);

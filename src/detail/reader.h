@@ -2,6 +2,7 @@
 #define __ROSE_DETAIL_READER_H__
 
 #include "detail/lexer.h"
+#include "rose/sexp.h"
 #include "rose/state.h"
 
 #include <setjmp.h>
@@ -16,4 +17,4 @@ struct RDatumReader {
     RToken  token;
 };
 
-#endif  //  __ROSE_DETAIL_READER_H__
+#endif  /* __ROSE_DETAIL_READER_H__ */

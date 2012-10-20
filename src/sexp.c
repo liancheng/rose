@@ -123,10 +123,10 @@ RType* r_sexp_get_type (RState* state, rsexp obj)
 
 void r_register_types (RState* state)
 {
-    register_bool_type (state);
+    register_bool_type          (state);
     register_special_const_type (state);
-    register_pair_type (state);
-    register_symbol_type (state);
-    register_smi_type (state);
-    register_char_type (state);
+    register_pair_type          (state);
+    register_symbol_type        (state);
+    register_smi_type           (state);
+    register_char_type          (state);
 }
