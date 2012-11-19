@@ -6,12 +6,23 @@
 
 #include <setjmp.h>
 
-struct RErrorJmp {
-    RErrorJmp* previous;
-    jmp_buf    buf;
+typedef struct RNestedJump RNestedJump;
+
+struct RNestedJump {
+    RNestedJump* previous;
+    jmp_buf      buf;
 };
 
-#define R_TRY(state)    if (0 == setjmp ((state)->error_jmp->buf))
-#define R_THROW(state)  longjmp (state->error_jmp->buf, 1)
+#define R_TRY(jmp, state)\
+        (jmp).previous = (state)->error_jmp;\
+        (state)->error_jmp = &(jmp);\
+        if (0 == setjmp ((state)->error_jmp->buf))
+
+#define R_CATCH else
+
+#define R_END_TRY(state)\
+        (state)->error_jmp = jmp.previous;
+
+#define R_RAISE(state)  longjmp (state->error_jmp->buf, 1)
 
 #endif  /* __ROSE_DETAIL_RAISE_H__ */

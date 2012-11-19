@@ -99,7 +99,7 @@ static rsexp lexeme_to_char (char const* text)
     return r_char_to_sexp (res);
 }
 
-static void raise_syntax_error (RDatumReader* reader,
+static void syntax_error (RDatumReader* reader,
                                 rsize         line,
                                 rsize         column,
                                 char const*   message)
@@ -111,7 +111,7 @@ static void raise_syntax_error (RDatumReader* reader,
                              r_int_to_sexp (line),
                              r_int_to_sexp (column)));
 
-    R_THROW (reader->state);
+    R_RAISE (reader->state);
 }
 
 static void record_source_location (RDatumReader* reader,
@@ -132,13 +132,19 @@ static rsexp read_vector (RDatumReader* reader)
     if (!match (reader, TKN_HASH_LP))
         return R_UNSPECIFIED;
 
-    record_source_location (reader, &line, &column);
-
     for (list = R_NULL; lookahead (reader)->_id != TKN_RP; ) {
+        record_source_location (reader, &line, &column);
         datum = read_datum (reader);
 
-        if (r_unspecified_p (datum))
-            raise_syntax_error (reader, line, column, "bad syntax");
+        if (r_eof_p (datum)) {
+            char* message = "the vector is not closed";
+            syntax_error (reader, line, column, message);
+        }
+
+        if (r_unspecified_p (datum)) {
+            char* message = "expecting a vector element";
+            syntax_error (reader, line, column, message);
+        }
 
         list = r_cons (datum, list);
     }
@@ -164,7 +170,7 @@ static rsexp read_full_list (RDatumReader* reader)
     record_source_location (reader, &line, &column);
 
     if (r_unspecified_p ((datum = read_datum (reader))))
-        raise_syntax_error (reader, line, column, "bad syntax");
+        syntax_error (reader, line, column, "bad syntax");
 
     for (list = r_cons (datum, R_NULL); ; list = r_cons (datum, list)) {
         rtokenid id = lookahead (reader)->_id;
@@ -175,7 +181,7 @@ static rsexp read_full_list (RDatumReader* reader)
         record_source_location (reader, &line, &column);
 
         if (r_unspecified_p ((datum = read_datum (reader))))
-            raise_syntax_error (reader, line, column, "bad syntax");
+            syntax_error (reader, line, column, "bad syntax");
     }
 
     list = r_reverse (list);
@@ -184,7 +190,7 @@ static rsexp read_full_list (RDatumReader* reader)
         record_source_location (reader, &line, &column);
 
         if (r_unspecified_p ((datum = read_datum (reader))))
-            raise_syntax_error (reader, line, column, "datum expected");
+            syntax_error (reader, line, column, "datum expected");
 
         list = r_append_x (list, datum);
     }
@@ -192,7 +198,7 @@ static rsexp read_full_list (RDatumReader* reader)
     record_source_location (reader, &line, &column);
 
     if (!match (reader, TKN_RP))
-        raise_syntax_error (reader, line, column, "missing close parenthesis");
+        syntax_error (reader, line, column, "missing close parenthesis");
 
     return list;
 }
@@ -229,7 +235,7 @@ static rsexp read_abbreviation (RDatumReader* reader)
     record_source_location (reader, &line, &column);
 
     if (r_unspecified_p ((datum = read_datum (reader))))
-        raise_syntax_error (reader, line, column, "bad syntax");
+        syntax_error (reader, line, column, "bad syntax");
 
     return r_list (2, prefix, datum);
 }
@@ -264,7 +270,7 @@ static rsexp read_bytevector (RDatumReader* reader)
         record_source_location (reader, &line, &column);
 
         if (!r_byte_p ((datum = read_datum (reader))))
-            raise_syntax_error (reader, line, column, "value out of range");
+            syntax_error (reader, line, column, "value out of range");
 
         bytes = r_cons (datum, bytes);
     }
@@ -330,9 +336,6 @@ static rsexp read_datum (RDatumReader* reader)
 {
     rsexp datum;
 
-    if (lookahead (reader)->_id == TKN_TERMINATION)
-        return R_EOF;
-
     if (match (reader, TKN_HASH_SEMICOLON))
         if (r_unspecified_p (read_datum (reader)))
             return R_UNSPECIFIED;
@@ -345,17 +348,18 @@ static rsexp read_datum (RDatumReader* reader)
 rsexp r_read (RDatumReader* reader)
 {
     rsexp datum;
-    RErrorJmp jmp;
+    RNestedJump jmp;
 
-    jmp.previous = reader->state->error_jmp;
-    reader->state->error_jmp = &jmp;
+    R_TRY (jmp, reader->state) {
+        if (lookahead (reader)->_id == TKN_TERMINATION)
+            return R_EOF;
 
-    R_TRY (reader->state) {
-        datum = read_datum (reader);
-        return r_unspecified_p (datum) ? R_EOF : datum;
+        return r_unspecified_p (datum = read_datum (reader)) ? R_EOF : datum;
     }
-
-    return R_UNSPECIFIED;
+    R_CATCH {
+        return R_UNSPECIFIED;
+    }
+    R_END_TRY (reader->state);
 }
 
 RDatumReader* r_reader_new (RState* state)
