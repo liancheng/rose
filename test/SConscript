@@ -5,14 +5,16 @@ Import('rose_lib')
 
 env = env.Clone()
 
-env.Prepend(LIBS=[rose_lib])
-env.MergeFlags('!pkg-config --cflags --libs glib-2.0')
+env.Prepend(LIBS=[rose_lib],
+            CPPPATH=[environ['GTEST_DIR'],
+                     environ['GTEST_DIR'] + '/include'])
 
 test = env.Program(target='test',
-                   source=env.Glob('*.c'))
+                   source=[env.Glob('*.cpp'),
+                           environ['GTEST_DIR'] + '/src/gtest-all.cc'])
 
 env.Command(target='run-test',
             source=test[0],
-            action='gtester ' + test[0].abspath)
+            action=test[0].abspath)
 
 # vim:ft=python
