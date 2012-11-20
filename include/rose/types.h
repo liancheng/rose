@@ -17,5 +17,7 @@ typedef size_t       rsize;
 typedef int          rbool;
 typedef int          rtribool;
 typedef uint8_t      rbyte;
+typedef uint32_t     runichar;
+typedef char         rchar;
 
 #endif  /* __ROSE_TYPES_H__ */

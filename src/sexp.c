@@ -16,10 +16,12 @@ static void write_bool (rsexp port, rsexp obj)
 static void register_bool_type (RState* state)
 {
     static RType type = {
-        .size    = 0,
-        .name    = "boolean",
-        .write   = write_bool,
-        .display = write_bool,
+        .size = 0,
+        .name = "boolean",
+        .ops = {
+            .write = write_bool,
+            .display = write_bool
+        }
     };
 
     state->types [R_BOOL_TAG] = &type;
@@ -45,10 +47,12 @@ static void display_special_const (rsexp port, rsexp obj)
 static void register_special_const_type (RState* state)
 {
     static RType type = {
-        .size    = 0,
-        .name    = "special-const",
-        .write   = write_special_const,
-        .display = display_special_const,
+        .size = 0,
+        .name = "special-const",
+        .ops = {
+            .write = write_special_const,
+            .display = display_special_const
+        }
     };
 
     state->types [R_SPECIAL_CONST_TAG] = &type;
@@ -62,10 +66,12 @@ static void write_smi (rsexp port, rsexp obj)
 static void register_smi_type (RState* state)
 {
     static RType type = {
-        .size    = 0,
-        .name    = "small-integer",
-        .write   = write_smi,
-        .display = write_smi,
+        .size = 0,
+        .name = "small-integer",
+        .ops = {
+            .write = write_smi,
+            .display = write_smi
+        }
     };
 
     state->types [R_SMI_EVEN_TAG] = &type;
@@ -105,10 +111,12 @@ static void display_char (rsexp port, rsexp obj)
 static void register_char_type (RState* state)
 {
     static RType type = {
-        .size    = 0,
-        .name    = "character",
-        .write   = write_char,
-        .display = display_char,
+        .size = 0,
+        .name = "character",
+        .ops = {
+            .write = write_char,
+            .display = display_char
+        }
     };
 
     state->types [R_CHAR_TAG] = &type;

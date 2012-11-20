@@ -8,7 +8,7 @@ void r_write (rsexp port, rsexp obj)
     RType* type = r_sexp_get_type (state, obj);
 
     if (type)
-        type->write (port, obj);
+        type->ops.write (port, obj);
 }
 
 void r_display (rsexp port, rsexp obj)
@@ -17,5 +17,5 @@ void r_display (rsexp port, rsexp obj)
     RType* type = r_sexp_get_type (state, obj);
 
     if (type)
-        type->display (port, obj);
+        type->ops.display (port, obj);
 }

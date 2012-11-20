@@ -37,10 +37,12 @@ static void display_string (rsexp port, rsexp obj)
 static RType* r_string_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RString),
-        .name    = "string",
-        .write   = write_string,
-        .display = display_string
+        .size = sizeof (RString),
+        .name = "string",
+        .ops = {
+            .write = write_string,
+            .display = display_string
+        }
     };
 
     return &type;
@@ -66,4 +68,21 @@ rbool r_string_p (rsexp obj)
 char const* r_string_to_cstr (rsexp obj)
 {
     return STRING_FROM_SEXP (obj)->data;
+}
+
+rbool r_string_equal_p (rsexp lhs, rsexp rhs)
+{
+    RString* lhs_str;
+    RString* rhs_str;
+
+    if (!r_string_p (lhs) || !r_string_p (rhs))
+        return FALSE;
+
+    lhs_str = STRING_FROM_SEXP (lhs);
+    rhs_str = STRING_FROM_SEXP (rhs);
+
+    return lhs_str->length == rhs_str->length
+        && 0 == memcmp (lhs_str->data,
+                        rhs_str->data,
+                        lhs_str->length * sizeof (char));
 }

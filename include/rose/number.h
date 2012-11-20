@@ -4,8 +4,6 @@
 #include "rose/sexp.h"
 
 #include <limits.h>
-
-#include <stdio.h>
 #include <gmp.h>
 
 /** Parses a number from string \a text. */
@@ -21,6 +19,12 @@ rsexp r_flonum_new (double real, double imag);
 
 /** Predicates whether \a obj is a flonum. */
 rbool r_flonum_p (rsexp obj);
+
+/**
+ * \def r_inexact_p(obj)
+ * Predicates whether \a obj is an inexact number.
+ */
+#define r_inexact_p(obj) (r_flonum_p (obj))
 
 /** Sets the real part of flonum \a obj to \a real. */
 void  r_flonum_set_real_x (rsexp obj, double real);
@@ -70,6 +74,9 @@ rbool r_byte_p (rsexp obj);
 
 /** Predicates whether \a obj is a fixnum, a flonum or a small integer. */
 rbool r_number_p (rsexp obj);
+
+/** Predicates whether \a obj is an exact number. */
+rbool r_exact_p (rsexp obj);
 
 /**
  * \def R_ZERO

@@ -41,10 +41,12 @@ static void write_env (rsexp port, rsexp obj)
 static RType* env_type_info ()
 {
     static RType type = {
-        .size    = sizeof (REnv),
-        .name    = "environment",
-        .write   = write_env,
-        .display = write_env
+        .size = sizeof (REnv),
+        .name = "environment",
+        .ops = {
+            .write = write_env,
+            .display = write_env
+        }
     };
 
     return &type;

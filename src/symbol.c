@@ -141,10 +141,12 @@ char const* r_symbol_name (RState* state, rsexp obj)
 void register_symbol_type (RState* state)
 {
     static RType type = {
-        .size    = 0,
-        .name    = "symbol",
-        .write   = write_symbol,
-        .display = write_symbol,
+        .size = 0,
+        .name = "symbol",
+        .ops = {
+            .write = write_symbol,
+            .display = write_symbol
+        }
     };
 
     state->types [R_SYMBOL_TAG] = &type;

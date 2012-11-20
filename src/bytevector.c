@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <gc/gc.h>
+#include <string.h>
 
 struct RBytevector {
     RType* type;
@@ -37,10 +38,12 @@ static void write_bytevector (rsexp port, rsexp obj)
 static RType* bytevector_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RBytevector),
-        .name    = "bytevector",
-        .write   = write_bytevector,
-        .display = write_bytevector
+        .size = sizeof (RBytevector),
+        .name = "bytevector",
+        .ops = {
+            .write = write_bytevector,
+            .display = write_bytevector
+        }
     };
 
     return &type;
@@ -103,4 +106,21 @@ rsexp r_list_to_bytevector (rsexp list)
     }
 
     return res;
+}
+
+rbool r_bytevector_equal_p (rsexp lhs, rsexp rhs)
+{
+    RBytevector* lhs_bv;
+    RBytevector* rhs_bv;
+
+    if (!r_bytevector_p (lhs) || !r_bytevector_p (rhs))
+        return FALSE;
+
+    lhs_bv = BYTEVECTOR_FROM_SEXP (lhs);
+    rhs_bv = BYTEVECTOR_FROM_SEXP (rhs);
+
+    return lhs_bv->length == rhs_bv->length
+        && 0 == memcmp (lhs_bv->data,
+                        rhs_bv->data,
+                        lhs_bv->length * sizeof (rbyte));
 }

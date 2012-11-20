@@ -39,10 +39,12 @@ static void display_error (rsexp port, rsexp obj)
 static RType* error_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RError),
-        .name    = "port",
-        .write   = write_error,
-        .display = display_error
+        .size = sizeof (RError),
+        .name = "port",
+        .ops = {
+            .write = write_error,
+            .display = display_error
+        }
     };
 
     return &type;

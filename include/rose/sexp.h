@@ -6,11 +6,6 @@
 
 typedef rword rsexp;
 
-typedef struct RType RType;
-
-typedef void (*RWriteFunction)   (rsexp, rsexp);
-typedef void (*RDisplayFunction) (rsexp, rsexp);
-
 /**
  * \defgroup TaggedPointer Tagged pointer
  * \{

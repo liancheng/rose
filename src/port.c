@@ -47,10 +47,12 @@ static void write_port (rsexp port, rsexp obj)
 static RType* port_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RPort),
-        .name    = "port",
-        .write   = write_port,
-        .display = write_port
+        .size = sizeof (RPort),
+        .name = "port",
+        .ops = {
+            .write = write_port,
+            .display = write_port
+        }
     };
 
     return &type;

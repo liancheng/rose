@@ -78,10 +78,10 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
 static RType* fixnum_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RFixnum),
-        .name    = "fixnum",
-        .write   = write_fixnum,
-        .display = write_fixnum,
+        .size        = sizeof (RFixnum),
+        .name        = "fixnum",
+        .ops.write   = write_fixnum,
+        .ops.display = write_fixnum,
     };
 
     return &type;
@@ -90,10 +90,12 @@ static RType* fixnum_type_info ()
 static RType* flonum_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RFlonum),
-        .name    = "flonum",
-        .write   = write_flonum,
-        .display = write_flonum,
+        .size = sizeof (RFlonum),
+        .name = "flonum",
+        .ops = {
+            .write = write_flonum,
+            .display = write_flonum
+        }
     };
 
     return &type;
@@ -108,6 +110,24 @@ static RFixnum* fixnum_new ()
     GC_REGISTER_FINALIZER (fixnum, fixnum_finalize, NULL, NULL, NULL);
 
     return fixnum;
+}
+
+static rbool fixnum_eqv_p (rsexp lhs, rsexp rhs)
+{
+    RFixnum* lhs_num = FIXNUM_FROM_SEXP (lhs);
+    RFixnum* rhs_num = FIXNUM_FROM_SEXP (rhs);
+
+    return mpq_cmp (lhs_num->real, rhs_num->real) == 0
+        && mpq_cmp (lhs_num->imag, rhs_num->imag) == 0;
+}
+
+static rbool flonum_eqv_p (rsexp lhs, rsexp rhs)
+{
+    RFlonum* lhs_num = FLONUM_FROM_SEXP (lhs);
+    RFlonum* rhs_num = FLONUM_FROM_SEXP (rhs);
+
+    return lhs_num->real == rhs_num->real
+        && lhs_num->imag == rhs_num->imag;
 }
 
 rbool r_fixnum_p (rsexp obj)
@@ -219,4 +239,23 @@ rbool r_byte_p (rsexp obj)
 rbool r_number_p (rsexp obj)
 {
     return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj);
+}
+
+rbool r_exact_p (rsexp obj)
+{
+    return r_small_int_p (obj) || r_fixnum_p (obj);
+}
+
+rbool r_number_eqv_p (rsexp lhs, rsexp rhs)
+{
+    if (r_small_int_p (lhs) && r_small_int_p (rhs))
+        return lhs == rhs;
+
+    if (r_fixnum_p (lhs) && r_fixnum_p (rhs))
+        return fixnum_eqv_p (lhs, rhs);
+
+    if (r_flonum_p (lhs) && r_flonum_p (rhs))
+        return flonum_eqv_p (lhs, rhs);
+
+    return FALSE;
 }

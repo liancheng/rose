@@ -181,10 +181,12 @@ rsexp r_list_ref (rsexp list, rsize k)
 void register_pair_type (RState* state)
 {
     static RType type = {
-        .size    = sizeof (RPair),
-        .name    = "pair",
-        .write   = write_pair,
-        .display = display_pair,
+        .size = sizeof (RPair),
+        .name = "pair",
+        .ops = {
+            .write = write_pair,
+            .display = display_pair
+        }
     };
 
     state->types [R_PAIR_TAG] = &type;

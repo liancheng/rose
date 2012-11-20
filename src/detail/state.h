@@ -2,7 +2,7 @@
 #define __ROSE_DETAIL_STATE_H__
 
 #include "detail/raise.h"
-#include "rose/sexp.h"
+#include "detail/sexp.h"
 #include "rose/state.h"
 #include "rose/symbol.h"
 

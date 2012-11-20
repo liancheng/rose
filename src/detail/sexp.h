@@ -4,18 +4,26 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
-typedef rbool (*REqvPredicate)   (rsexp, rsexp);
-typedef rbool (*REqPredicate)    (rsexp, rsexp);
-typedef rbool (*REqualPredicate) (rsexp, rsexp);
+typedef struct RType RType;
+
+typedef rbool (*REqvPredicate)    (rsexp, rsexp);
+typedef rbool (*REqPredicate)     (rsexp, rsexp);
+typedef rbool (*REqualPredicate)  (rsexp, rsexp);
+typedef void  (*RWriteFunction)   (rsexp, rsexp);
+typedef void  (*RDisplayFunction) (rsexp, rsexp);
 
 struct RType {
-    rsize            size;
-    char const*      name;
-    RWriteFunction   write;
-    RDisplayFunction display;
-    REqvPredicate    eqv_p;
-    REqPredicate     eq_p;
-    REqualPredicate  equal_p;
+    rsize       size;
+    char const* name;
+
+    struct {
+        RWriteFunction   write;
+        RDisplayFunction display;
+        REqvPredicate    eqv_p;
+        REqPredicate     eq_p;
+        REqualPredicate  equal_p;
+    }
+    ops;
 };
 
 #define R_SEXP_TYPE(obj)    (*(RType**) (obj))

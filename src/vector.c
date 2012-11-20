@@ -56,10 +56,12 @@ static void display_vector (rsexp port, rsexp obj)
 static RType* vector_type_info ()
 {
     static RType type = {
-        .size    = sizeof (RVector),
-        .name    = "vector",
-        .write   = write_vector,
-        .display = display_vector
+        .size = sizeof (RVector),
+        .name = "vector",
+        .ops = {
+            .write = write_vector,
+            .display = display_vector
+        }
     };
 
     return &type;
