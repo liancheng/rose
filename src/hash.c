@@ -297,7 +297,7 @@ RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
     hash_table->key_destructor   = key_destructor;
     hash_table->value_destructor = value_destructor;
 
-    hash_table->hashes = malloc (sizeof (ruint) * hash_table->size);
+    hash_table->hashes = calloc (hash_table->size, sizeof (ruint));
     hash_table->keys   = malloc (sizeof (rpointer) * hash_table->size);
     hash_table->values = hash_table->keys;
 
