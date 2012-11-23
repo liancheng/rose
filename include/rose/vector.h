@@ -5,12 +5,15 @@
 
 typedef struct RVector RVector;
 
-rsexp r_vector_new     (rsize   k,
+rsexp r_vector_new     (RState* state,
+                        rsize   k,
                         rsexp   fill);
-rsexp r_vector         (rsize   k,
+rsexp r_vector         (RState* state,
+                        rsize   k,
                         ...);
 rbool r_vector_p       (rsexp   obj);
-rbool r_vector_equal_p (rsexp   lhs,
+rbool r_vector_equal_p (RState* state,
+                        rsexp   lhs,
                         rsexp   rhs);
 rsexp r_vector_ref     (rsexp   vector,
                         rsize   k);
@@ -18,7 +21,9 @@ rsexp r_vector_set_x   (rsexp   vector,
                         rsize   k,
                         rsexp   obj);
 rsize r_vector_length  (rsexp   vector);
-rsexp r_list_to_vector (rsexp   list);
-rsexp r_vector_to_list (rsexp   vector);
+rsexp r_list_to_vector (RState* state,
+                        rsexp   list);
+rsexp r_vector_to_list (RState* state,
+                        rsexp   vector);
 
 #endif  /* __ROSE_VECTOR_H__ */

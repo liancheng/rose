@@ -15,7 +15,7 @@ static void write_bool (rsexp port, rsexp obj)
 
 static void register_bool_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = 0,
         .name = "boolean",
         .ops = {
@@ -46,7 +46,7 @@ static void display_special_const (rsexp port, rsexp obj)
 
 static void register_special_const_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = 0,
         .name = "special-const",
         .ops = {
@@ -65,7 +65,7 @@ static void write_smi (rsexp port, rsexp obj)
 
 static void register_smi_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = 0,
         .name = "small-integer",
         .ops = {
@@ -110,7 +110,7 @@ static void display_char (rsexp port, rsexp obj)
 
 static void register_char_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = 0,
         .name = "character",
         .ops = {
@@ -122,7 +122,14 @@ static void register_char_type (RState* state)
     state->types [R_CHAR_TAG] = &type;
 }
 
-RType* r_sexp_get_type (RState* state, rsexp obj)
+ruint r_type_tag (rsexp obj)
+{
+    return r_boxed_p (obj)
+           ? ((RObject*) obj)->type_tag
+           : R_GET_TAG (obj);
+}
+
+RTypeDescriptor* r_describe (RState* state, rsexp obj)
 {
     return (r_boxed_p (obj))
            ? R_SEXP_TYPE (obj)
@@ -137,4 +144,30 @@ void r_register_types (RState* state)
     register_symbol_type        (state);
     register_smi_type           (state);
     register_char_type          (state);
+}
+
+// TODO remove me when the GC mechanism is ready
+static void finalize_object (rpointer obj, rpointer client_data)
+{
+    (((RObject*) obj)->type_desc->ops.destruct) ((RState*) client_data, obj);
+}
+
+RObject* r_object_new (RState*          state,
+                       RBoxedTypeTag    type_tag,
+                       RTypeDescriptor* type_desc)
+{
+    RObject* obj = r_alloc (state, type_desc->size);
+
+    if (obj == NULL) {
+        // TODO trigger GC
+        return NULL;
+    }
+
+    obj->type_desc = type_desc;
+    obj->type_tag  = type_tag;
+
+    // TODO remove me when the GC mechanism is ready
+    GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);
+
+    return obj;
 }

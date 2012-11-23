@@ -8,7 +8,6 @@
 #include "rose/port.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <string.h>
 
 static void write_fixnum (rsexp port, rsexp obj)
@@ -42,12 +41,6 @@ static void write_flonum (rsexp port, rsexp obj)
     }
 }
 
-static void fixnum_finalize (rpointer obj, rpointer client_data)
-{
-    RFixnum* fixnum = obj;
-    mpq_clears (fixnum->real, fixnum->imag, NULL);
-}
-
 static rsexp try_small_int (mpq_t real, mpq_t imag)
 {
     rint smi;
@@ -75,44 +68,7 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
     return r_int_to_sexp (smi);
 }
 
-static RType* fixnum_type_info ()
-{
-    static RType type = {
-        .size        = sizeof (RFixnum),
-        .name        = "fixnum",
-        .ops.write   = write_fixnum,
-        .ops.display = write_fixnum,
-    };
-
-    return &type;
-}
-
-static RType* flonum_type_info ()
-{
-    static RType type = {
-        .size = sizeof (RFlonum),
-        .name = "flonum",
-        .ops = {
-            .write = write_flonum,
-            .display = write_flonum
-        }
-    };
-
-    return &type;
-}
-
-static RFixnum* fixnum_new ()
-{
-    RFixnum* fixnum = GC_NEW_ATOMIC (RFixnum);
-
-    fixnum->type = fixnum_type_info ();
-    mpq_inits (fixnum->real, fixnum->imag, NULL);
-    GC_REGISTER_FINALIZER (fixnum, fixnum_finalize, NULL, NULL, NULL);
-
-    return fixnum;
-}
-
-static rbool fixnum_eqv_p (rsexp lhs, rsexp rhs)
+static rbool fixnum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 {
     RFixnum* lhs_num = FIXNUM_FROM_SEXP (lhs);
     RFixnum* rhs_num = FIXNUM_FROM_SEXP (rhs);
@@ -121,7 +77,7 @@ static rbool fixnum_eqv_p (rsexp lhs, rsexp rhs)
         && mpq_cmp (lhs_num->imag, rhs_num->imag) == 0;
 }
 
-static rbool flonum_eqv_p (rsexp lhs, rsexp rhs)
+static rbool flonum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 {
     RFlonum* lhs_num = FLONUM_FROM_SEXP (lhs);
     RFlonum* rhs_num = FLONUM_FROM_SEXP (rhs);
@@ -130,40 +86,91 @@ static rbool flonum_eqv_p (rsexp lhs, rsexp rhs)
         && lhs_num->imag == rhs_num->imag;
 }
 
+static void destruct_fixnum (RState* state, RObject* obj)
+{
+    RFixnum* fixnum = (RFixnum*) obj;
+    mpq_clears (fixnum->real, fixnum->imag, NULL);
+}
+
+static RTypeDescriptor* fixnum_type_info ()
+{
+    static RTypeDescriptor type = {
+        .size = sizeof (RFixnum),
+        .name = "fixnum",
+        .ops = {
+            .write    = write_fixnum,
+            .display  = write_fixnum,
+            .eqv_p    = fixnum_eqv_p,
+            .equal_p  = fixnum_eqv_p,
+            .mark     = NULL,
+            .destruct = destruct_fixnum
+        }
+    };
+
+    return &type;
+}
+
+static RTypeDescriptor* flonum_type_info ()
+{
+    static RTypeDescriptor type = {
+        .size = sizeof (RFlonum),
+        .name = "flonum",
+        .ops = {
+            .write    = write_flonum,
+            .display  = write_flonum,
+            .eqv_p    = flonum_eqv_p,
+            .equal_p  = flonum_eqv_p,
+            .mark     = NULL,
+            .destruct = NULL
+        }
+    };
+
+    return &type;
+}
+
+static RFixnum* fixnum_new (RState* state)
+{
+    RFixnum* fixnum = (RFixnum*) r_object_new (state,
+                                               R_TYPE_FIXNUM,
+                                               fixnum_type_info ());
+
+    mpq_inits (fixnum->real, fixnum->imag, NULL);
+
+    return fixnum;
+}
+
 rbool r_fixnum_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == fixnum_type_info ();
+    return r_type_tag (obj) == R_TYPE_FIXNUM;
 }
 
 rbool r_flonum_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == flonum_type_info ();
+    return r_type_tag (obj) == R_TYPE_FLONUM;
 }
 
-rsexp r_string_to_number (char const* text)
+rsexp r_string_to_number (RState* state, rchar const* text)
 {
-    return r_number_read (r_number_reader_new (), text);
+    return r_number_read (r_number_reader_new (state), text);
 }
 
-rsexp r_fixnum_new (mpq_t real, mpq_t imag)
+rsexp r_fixnum_new (RState* state, mpq_t real, mpq_t imag)
 {
     rsexp number = try_small_int (real, imag);
 
     if (!r_false_p (number))
         return number;
 
-    RFixnum* fixnum = fixnum_new ();
+    RFixnum* fixnum = fixnum_new (state);
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
 
     return FIXNUM_TO_SEXP (fixnum);
 }
 
-rsexp r_fixreal_new (mpq_t real)
+rsexp r_fixreal_new (RState* state, mpq_t real)
 {
-    RFixnum* fixnum = fixnum_new ();
+    RFixnum* fixnum = fixnum_new (state);
     mpq_set (fixnum->real, real);
     return FIXNUM_TO_SEXP (fixnum);
 }
@@ -178,11 +185,12 @@ rsexp r_fixnum_normalize (rsexp obj)
     return r_false_p (smi) ? obj : smi;
 }
 
-rsexp r_flonum_new (double real, double imag)
+rsexp r_flonum_new (RState* state, double real, double imag)
 {
-    RFlonum* flonum = GC_NEW_ATOMIC (RFlonum);
+    RFlonum* flonum = (RFlonum*) r_object_new (state,
+                                               R_TYPE_FLONUM,
+                                               flonum_type_info ());
 
-    flonum->type = flonum_type_info ();
     flonum->real = real;
     flonum->imag = imag;
 
@@ -211,18 +219,13 @@ void r_flonum_set_imag_x (rsexp obj, double imag)
 
 rsexp r_int_to_sexp (rint n)
 {
-    if (n >= R_SMI_MIN && n <= R_SMI_MAX)
-        return (n << R_SMI_BITS) | R_SMI_TAG;
-
-    mpq_t real;
-    mpq_init (real);
-    mpq_set_si (real, n, 1);
-
-    return r_fixreal_new (real);
+    assert (n >= R_SMI_MIN && n <= R_SMI_MAX);
+    return (n << R_SMI_BITS) | R_SMI_TAG;
 }
 
 rint r_int_from_sexp (rsexp obj)
 {
+    assert (r_small_int_p (obj));
     return ((rint) obj) >> R_SMI_BITS;
 }
 
@@ -246,16 +249,16 @@ rbool r_exact_p (rsexp obj)
     return r_small_int_p (obj) || r_fixnum_p (obj);
 }
 
-rbool r_number_eqv_p (rsexp lhs, rsexp rhs)
+rbool r_number_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 {
     if (r_small_int_p (lhs) && r_small_int_p (rhs))
         return lhs == rhs;
 
     if (r_fixnum_p (lhs) && r_fixnum_p (rhs))
-        return fixnum_eqv_p (lhs, rhs);
+        return fixnum_eqv_p (state, lhs, rhs);
 
     if (r_flonum_p (lhs) && r_flonum_p (rhs))
-        return flonum_eqv_p (lhs, rhs);
+        return flonum_eqv_p (state, lhs, rhs);
 
     return FALSE;
 }

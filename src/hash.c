@@ -17,10 +17,10 @@ struct RHashTable {
     ruint          mod;
     ruint          mask;
 
-    RHashFunction  hash_fn;
-    REqualFunction key_equal_fn;
-    RDestructor    key_destructor;
-    RDestructor    value_destructor;
+    RHashFunc      hash_fn;
+    RHashEqualPred key_equal_p;
+    RHashDestruct  key_destructor;
+    RHashDestruct  value_destructor;
 
     ruint*         hashes;
     rpointer*      keys;
@@ -127,7 +127,13 @@ static rsize get_node (RHashTable*   hash_table,
 
     while (!UNUSED_HASH_P (node_hash)) {
         if (hash_value == node_hash) {
-            if (hash_table->key_equal_fn (key, hash_table->keys [node_index]))
+            rconstpointer node_key = hash_table->keys [node_index];
+
+            if (hash_table->key_equal_p) {
+                if (hash_table->key_equal_p (key, node_key))
+                    return node_index;
+            }
+            else if (node_key == key)
                 return node_index;
         }
         else if (TOMBSTONE_HASH_P (node_hash) && !have_tombstone) {
@@ -275,16 +281,16 @@ static void delete_node (RHashTable*   hash_table,
         hash_table->value_destructor (old_value);
 }
 
-RHashTable* r_hash_table_new (RHashFunction  hash_fn,
-                              REqualFunction equal_fn)
+RHashTable* r_hash_table_new (RHashFunc      hash_fn,
+                              RHashEqualPred equal_p)
 {
-    return r_hash_table_new_full (hash_fn, equal_fn, NULL, NULL);
+    return r_hash_table_new_full (hash_fn, equal_p, NULL, NULL);
 }
 
-RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
-                                   REqualFunction equal_fn,
-                                   RDestructor    key_destructor,
-                                   RDestructor    value_destructor)
+RHashTable* r_hash_table_new_full (RHashFunc      hash_fn,
+                                   RHashEqualPred equal_p,
+                                   RHashDestruct  key_destructor,
+                                   RHashDestruct  value_destructor)
 {
     RHashTable* hash_table = malloc (sizeof (RHashTable));
 
@@ -292,8 +298,8 @@ RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
 
     hash_table->n_occupied       = 0;
     hash_table->n_nodes          = 0;
-    hash_table->hash_fn          = hash_fn  ? hash_fn  : direct_hash;
-    hash_table->key_equal_fn     = equal_fn ? equal_fn : direct_euqal;
+    hash_table->hash_fn          = hash_fn ? hash_fn : direct_hash;
+    hash_table->key_equal_p      = equal_p ? equal_p : direct_euqal;
     hash_table->key_destructor   = key_destructor;
     hash_table->value_destructor = value_destructor;
 
@@ -343,7 +349,7 @@ rbool r_hash_table_delete (RHashTable*   hash_table,
 
     node_index = get_node (hash_table, key, &node_hash);
 
-    if (!REAL_HASH_P (hash_table->hashes[node_index]))
+    if (!REAL_HASH_P (hash_table->hashes [node_index]))
         return FALSE;
 
     delete_node (hash_table, key, node_index);
@@ -360,18 +366,18 @@ void r_hash_table_clear (RHashTable* hash_table)
     hash_table->n_occupied = 0;
 
     for (i = 0; i < hash_table->size; ++i) {
-        if (REAL_HASH_P (hash_table->hashes[i])) {
+        if (REAL_HASH_P (hash_table->hashes [i])) {
             if (hash_table->key_destructor)
-                hash_table->key_destructor (hash_table->keys[i]);
+                hash_table->key_destructor (hash_table->keys [i]);
 
             if (hash_table->value_destructor)
-                hash_table->value_destructor (hash_table->values[i]);
+                hash_table->value_destructor (hash_table->values [i]);
 
             hash_table->hashes [i] = UNUSED_HASH_VALUE;
             hash_table->keys   [i] = NULL;
             hash_table->values [i] = NULL;
         }
-        else if (TOMBSTONE_HASH_P (hash_table->hashes[i]))
+        else if (TOMBSTONE_HASH_P (hash_table->hashes [i]))
             hash_table->hashes [i] = UNUSED_HASH_VALUE;
     }
 

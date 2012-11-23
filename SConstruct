@@ -3,6 +3,7 @@ from os import environ
 env = Environment(tools=['default', 'quex'],
                   ENV=environ,
                   CC='clang',
+                  CXX='clang++',
                   LIBS=['gc', 'gmp', 'm'],
                   CPPFLAGS='-ggdb -Wall',
                   CPPPATH=['#include/',

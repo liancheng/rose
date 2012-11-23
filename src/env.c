@@ -5,10 +5,9 @@
 #include "rose/port.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 
 struct REnv{
-    RType*      type;
+    R_OBJECT_HEADER
     rsexp       parent;
     RHashTable* bindings;
 };
@@ -16,7 +15,7 @@ struct REnv{
 #define ENV_FROM_SEXP(obj)  ((REnv*) (obj))
 #define ENV_TO_SEXP(env)    ((rsexp) env)
 
-static RType* env_type_info ();
+static RTypeDescriptor* env_type_info ();
 
 static void set_parent_frame_x (rsexp env, rsexp parent)
 {
@@ -28,24 +27,28 @@ static rsexp get_parent_frame (rsexp env)
     return ENV_FROM_SEXP (env)->parent;
 }
 
-static void env_finalize (rpointer obj, rpointer client_data)
-{
-    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
-}
-
 static void write_env (rsexp port, rsexp obj)
 {
     r_port_printf (port, "#<%s>", env_type_info ()->name);
 }
 
-static RType* env_type_info ()
+static void destruct_env (RState* state, RObject* obj)
 {
-    static RType type = {
+    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
+}
+
+static RTypeDescriptor* env_type_info ()
+{
+    static RTypeDescriptor type = {
         .size = sizeof (REnv),
         .name = "environment",
         .ops = {
-            .write = write_env,
-            .display = write_env
+            .write    = write_env,
+            .display  = write_env,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .mark     = NULL,
+            .destruct = destruct_env
         }
     };
 
@@ -62,26 +65,23 @@ static rsexp frame_lookup (rsexp frame, rsexp var)
 
 rbool r_env_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == env_type_info ();
+    return r_type_tag (obj) == R_TYPE_ENV;
 }
 
-rsexp r_env_new ()
+rsexp r_env_new (RState* state)
 {
-    REnv* res = GC_NEW (REnv);
+    REnv* res;
 
-    res->type     = env_type_info ();
+    res           = (REnv*) r_object_new (state, R_TYPE_ENV, env_type_info ());
     res->parent   = R_UNDEFINED;
     res->bindings = r_hash_table_new (NULL, NULL);
-
-    GC_REGISTER_FINALIZER ((rpointer) res, env_finalize, NULL, NULL, NULL);
 
     return ENV_TO_SEXP (res);
 }
 
-rsexp r_env_extend (rsexp parent, rsexp vars, rsexp vals)
+rsexp r_env_extend (RState* state, rsexp parent, rsexp vars, rsexp vals)
 {
-    rsexp env = r_env_new ();
+    rsexp env = r_env_new (state);
 
     while (!r_null_p (vars)) {
         r_env_define (env, r_car (vars), r_car (vals));

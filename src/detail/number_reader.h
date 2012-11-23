@@ -8,6 +8,8 @@
 typedef struct RNumberReader RNumberReader;
 
 struct RNumberReader {
+    RState*     state;
+
     char const* begin;
     char const* end;
     char const* pos;
@@ -17,7 +19,7 @@ struct RNumberReader {
     ruint       radix;
 };
 
-RNumberReader*  r_number_reader_new ();
+RNumberReader*  r_number_reader_new (RState*        state);
 rsexp           r_number_read       (RNumberReader* reader,
                                      char const*    text);
 

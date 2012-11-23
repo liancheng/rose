@@ -6,14 +6,14 @@
 #include "rose/number.h"
 
 typedef struct {
-    RType* type;
-    mpq_t  real;
-    mpq_t  imag;
+    R_OBJECT_HEADER
+    mpq_t real;
+    mpq_t imag;
 }
 RFixnum;
 
 typedef struct {
-    RType* type;
+    R_OBJECT_HEADER
     double real;
     double imag;
 }
@@ -25,6 +25,6 @@ RFlonum;
 #define FLONUM_TO_SEXP(flonum)  ((rsexp) (flonum))
 #define FLONUM_FROM_SEXP(obj)   ((RFlonum*) (obj))
 
-rbool r_number_eqv_p (rsexp lhs, rsexp rhs);
+rbool r_number_eqv_p (RState* state, rsexp lhs, rsexp rhs);
 
 #endif  /* __ROSE_DETAIL_NUMBER_H__ */

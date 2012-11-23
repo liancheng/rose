@@ -4,7 +4,6 @@
 #include "rose/port.h"
 #include "rose/symbol.h"
 
-#include <gc/gc.h>
 #include <assert.h>
 #include <string.h>
 
@@ -20,35 +19,36 @@ struct RSymbolTable {
     rquark      quark_seq_id;
 };
 
-static rquark quark_new (char* symbol, RSymbolTable* st)
+static rquark quark_new (RState* state, char* symbol, RSymbolTable* st)
 {
     rquark quark;
     char** new_quarks;
 
     if (0 == st->quark_seq_id % QUARK_BLOCK_SIZE) {
-        new_quarks = GC_REALLOC (st->quarks,
-                                 st->quark_seq_id + QUARK_BLOCK_SIZE);
+        new_quarks = r_realloc (state,
+                                st->quarks,
+                                st->quark_seq_id + QUARK_BLOCK_SIZE);
         memset (new_quarks + st->quark_seq_id, 0, QUARK_BLOCK_SIZE);
         st->quarks = new_quarks;
     }
 
-    quark = st->quark_seq_id;
+    quark = st->quark_seq_id++;
     st->quarks[quark] = symbol;
-    r_hash_table_put (st->quark_ht, symbol, (rpointer)quark);
-    ++st->quark_seq_id;
+    r_hash_table_put (st->quark_ht, symbol, (rpointer) quark);
 
     return quark;
 }
 
-static rquark string_to_quark_internal (char const*   symbol,
+static rquark string_to_quark_internal (RState*       state,
+                                        rchar const*  symbol,
                                         rbool         duplicate,
                                         RSymbolTable* st)
 {
     rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
 
     if (!quark) {
-        char* str = duplicate ? GC_STRDUP (symbol) : (char*) symbol;
-        quark = quark_new (str, st);
+        rchar* str = duplicate ? r_strdup (state, symbol) : (rchar*) symbol;
+        quark = quark_new (state, str, st);
     }
 
     return quark;
@@ -59,7 +59,7 @@ static rquark quark_from_symbol (RState* state, char const* symbol)
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, TRUE, state->symbol_table);
+    return string_to_quark_internal (state, symbol, TRUE, state->symbol_table);
 }
 
 static rquark static_symbol_to_quark (RState* state, char const* symbol)
@@ -67,18 +67,13 @@ static rquark static_symbol_to_quark (RState* state, char const* symbol)
     if (!symbol)
         return 0;
 
-    return string_to_quark_internal (symbol, FALSE, state->symbol_table);
+    return string_to_quark_internal (state, symbol, FALSE, state->symbol_table);
 }
 
 static char const* quark_to_symbol (RState* state, rquark quark)
 {
     RSymbolTable* st = state->symbol_table;
     return quark < st->quark_seq_id ? st->quarks [quark] : NULL;
-}
-
-static void symbol_table_finalize (rpointer obj, rpointer client_data)
-{
-    r_hash_table_free (((RSymbolTable*) obj)->quark_ht);
 }
 
 static ruint str_hash (rconstpointer str)
@@ -102,22 +97,25 @@ static void write_symbol (rsexp port, rsexp obj)
     r_port_puts (port, r_symbol_name (r_port_get_state (port), obj));
 }
 
-RSymbolTable* r_symbol_table_new ()
+RSymbolTable* r_symbol_table_new (RState* state)
 {
     RSymbolTable* res;
     rsize size;
 
-    res  = GC_NEW (RSymbolTable);
+    res  = R_NEW0 (state, RSymbolTable);
     size = sizeof (rquark) * QUARK_BLOCK_SIZE;
 
     res->quark_ht     = r_hash_table_new (str_hash, str_equal);
-    res->quarks       = GC_MALLOC_ATOMIC (size);
+    res->quarks       = r_calloc (state, 1u, size);
     res->quark_seq_id = 1;
 
-    memset (res->quarks, 0, size);
-    GC_REGISTER_FINALIZER (res, symbol_table_finalize, NULL, NULL, NULL);
-
     return res;
+}
+
+void r_symbol_table_free (RState* state, RSymbolTable* symbol_table)
+{
+    r_free (state, symbol_table->quarks);
+    r_hash_table_free (symbol_table->quark_ht);
 }
 
 rsexp r_symbol_new (RState* state, char const* symbol)
@@ -140,7 +138,7 @@ char const* r_symbol_name (RState* state, rsexp obj)
 
 void register_symbol_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = 0,
         .name = "symbol",
         .ops = {

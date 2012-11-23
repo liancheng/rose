@@ -4,32 +4,64 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
-typedef struct RType RType;
+typedef enum {
+    R_TYPE_STRING = R_TAG_MAX + 1,
+    R_TYPE_VECTOR,
+    R_TYPE_BYTEVECTOR,
+    R_TYPE_PROCEDURE,
+    R_TYPE_CONTINUATION,
+    R_TYPE_ENV,
+    R_TYPE_PORT,
+    R_TYPE_ERROR,
+    R_TYPE_FIXNUM,
+    R_TYPE_FLONUM,
+    R_TYPE_END
+}
+RBoxedTypeTag;
 
-typedef rbool (*REqvPredicate)    (rsexp, rsexp);
-typedef rbool (*REqPredicate)     (rsexp, rsexp);
-typedef rbool (*REqualPredicate)  (rsexp, rsexp);
-typedef void  (*RWriteFunction)   (rsexp, rsexp);
-typedef void  (*RDisplayFunction) (rsexp, rsexp);
+typedef struct RObject         RObject;
+typedef struct RTypeDescriptor RTypeDescriptor;
 
-struct RType {
-    rsize       size;
-    char const* name;
+#define R_OBJECT_HEADER\
+        RTypeDescriptor* type_desc;\
+        RBoxedTypeTag    type_tag : 8;\
+        ruint            gc_color : 3;\
+        RObject*         gc_next;
+
+typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
+typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
+typedef void  (*RWriteFunc)   (rsexp,   rsexp);
+typedef void  (*RDisplayFunc) (rsexp,   rsexp);
+typedef void  (*RGcMarkFunc)  (RState*, rsexp);
+typedef void  (*RObjDestruct) (RState*, RObject*);
+
+struct RObject {
+    R_OBJECT_HEADER
+};
+
+struct RTypeDescriptor {
+    rsize size;
+    char* name;
 
     struct {
-        RWriteFunction   write;
-        RDisplayFunction display;
-        REqvPredicate    eqv_p;
-        REqPredicate     eq_p;
-        REqualPredicate  equal_p;
+        RWriteFunc   write;
+        RDisplayFunc display;
+        REqvPred     eqv_p;
+        REqualPred   equal_p;
+        RGcMarkFunc  mark;
+        RObjDestruct destruct;
     }
     ops;
 };
 
-#define R_SEXP_TYPE(obj)    (*(RType**) (obj))
+#define R_SEXP_TYPE(obj)    (*(RTypeDescriptor**) (obj))
 
-RType* r_sexp_get_type  (RState* state,
-                         rsexp   obj);
-void   r_register_types (RState* state);
+ruint            r_type_tag       (rsexp            obj);
+RTypeDescriptor* r_describe       (RState*          state,
+                                   rsexp            obj);
+void             r_register_types (RState*          state);
+RObject*         r_object_new     (RState*          state,
+                                   RBoxedTypeTag    type_tag,
+                                   RTypeDescriptor* type_desc);
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

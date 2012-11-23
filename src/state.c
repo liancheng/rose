@@ -3,11 +3,13 @@
 
 #include "rose/env.h"
 #include "rose/port.h"
+#include "rose/state.h"
 #include "rose/symbol.h"
 
-#include <assert.h>
 #include <gc/gc.h>
+#include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 static void register_keyword (RState*     state,
                               ruint       index,
@@ -40,18 +42,39 @@ static void register_keywords (RState* state)
     register_keyword (state, R_UNQUOTE_SPLICING, "unquote-splicing");
 }
 
-RState* r_state_new ()
+static rpointer default_alloc_fn (RState*  state,
+                                  rpointer ptr,
+                                  rsize    size,
+                                  rpointer user_data)
 {
-    RState* state = GC_NEW (RState);
+    // Free the memory if size is 0.
+    if (0 == size) {
+        GC_FREE (ptr);
+        return NULL;
+    }
+
+    if (NULL == ptr)
+        return GC_MALLOC (size);
+
+    return GC_REALLOC (ptr, size);
+}
+
+RState* r_state_new (RAllocFunc alloc_fn, rpointer user_data)
+{
+    RState* state = malloc (sizeof (RState));
 
     memset (state, 0, sizeof (RState));
 
-    state->symbol_table        = r_symbol_table_new ();
-    state->env                 = r_env_new ();
+    state->alloc_fn  = alloc_fn;
+    state->user_data = user_data;
+
+    state->symbol_table        = r_symbol_table_new (state);
+    state->env                 = r_env_new (state);
     state->current_input_port  = r_stdin_port (state);
     state->current_output_port = r_stdout_port (state);
     state->error_jmp           = NULL;
-    state->types               = GC_MALLOC_ATOMIC (sizeof (RType*) * 8);
+
+    state->types = r_calloc (state, sizeof (RTypeDescriptor*), 8);
 
     r_register_types (state);
     register_keywords (state);
@@ -59,8 +82,54 @@ RState* r_state_new ()
     return state;
 }
 
+RState* r_state_open ()
+{
+    return r_state_new (default_alloc_fn, NULL);
+}
+
+void r_state_free (RState* state)
+{
+    r_symbol_table_free (state, state->symbol_table);
+    r_free (state, state->types);
+    free (state);
+}
+
 rsexp r_keyword (RState* state, ruint index)
 {
     assert (index < R_KEYWORD_COUNT);
     return state->keywords [index];
+}
+
+rpointer r_realloc (RState* state, rpointer ptr, rsize size)
+{
+    return state->alloc_fn (state, ptr, size, state->user_data);
+}
+
+rpointer r_alloc (RState* state, rsize size)
+{
+    return r_realloc (state, NULL, size);
+}
+
+rpointer r_calloc (RState* state, rsize element_size, rsize count)
+{
+    rpointer ptr = r_alloc (state, element_size * count);
+    memset (ptr, 0, element_size * count);
+    return ptr;
+}
+
+void r_free (RState* state, rpointer ptr)
+{
+    state->alloc_fn (state, ptr, 0u, state->user_data);
+}
+
+rchar* r_strdup (RState* state, rchar const* str)
+{
+    rsize  size;
+    rchar* res;
+
+    size = strlen (str);
+    res = r_alloc (state, size + 1);
+    memcpy (res, str, size + 1);
+
+    return res;
 }

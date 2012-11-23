@@ -5,11 +5,10 @@
 
 #include <stdarg.h>
 
-#define r_pair_p(obj)   (R_GET_TAG (obj) == R_PAIR_TAG)
-
 typedef struct RPair RPair;
 
-rsexp r_cons         (rsexp   car,
+rsexp r_cons         (RState* state,
+                      rsexp   car,
                       rsexp   cdr);
 rsexp r_car          (rsexp   obj);
 rsexp r_cdr          (rsexp   obj);
@@ -17,13 +16,16 @@ rsexp r_set_car_x    (rsexp   pair,
                       rsexp   obj);
 rsexp r_set_cdr_x    (rsexp   pair,
                       rsexp   obj);
-rbool r_pair_equal_p (rsexp   lhs,
+rbool r_pair_equal_p (RState* state,
+                      rsexp   lhs,
                       rsexp   rhs);
-rsexp r_reverse      (rsexp   list);
+rsexp r_reverse      (RState* state,
+                      rsexp   list);
 rsexp r_append_x     (rsexp   list,
                       rsexp   value);
 rbool r_list_p       (rsexp   obj);
-rsexp r_list         (rsize   k,
+rsexp r_list         (RState* state,
+                      rsize   k,
                       ...);
 rsize r_length       (rsexp   list);
 rsexp r_list_ref     (rsexp   list,

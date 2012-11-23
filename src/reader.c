@@ -11,7 +11,7 @@
 #include "rose/vector.h"
 
 #include <alloca.h>
-#include <gc/gc.h>
+#include <assert.h>
 #include <stdarg.h>
 
 static rsexp read_datum (RDatumReader* reader);
@@ -65,19 +65,18 @@ static rbool match (RDatumReader* reader, rtokenid id)
     return FALSE;
 }
 
-static void lexer_finalize (rpointer obj, rpointer client_data)
+static RLexer* lexer_new (RState* state)
 {
-    QUEX_NAME (destruct) ((RLexer*) obj);
-}
-
-static RLexer* lexer_new ()
-{
-    RLexer* lexer = GC_NEW_ATOMIC (RLexer);
-
+    RLexer* lexer = R_NEW (state, RLexer);
     QUEX_NAME (construct_memory) (lexer, NULL, 0, NULL, NULL, FALSE);
-    GC_REGISTER_FINALIZER (lexer, lexer_finalize, NULL, NULL, NULL);
 
     return lexer;
+}
+
+static void lexer_free (RState* state, RLexer* lexer)
+{
+    QUEX_NAME (destruct) (lexer);
+    r_free (state, lexer);
 }
 
 static rsexp lexeme_to_char (char const* text)
@@ -105,8 +104,10 @@ static void syntax_error (RDatumReader* reader,
                                 char const*   message)
 {
     reader->last_error =
-        r_error_new (r_string_new (message),
-                     r_list (3,
+        r_error_new (reader->state,
+                     r_string_new (reader->state, message),
+                     r_list (reader->state,
+                             3,
                              r_port_get_name (reader->input_port),
                              r_int_to_sexp (line),
                              r_int_to_sexp (column)));
@@ -136,7 +137,7 @@ static rsexp read_vector (RDatumReader* reader)
         record_source_location (reader, &line, &column);
         datum = read_datum (reader);
 
-        if (r_eof_p (datum)) {
+        if (r_eof_object_p (datum)) {
             char* message = "the vector is not closed";
             syntax_error (reader, line, column, message);
         }
@@ -146,12 +147,13 @@ static rsexp read_vector (RDatumReader* reader)
             syntax_error (reader, line, column, message);
         }
 
-        list = r_cons (datum, list);
+        list = r_cons (reader->state, datum, list);
     }
 
     consume (reader);
 
-    return r_list_to_vector (r_reverse (list));
+    return r_list_to_vector (reader->state,
+                             r_reverse (reader->state, list));
 }
 
 static rsexp read_full_list (RDatumReader* reader)
@@ -172,7 +174,9 @@ static rsexp read_full_list (RDatumReader* reader)
     if (r_unspecified_p ((datum = read_datum (reader))))
         syntax_error (reader, line, column, "bad syntax");
 
-    for (list = r_cons (datum, R_NULL); ; list = r_cons (datum, list)) {
+    list = r_cons (reader->state, datum, R_NULL);
+
+    while (true) {
         rtokenid id = lookahead (reader)->_id;
 
         if (id == TKN_DOT || id == TKN_RP)
@@ -182,9 +186,11 @@ static rsexp read_full_list (RDatumReader* reader)
 
         if (r_unspecified_p ((datum = read_datum (reader))))
             syntax_error (reader, line, column, "bad syntax");
+
+        list = r_cons (reader->state, datum, list);
     }
 
-    list = r_reverse (list);
+    list = r_reverse (reader->state, list);
 
     if (match (reader, TKN_DOT)) {
         record_source_location (reader, &line, &column);
@@ -237,7 +243,7 @@ static rsexp read_abbreviation (RDatumReader* reader)
     if (r_unspecified_p ((datum = read_datum (reader))))
         syntax_error (reader, line, column, "bad syntax");
 
-    return r_list (2, prefix, datum);
+    return r_list (reader->state, 2, prefix, datum);
 }
 
 static rsexp read_list (RDatumReader* reader)
@@ -272,13 +278,14 @@ static rsexp read_bytevector (RDatumReader* reader)
         if (!r_byte_p ((datum = read_datum (reader))))
             syntax_error (reader, line, column, "value out of range");
 
-        bytes = r_cons (datum, bytes);
+        bytes = r_cons (reader->state, datum, bytes);
     }
 
     if (!match (reader, TKN_RP))
         return R_UNSPECIFIED;
 
-    return r_list_to_bytevector (r_reverse (bytes));
+    return r_list_to_bytevector (reader->state,
+                                 r_reverse (reader->state, bytes));
 }
 
 static rsexp read_simple_datum (RDatumReader* reader)
@@ -304,7 +311,7 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         case TKN_NUMBER:
-            datum = r_string_to_number (text);
+            datum = r_string_to_number (reader->state, text);
             break;
 
         case TKN_CHARACTER:
@@ -312,7 +319,7 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         case TKN_STRING:
-            datum = r_string_new (text);
+            datum = r_string_new (reader->state, text);
             break;
 
         case TKN_IDENTIFIER:
@@ -364,19 +371,23 @@ rsexp r_read (RDatumReader* reader)
 
 RDatumReader* r_reader_new (RState* state)
 {
-    RDatumReader* reader = GC_NEW (RDatumReader);
-
-    memset (reader, 0, sizeof (RDatumReader));
+    RDatumReader* reader = R_NEW0 (state, RDatumReader);
 
     reader->state      = state;
     reader->input_port = r_current_input_port (state);
     reader->last_error = R_UNDEFINED;
-    reader->lexer      = lexer_new ();
+    reader->lexer      = lexer_new (state);
     reader->lookahead  = NULL;
 
     QUEX_NAME (token_p_set) (reader->lexer, &reader->token);
 
     return reader;
+}
+
+void r_reader_free (RState* state, RDatumReader* reader)
+{
+    assert (state == reader->state);
+    lexer_free (state, reader->lexer);
 }
 
 RDatumReader* r_file_reader (RState* state, char const* filename)

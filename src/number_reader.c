@@ -4,7 +4,6 @@
 #include "rose/number.h"
 
 #include <ctype.h>
-#include <gc/gc.h>
 #include <string.h>
 
 static rbool xdigit_to_uint (char ch, ruint* digit)
@@ -726,7 +725,9 @@ static rsexp read_number (RNumberReader* reader)
     read_prefix (reader);
 
     if (read_polar_complex (reader, &rho, &theta)) {
-        number = r_flonum_new (rho * r_cos (theta), rho * r_sin (theta));
+        number = r_flonum_new (reader->state,
+                               rho * r_cos (theta),
+                               rho * r_sin (theta));
         goto clear;
     }
 
@@ -735,8 +736,8 @@ static rsexp read_number (RNumberReader* reader)
         double i;
 
         number = fix_exactness (reader, real, imag, &r, &i)
-               ? r_fixnum_new (real, imag)
-               : r_flonum_new (r, i);
+               ? r_fixnum_new (reader->state, real, imag)
+               : r_flonum_new (reader->state, r, i);
 
         goto clear;
     }
@@ -778,11 +779,11 @@ rsexp r_number_read (RNumberReader* reader, char const* text)
     return number;
 }
 
-RNumberReader* r_number_reader_new ()
+RNumberReader* r_number_reader_new (RState* state)
 {
-    RNumberReader* reader = GC_NEW (RNumberReader);
+    RNumberReader* reader = R_NEW0 (state, RNumberReader);
 
-    memset (reader, 0, sizeof (RNumberReader));
+    reader->state = state;
 
     reader->begin = NULL;
     reader->end   = NULL;

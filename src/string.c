@@ -1,14 +1,14 @@
 #include "detail/sexp.h"
+#include "detail/state.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
-#include <gc/gc.h>
 #include <string.h>
 
 struct RString {
-    RType* type;
-    rsize  length;
-    char*  data;
+    R_OBJECT_HEADER
+    rsize length;
+    char* data;
 };
 
 #define STRING_FROM_SEXP(obj)   ((RString*) (obj))
@@ -34,35 +34,45 @@ static void display_string (rsexp port, rsexp obj)
     r_port_puts (port, STRING_FROM_SEXP (obj)->data);
 }
 
-static RType* r_string_type_info ()
+static void destruct_string (RState* state, RObject* obj)
 {
-    static RType type = {
+    RString* str = (RString*) obj;
+    r_free (state, str->data);
+}
+
+static RTypeDescriptor* string_type_info ()
+{
+    static RTypeDescriptor type = {
         .size = sizeof (RString),
         .name = "string",
         .ops = {
             .write = write_string,
-            .display = display_string
+            .display = display_string,
+            .eqv_p = NULL,
+            .equal_p = r_string_equal_p,
+            .mark = NULL,
+            .destruct = destruct_string
         }
     };
 
     return &type;
 }
 
-rsexp r_string_new (char const* str)
+rsexp r_string_new (RState* state, rchar const* str)
 {
-    RString* res = GC_NEW (RString);
+    RString* res = (RString*) r_object_new (state,
+                                            R_TYPE_STRING,
+                                            string_type_info ());
 
-    res->type   = r_string_type_info ();
     res->length = strlen (str) + 1;
-    res->data   = GC_STRDUP (str);
+    res->data = r_strdup (state, str);
 
     return STRING_TO_SEXP (res);
 }
 
 rbool r_string_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           (R_SEXP_TYPE (obj) == r_string_type_info ());
+    return r_type_tag (obj) == R_TYPE_STRING;
 }
 
 char const* r_string_to_cstr (rsexp obj)
@@ -70,7 +80,7 @@ char const* r_string_to_cstr (rsexp obj)
     return STRING_FROM_SEXP (obj)->data;
 }
 
-rbool r_string_equal_p (rsexp lhs, rsexp rhs)
+rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
     RString* lhs_str;
     RString* rhs_str;

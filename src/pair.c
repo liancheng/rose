@@ -6,7 +6,6 @@
 #include "rose/writer.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <stdarg.h>
 
 struct RPair {
@@ -19,12 +18,13 @@ struct RPair {
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
-static rsexp reverse_internal (rsexp list, rsexp acc)
+static rsexp reverse_internal (RState* state, rsexp list, rsexp acc)
 {
     return r_null_p (list)
            ? acc
-           : reverse_internal (r_cdr (list),
-                               r_cons (r_car (list), acc));
+           : reverse_internal (state,
+                               r_cdr (list),
+                               r_cons (state, r_car (list), acc));
 }
 
 static void output_cdr (rsexp           port,
@@ -64,21 +64,21 @@ static void display_pair (rsexp port, rsexp obj)
     output_pair (port, obj, r_display);
 }
 
-static rsexp vlist (rsize k, va_list args)
+static rsexp vlist (RState* state, rsize k, va_list args)
 {
     rsexp res = R_NULL;
 
     while (k--)
-        res = r_cons (va_arg (args, rsexp), res);
+        res = r_cons (state, va_arg (args, rsexp), res);
 
-    return r_reverse (res);
+    return r_reverse (state, res);
 }
 
-rsexp r_cons (rsexp car, rsexp cdr)
+rsexp r_cons (RState* state, rsexp car, rsexp cdr)
 {
     RPair* pair;
 
-    pair = GC_NEW (RPair);
+    pair = R_NEW (state, RPair);
     pair->car = car;
     pair->cdr = cdr;
 
@@ -111,18 +111,18 @@ rsexp r_set_cdr_x (rsexp pair, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-rbool r_pair_equal_p (rsexp lhs, rsexp rhs)
+rbool r_pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
     return r_pair_p (lhs) &&
            r_pair_p (rhs) &&
-           r_equal_p (r_car (lhs), r_car (rhs)) &&
-           r_equal_p (r_cdr (lhs), r_cdr (rhs));
+           r_equal_p (state, r_car (lhs), r_car (rhs)) &&
+           r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
 }
 
-rsexp r_reverse (rsexp list)
+rsexp r_reverse (RState* state, rsexp list)
 {
     assert (r_null_p (list) || r_pair_p (list));
-    return reverse_internal (list, R_NULL);
+    return reverse_internal (state, list, R_NULL);
 }
 
 rsexp r_append_x (rsexp list, rsexp obj)
@@ -148,13 +148,13 @@ rbool r_list_p (rsexp obj)
            (r_pair_p (obj) && r_list_p (r_cdr (obj)));
 }
 
-rsexp r_list (rsize k, ...)
+rsexp r_list (RState* state, rsize k, ...)
 {
     va_list args;
     rsexp   res;
 
     va_start (args, k);
-    res = vlist (k, args);
+    res = vlist (state, k, args);
     va_end (args);
 
     return res;
@@ -180,12 +180,16 @@ rsexp r_list_ref (rsexp list, rsize k)
 
 void register_pair_type (RState* state)
 {
-    static RType type = {
+    static RTypeDescriptor type = {
         .size = sizeof (RPair),
         .name = "pair",
         .ops = {
-            .write = write_pair,
-            .display = display_pair
+            .write    = write_pair,
+            .display  = display_pair,
+            .eqv_p    = NULL,
+            .equal_p  = r_pair_equal_p,
+            .mark     = NULL,
+            .destruct = NULL
         }
     };
 

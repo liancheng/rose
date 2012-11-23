@@ -6,11 +6,10 @@
 #include "rose/writer.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <string.h>
 
 struct RBytevector {
-    RType* type;
+    R_OBJECT_HEADER
     rsize  length;
     rbyte* data;
 };
@@ -35,27 +34,37 @@ static void write_bytevector (rsexp port, rsexp obj)
     r_write_char (port, ')');
 }
 
-static RType* bytevector_type_info ()
+static void destruct_bytevector (RState* state, RObject* obj)
 {
-    static RType type = {
+    r_free (state, ((RBytevector*) obj)->data);
+}
+
+static RTypeDescriptor* bytevector_type_info ()
+{
+    static RTypeDescriptor type = {
         .size = sizeof (RBytevector),
         .name = "bytevector",
         .ops = {
-            .write = write_bytevector,
-            .display = write_bytevector
+            .write    = write_bytevector,
+            .display  = write_bytevector,
+            .eqv_p    = NULL,
+            .equal_p  = r_bytevector_equal_p,
+            .mark     = NULL,
+            .destruct = destruct_bytevector
         }
     };
 
     return &type;
 }
 
-rsexp r_bytevector_new (rsize k, rbyte fill)
+rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
-    RBytevector* res = GC_NEW (RBytevector);
+    RBytevector* res = (RBytevector*) r_object_new (state,
+                                                    R_TYPE_BYTEVECTOR,
+                                                    bytevector_type_info ());
 
-    res->type   = bytevector_type_info ();
     res->length = k;
-    res->data   = k ? GC_MALLOC_ATOMIC (k * sizeof (rbyte)) : NULL;
+    res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;
 
     while (k--)
         res->data [k] = fill;
@@ -92,10 +101,10 @@ rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
     return R_UNSPECIFIED;
 }
 
-rsexp r_list_to_bytevector (rsexp list)
+rsexp r_list_to_bytevector (RState* state, rsexp list)
 {
     rsize length = r_length (list);
-    rsexp res = r_bytevector_new (length, R_UNSPECIFIED);
+    rsexp res = r_bytevector_new (state, length, R_UNSPECIFIED);
     rbyte byte;
     rsize k;
 
@@ -108,7 +117,7 @@ rsexp r_list_to_bytevector (rsexp list)
     return res;
 }
 
-rbool r_bytevector_equal_p (rsexp lhs, rsexp rhs)
+rbool r_bytevector_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
     RBytevector* lhs_bv;
     RBytevector* rhs_bv;

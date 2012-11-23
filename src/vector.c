@@ -6,11 +6,10 @@
 #include "rose/writer.h"
 
 #include <assert.h>
-#include <gc/gc.h>
 #include <stdarg.h>
 
 struct RVector {
-    RType* type;
+    R_OBJECT_HEADER
     rsize  length;
     rsexp* data;
 };
@@ -53,26 +52,35 @@ static void display_vector (rsexp port, rsexp obj)
     output_vector (port, obj, r_display);
 }
 
-static RType* vector_type_info ()
+static void destruct_vector (RState* state, RObject* obj)
 {
-    static RType type = {
+    r_free (state, ((RVector*) obj)->data);
+}
+
+static RTypeDescriptor* vector_type_info ()
+{
+    static RTypeDescriptor type = {
         .size = sizeof (RVector),
         .name = "vector",
         .ops = {
             .write = write_vector,
-            .display = display_vector
+            .display = display_vector,
+            .eqv_p = NULL,
+            .equal_p = r_vector_equal_p,
+            .mark = NULL,
+            .destruct = destruct_vector
         }
     };
 
     return &type;
 }
 
-static rsexp vvector (rsize k, va_list args)
+static rsexp vvector (RState* state, rsize k, va_list args)
 {
     rsexp res;
     rsize i;
 
-    res = r_vector_new (k, R_FALSE);
+    res = r_vector_new (state, k, R_FALSE);
 
     for (i = 0; i < k; ++i)
         r_vector_set_x (res, i, va_arg (args, rsexp));
@@ -80,16 +88,17 @@ static rsexp vvector (rsize k, va_list args)
     return res;
 }
 
-rsexp r_vector_new (rsize k, rsexp fill)
+rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 {
     RVector* res;
     rsize i;
 
-    res = GC_NEW (RVector);
+    res = (RVector*) r_object_new (state,
+                                   R_TYPE_VECTOR,
+                                   vector_type_info ());
 
-    res->type   = vector_type_info ();
     res->length = k;
-    res->data   = k ? GC_MALLOC (k * sizeof (rsexp)) : NULL;
+    res->data = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;
 
     for (i = 0; i < k; ++i)
         res->data [i] = fill;
@@ -97,13 +106,13 @@ rsexp r_vector_new (rsize k, rsexp fill)
     return VECTOR_TO_SEXP (res);
 }
 
-rsexp r_vector (rsize k, ...)
+rsexp r_vector (RState* state, rsize k, ...)
 {
     va_list args;
     rsexp res;
 
     va_start (args, k);
-    res = vvector (k, args);
+    res = vvector (state, k, args);
     va_end (args);
 
     return res;
@@ -111,30 +120,31 @@ rsexp r_vector (rsize k, ...)
 
 rbool r_vector_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           (R_SEXP_TYPE (obj) == vector_type_info ());
+    return r_type_tag (obj) == R_TYPE_VECTOR;
 }
 
-rbool r_vector_equal_p (rsexp lhs, rsexp rhs)
+rbool r_vector_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
-    rsize length;
-    rsize k;
+    rsize  k;
+    rsize  lhs_len;
+    rsize  rhs_len;
     rsexp* lhs_data;
     rsexp* rhs_data;
 
-    if (!r_vector_p (rhs))
+    if (!r_vector_p (lhs) || !r_vector_p (rhs))
         return FALSE;
 
-    length = VECTOR_FROM_SEXP (lhs)->length;
+    lhs_len = VECTOR_FROM_SEXP (lhs)->length;
+    rhs_len = VECTOR_FROM_SEXP (rhs)->length;
 
-    if (VECTOR_FROM_SEXP (rhs)->length != length)
+    if (lhs_len != rhs_len)
         return FALSE;
 
     lhs_data = VECTOR_FROM_SEXP (lhs)->data;
     rhs_data = VECTOR_FROM_SEXP (rhs)->data;
 
-    for (k = 0; k < length; ++k)
-        if (!r_equal_p (lhs_data [k], rhs_data [k]))
+    for (k = 0; k < lhs_len; ++k)
+        if (!r_equal_p (state, lhs_data [k], rhs_data [k]))
             return FALSE;
 
     return TRUE;
@@ -163,12 +173,12 @@ rsize r_vector_length (rsexp vector)
     return VECTOR_FROM_SEXP (vector)->length;
 }
 
-rsexp r_list_to_vector (rsexp list)
+rsexp r_list_to_vector (RState* state, rsexp list)
 {
     rsexp res;
     rsize i;
 
-    res = r_vector_new (r_length (list), R_UNSPECIFIED);
+    res = r_vector_new (state, r_length (list), R_UNSPECIFIED);
 
     for (i = 0; !r_null_p (list); ++i) {
         r_vector_set_x (res, i, r_car (list));
@@ -178,13 +188,13 @@ rsexp r_list_to_vector (rsexp list)
     return res;
 }
 
-rsexp r_vector_to_list (rsexp vector)
+rsexp r_vector_to_list (RState* state, rsexp vector)
 {
     rsize i;
     rsexp res;
 
     for (i = r_vector_length (vector), res = R_NULL; i > 0; --i)
-        res = r_cons (r_vector_ref (vector, i - 1), res);
+        res = r_cons (state, r_vector_ref (vector, i - 1), res);
 
     return res;
 }

@@ -7,12 +7,14 @@
 
 typedef struct RSymbolTable RSymbolTable;
 
-RSymbolTable* r_symbol_table_new  ();
-rsexp         r_symbol_new        (RState*     state,
-                                   char const* symbol);
-rsexp         r_symbol_new_static (RState*     state,
-                                   char const* symbol);
-char const*   r_symbol_name       (RState*     state,
-                                   rsexp       obj);
+RSymbolTable* r_symbol_table_new  (RState*       state);
+rsexp         r_symbol_new        (RState*       state,
+                                   char const*   symbol);
+rsexp         r_symbol_new_static (RState*       state,
+                                   char const*   symbol);
+void          r_symbol_table_free (RState*       state,
+                                   RSymbolTable* symbol_table);
+char const*   r_symbol_name       (RState*       state,
+                                   rsexp         obj);
 
 #endif  /* __ROSE_SYMBOL_H__ */

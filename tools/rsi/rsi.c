@@ -25,7 +25,7 @@ int main (int argc, char* argv[])
 
     GC_INIT ();
 
-    state = r_state_new ();
+    state = r_state_open ();
 
     if (argc > 1)
         r_set_current_input_port_x
@@ -47,6 +47,9 @@ int main (int argc, char* argv[])
 
         r_format (r_current_output_port (state), "~s~%", datum);
     }
+
+    r_reader_free (state, reader);
+    r_state_free (state);
 
     return EXIT_SUCCESS;
 }

@@ -5,17 +5,17 @@
 
 typedef struct RHashTable RHashTable;
 
-typedef ruint (*RHashFunction)  (rconstpointer data);
-typedef rbool (*REqualFunction) (rconstpointer lhs,
-                                    rconstpointer rhs);
-typedef void     (*RDestructor)    (rconstpointer data);
+typedef ruint (*RHashFunc)      (rconstpointer data);
+typedef rbool (*RHashEqualPred) (rconstpointer lhs,
+                                 rconstpointer rhs);
+typedef void  (*RHashDestruct)  (rconstpointer data);
 
-RHashTable* r_hash_table_new      (RHashFunction  hash_fn,
-                                   REqualFunction equal_fn);
-RHashTable* r_hash_table_new_full (RHashFunction  hash_fn,
-                                   REqualFunction equal_fn,
-                                   RDestructor    key_destroy_fn,
-                                   RDestructor    value_destroy_fn);
+RHashTable* r_hash_table_new      (RHashFunc      hash_fn,
+                                   RHashEqualPred equal_fn);
+RHashTable* r_hash_table_new_full (RHashFunc      hash_fn,
+                                   RHashEqualPred equal_fn,
+                                   RHashDestruct  key_destroy_fn,
+                                   RHashDestruct  value_destroy_fn);
 void        r_hash_table_free     (RHashTable*    hash_table);
 rpointer    r_hash_table_get      (RHashTable*    hash_table,
                                    rconstpointer  key);

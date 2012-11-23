@@ -12,55 +12,85 @@ extern "C" {
 
 #include <gtest/gtest.h>
 
-TEST (test_eq_p, symbol)
-{
-    RState* state = r_state_new ();
+class test_equivalence : public testing:: Test {
+protected:
+    RState* state;
 
-    EXPECT_PRED2 (r_eq_p, r_symbol_new (state, "a"),
-                          r_symbol_new (state, "a"));
+    virtual void SetUp ()
+    {
+        state = r_state_open ();
+    }
+
+    virtual void TearDown ()
+    {
+        r_state_free (state);
+    }
+
+};
+
+class test_eq_p    : public test_equivalence {};
+class test_eqv_p   : public test_equivalence {};
+class test_equal_p : public test_equivalence {};
+
+TEST_F (test_eq_p, symbol)
+{
+    EXPECT_TRUE (r_eq_p (state,
+                         r_symbol_new (state, "a"),
+                         r_symbol_new (state, "a")));
 }
 
-TEST (test_eq_p, character)
+TEST_F (test_eq_p, character)
 {
-    EXPECT_PRED2 (r_eq_p, r_char_to_sexp ('a'), r_char_to_sexp ('a'));
+    EXPECT_TRUE (r_eq_p (state,
+                         r_char_to_sexp ('a'),
+                         r_char_to_sexp ('a')));
 }
 
-TEST (test_eq_p, null)
+TEST_F (test_eq_p, null)
 {
-    EXPECT_PRED2 (r_eq_p, R_NULL, R_NULL);
+    EXPECT_TRUE (r_eq_p (state, R_NULL, R_NULL));
 }
 
-TEST (test_eq_p, string)
+TEST_F (test_eq_p, string)
 {
-    EXPECT_FALSE (r_eq_p (r_string_new ("a"), r_string_new ("a")));
+    EXPECT_FALSE (r_eq_p (state,
+                          r_string_new (state, "a"),
+                          r_string_new (state, "a")));
 }
 
-TEST (test_eqv_p, small_int)
+TEST_F (test_eqv_p, small_int)
 {
-    EXPECT_PRED2 (r_eqv_p, r_int_to_sexp (42), r_int_to_sexp (42));
+    EXPECT_TRUE (r_eqv_p (state,
+                          r_int_to_sexp (42),
+                          r_int_to_sexp (42)));
 }
 
-TEST (test_eqv_p, fixnum)
+TEST_F (test_eqv_p, fixnum)
 {
-    EXPECT_PRED2 (r_eqv_p, r_string_to_number ("1/2"),
-                           r_string_to_number ("2/4"));
+    EXPECT_TRUE (r_eqv_p (state,
+                          r_string_to_number (state, "1/2"),
+                          r_string_to_number (state, "2/4")));
 }
 
-TEST (test_eqv_p, flonum)
+TEST_F (test_eqv_p, flonum)
 {
-    EXPECT_PRED2 (r_eqv_p, r_string_to_number ("#i1/2"),
-                           r_string_to_number ("0.5"));
+    EXPECT_TRUE (r_eqv_p (state,
+                          r_string_to_number (state, "#i1/2"),
+                          r_string_to_number (state, "0.5")));
 }
 
-TEST (test_equal_p, list)
+TEST_F (test_equal_p, list)
 {
-    rsexp actual = r_list (2,
-                           r_string_new ("a"),
+    rsexp actual = r_list (state,
+                           2,
+                           r_string_new (state, "a"),
                            r_int_to_sexp (42));
 
-    rsexp expected = r_cons (r_string_new ("a"),
-                             r_cons (r_int_to_sexp (42),
+    rsexp expected = r_cons (state,
+                             r_string_new (state, "a"),
+                             r_cons (state,
+                                     r_int_to_sexp (42),
                                      R_NULL));
 
-    EXPECT_PRED2 (r_equal_p, expected, actual);
+    EXPECT_TRUE (r_equal_p (state, expected, actual));
 }

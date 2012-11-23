@@ -5,24 +5,24 @@
 #include "rose/string.h"
 #include "rose/writer.h"
 
-#include <gc/gc.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-static RType* port_type_info ();
+static RTypeDescriptor* port_type_info ();
 
 static rsexp make_file_port (RState*     state,
                              FILE*       file,
                              char const* name,
                              rint        mode)
 {
-    RPort* port = GC_NEW (RPort);
+    RPort* port = (RPort*) r_object_new (state,
+                                         R_TYPE_PORT,
+                                         port_type_info ());
 
-    port->type   = port_type_info ();
     port->state  = state;
     port->stream = file;
-    port->name   = r_string_new (name);
+    port->name   = r_string_new (state, name);
     port->mode   = mode;
 
     return PORT_TO_SEXP (port);
@@ -33,8 +33,9 @@ static rsexp open_file (RState* state, char const* filename, rint mode)
     FILE* file = fopen (filename, (INPUT_PORT == mode) ? "r" : "w");
 
     if (!file)
-        return r_error_new (r_string_new ("cannot open file"),
-                            r_string_new (filename));
+        return r_error_new (state,
+                            r_string_new (state, "cannot open file"),
+                            r_string_new (state, filename));
 
     return make_file_port (state, file, filename, mode);
 }
@@ -44,14 +45,22 @@ static void write_port (rsexp port, rsexp obj)
     r_port_printf (port, "#<port %s>", PORT_FROM_SEXP (obj)->name);
 }
 
-static RType* port_type_info ()
+static void destruct_port (RState* state, RObject* obj)
 {
-    static RType type = {
+}
+
+static RTypeDescriptor* port_type_info ()
+{
+    static RTypeDescriptor type = {
         .size = sizeof (RPort),
         .name = "port",
         .ops = {
-            .write = write_port,
-            .display = write_port
+            .write    = write_port,
+            .display  = write_port,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .mark     = NULL,
+            .destruct = destruct_port
         }
     };
 
@@ -116,8 +125,7 @@ rbool r_eof_p (rsexp port)
 
 rbool r_port_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           R_SEXP_TYPE (obj) == port_type_info ();
+    return r_type_tag (obj) == R_TYPE_PORT;
 }
 
 rbool r_input_port_p (rsexp obj)

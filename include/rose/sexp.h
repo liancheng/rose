@@ -20,8 +20,8 @@ typedef rword rsexp;
  *
  * Non-immediate types (end with \c #b00):
  *
- * - \c #b000: pointer to boxed heap object
  * - \c #b100: pair
+ * - \c #b000: all heap-allocated types other than pair
  *
  * Immediate types:
  *
@@ -34,23 +34,22 @@ typedef rword rsexp;
  */
 
 #define R_TAG_BITS              3
+#define R_TAG_MAX               ((1 << R_TAG_BITS) - 1)
+
 #define R_SMI_BITS              2
-#define R_HEAP_OBJ_BITS         2
-#define R_TAG_MASK              0x07
-#define R_SMI_MASK              0x03
-#define R_HEAP_OBJ_MASK         0x03
+#define R_TAG_MASK              0x07    /* #b111 */
+#define R_SMI_MASK              0x03    /* #b011 */
 
-#define R_BOXED_TAG             0x00
-#define R_PAIR_TAG              0x04
-#define R_HEAP_OBJ_TAG          0x00
+#define R_BOXED_TAG             0x00    /* #b000 */
+#define R_PAIR_TAG              0x04    /* #b100 */
 
-#define R_BOOL_TAG              0x01
-#define R_CHAR_TAG              0x02
-#define R_SMI_TAG               0x03
-#define R_SMI_EVEN_TAG          0x03
-#define R_SMI_ODD_TAG           0x07
-#define R_SPECIAL_CONST_TAG     0x05
-#define R_SYMBOL_TAG            0x06
+#define R_BOOL_TAG              0x01    /* #b001 */
+#define R_CHAR_TAG              0x02    /* #b010 */
+#define R_SMI_TAG               0x03    /* #b011 */
+#define R_SMI_EVEN_TAG          0x03    /* #b011 */
+#define R_SMI_ODD_TAG           0x07    /* #b111 */
+#define R_SPECIAL_CONST_TAG     0x05    /* #b101 */
+#define R_SYMBOL_TAG            0x06    /* #b110 */
 
 #define R_MAKE_BOOL(b)          (((b) << R_TAG_BITS) | R_BOOL_TAG)
 #define R_FALSE                 (R_MAKE_BOOL (0))
@@ -65,8 +64,8 @@ typedef rword rsexp;
 #define R_GET_TAG(obj)          ((obj) & R_TAG_MASK)
 
 #define r_boxed_p(obj)          (R_GET_TAG (obj) == R_BOXED_TAG)
-#define r_heap_obj_p(obj)       (((obj) & R_HEAP_OBJ_MASK) == R_HEAP_OBJ_TAG)
-#define r_immediate_p(obj)      (!(R_HEAP_OBJ_p (obj)))
+#define r_pair_p(obj)           (R_GET_TAG (obj) == R_PAIR_TAG)
+#define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
 
 #define r_bool_p(obj)           (R_GET_TAG (obj) == R_BOOL_TAG)
 #define r_false_p(obj)          ((obj) == R_FALSE)
