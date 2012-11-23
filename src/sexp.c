@@ -20,8 +20,11 @@ static void register_bool_type (RState* state)
         .size = 0,
         .name = "boolean",
         .ops = {
-            .write = write_bool,
-            .display = write_bool
+            .write    = write_bool,
+            .display  = write_bool,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .destruct = NULL
         }
     };
 
@@ -51,8 +54,11 @@ static void register_special_const_type (RState* state)
         .size = 0,
         .name = "special-const",
         .ops = {
-            .write = write_special_const,
-            .display = display_special_const
+            .write    = write_special_const,
+            .display  = display_special_const,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .destruct = NULL
         }
     };
 
@@ -70,8 +76,11 @@ static void register_smi_type (RState* state)
         .size = 0,
         .name = "small-integer",
         .ops = {
-            .write = write_smi,
-            .display = write_smi
+            .write    = write_smi,
+            .display  = write_smi,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .destruct = NULL
         }
     };
 
@@ -115,8 +124,11 @@ static void register_char_type (RState* state)
         .size = 0,
         .name = "character",
         .ops = {
-            .write = write_char,
-            .display = display_char
+            .write    = write_char,
+            .display  = display_char,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .destruct = NULL
         }
     };
 
