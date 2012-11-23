@@ -1,5 +1,6 @@
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "rose/memory.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
@@ -46,11 +47,11 @@ static RTypeDescriptor* string_type_info ()
         .size = sizeof (RString),
         .name = "string",
         .ops = {
-            .write = write_string,
-            .display = display_string,
-            .eqv_p = NULL,
-            .equal_p = r_string_equal_p,
-            .mark = NULL,
+            .write    = write_string,
+            .display  = display_string,
+            .eqv_p    = NULL,
+            .equal_p  = r_string_equal_p,
+            .mark     = NULL,
             .destruct = destruct_string
         }
     };

@@ -1,9 +1,4 @@
-#include "detail/number.h"
-#include "rose/eq.h"
-#include "rose/pair.h"
-#include "rose/bytevector.h"
-#include "rose/string.h"
-#include "rose/vector.h"
+#include "detail/sexp.h"
 
 rbool r_eq_p (RState* state, rsexp lhs, rsexp rhs)
 {
@@ -12,15 +7,22 @@ rbool r_eq_p (RState* state, rsexp lhs, rsexp rhs)
 
 rbool r_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 {
+    RTypeDescriptor* desc = r_describe (state, lhs);
+    REqvPred         pred = desc->ops.eqv_p;
+
     return r_eq_p (state, lhs, rhs)
-        || r_number_eqv_p (state, lhs, rhs);
+           ? TRUE
+           : pred ? pred (state, lhs, rhs)
+                  : FALSE;
 }
 
 rbool r_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
+    RTypeDescriptor* desc = r_describe (state, lhs);
+    REqualPred       pred = desc->ops.equal_p;
+
     return r_eqv_p (state, lhs, rhs)
-        || r_pair_equal_p (state, lhs, rhs)
-        || r_vector_equal_p (state, lhs, rhs)
-        || r_bytevector_equal_p (state, lhs, rhs)
-        || r_string_equal_p (state, lhs, rhs);
+           ? TRUE
+           : pred ? pred (state, lhs, rhs)
+                  : FALSE;
 }

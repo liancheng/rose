@@ -3,6 +3,7 @@
 #include "detail/state.h"
 #include "rose/bytevector.h"
 #include "rose/error.h"
+#include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"

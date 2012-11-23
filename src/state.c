@@ -2,6 +2,7 @@
 #include "detail/sexp.h"
 
 #include "rose/env.h"
+#include "rose/memory.h"
 #include "rose/port.h"
 #include "rose/state.h"
 #include "rose/symbol.h"
@@ -100,35 +101,13 @@ rsexp r_keyword (RState* state, ruint index)
     return state->keywords [index];
 }
 
-rpointer r_realloc (RState* state, rpointer ptr, rsize size)
-{
-    return state->alloc_fn (state, ptr, size, state->user_data);
-}
-
-rpointer r_alloc (RState* state, rsize size)
-{
-    return r_realloc (state, NULL, size);
-}
-
-rpointer r_calloc (RState* state, rsize element_size, rsize count)
-{
-    rpointer ptr = r_alloc (state, element_size * count);
-    memset (ptr, 0, element_size * count);
-    return ptr;
-}
-
-void r_free (RState* state, rpointer ptr)
-{
-    state->alloc_fn (state, ptr, 0u, state->user_data);
-}
-
 rchar* r_strdup (RState* state, rchar const* str)
 {
     rsize  size;
     rchar* res;
 
     size = strlen (str);
-    res = r_alloc (state, size + 1);
+    res = (rchar*) r_alloc (state, size + 1);
     memcpy (res, str, size + 1);
 
     return res;

@@ -1,6 +1,7 @@
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/eq.h"
+#include "rose/memory.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/writer.h"
