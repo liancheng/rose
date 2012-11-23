@@ -149,7 +149,10 @@ void r_register_types (RState* state)
 // TODO remove me when the GC mechanism is ready
 static void finalize_object (rpointer obj, rpointer client_data)
 {
-    (((RObject*) obj)->type_desc->ops.destruct) ((RState*) client_data, obj);
+    RObjDestruct destruct = ((RObject*) obj)->type_desc->ops.destruct;
+    RState*      state    = (RState*) client_data;
+
+    destruct (state, obj);
 }
 
 RObject* r_object_new (RState*          state,
@@ -164,7 +167,7 @@ RObject* r_object_new (RState*          state,
     }
 
     obj->type_desc = type_desc;
-    obj->type_tag  = type_tag;
+    obj->type_tag = type_tag;
 
     // TODO remove me when the GC mechanism is ready
     GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);
