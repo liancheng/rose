@@ -5,7 +5,7 @@ env = Environment(tools=['default', 'quex'],
                   CC='clang',
                   CXX='clang++',
                   LIBS=['gc', 'gmp', 'm'],
-                  CPPFLAGS='-ggdb -Wall',
+                  CPPFLAGS='-ggdb -Wall -Werror',
                   CPPPATH=['#include/',
                            '#build/src/',
                            environ['QUEX_PATH']])
