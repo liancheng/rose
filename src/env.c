@@ -28,9 +28,8 @@ static rsexp get_parent_frame (rsexp env)
 
 static void write_env (rsexp port, rsexp obj)
 {
-    /* TODO add state argument to RWriteFunc */
-    assert (FALSE);
-    r_port_printf (port, "#<environment>");
+    RState* state = r_port_get_state (port);
+    r_port_printf (port, "#<%s>", r_type_info (state, obj)->name);
 }
 
 static void destruct_env (RState* state, RObject* obj)

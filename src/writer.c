@@ -1,5 +1,4 @@
 #include "detail/sexp.h"
-#include "rose/state.h"
 #include "rose/port.h"
 
 void r_write (rsexp port, rsexp obj)
