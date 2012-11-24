@@ -28,4 +28,6 @@ typedef unsigned int ruint;
 typedef void const*  rconstpointer;
 typedef void*        rpointer;
 
+#define r_cast(to, from) ((to) (from))
+
 #endif  /* __ROSE_TYPES_H__ */

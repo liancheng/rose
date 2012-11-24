@@ -15,8 +15,8 @@ struct RBytevector {
     rbyte* data;
 };
 
-#define BYTEVECTOR_FROM_SEXP(obj)   ((RBytevector*) (obj))
-#define BYTEVECTOR_TO_SEXP(bytevec) ((rsexp) (bytevec))
+#define BYTEVECTOR_FROM_SEXP(obj)   (r_cast (RBytevector*, (obj)))
+#define BYTEVECTOR_TO_SEXP(bytevec) (r_cast (rsexp, (bytevec)))
 
 static void write_bytevector (rsexp port, rsexp obj)
 {
@@ -37,7 +37,7 @@ static void write_bytevector (rsexp port, rsexp obj)
 
 static void destruct_bytevector (RState* state, RObject* obj)
 {
-    r_free (state, ((RBytevector*) obj)->data);
+    r_free (state, r_cast (RBytevector*, obj)->data);
 }
 
 static RTypeDescriptor* bytevector_type_info ()
@@ -60,9 +60,10 @@ static RTypeDescriptor* bytevector_type_info ()
 
 rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
-    RBytevector* res = (RBytevector*) r_object_new (state,
-                                                    R_TYPE_BYTEVECTOR,
-                                                    bytevector_type_info ());
+    RBytevector* res = r_cast (RBytevector*,
+                               r_object_new (state,
+                                             R_TYPE_BYTEVECTOR,
+                                             bytevector_type_info ()));
 
     res->length = k;
     res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;
@@ -75,8 +76,7 @@ rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 
 rbool r_bytevector_p (rsexp obj)
 {
-    return r_boxed_p (obj) &&
-           (R_SEXP_TYPE (obj) == bytevector_type_info ());
+    return r_type_tag (obj) == R_TYPE_BYTEVECTOR;
 }
 
 rsize r_bytevector_length (rsexp obj)
@@ -104,13 +104,13 @@ rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
 
 rsexp r_list_to_bytevector (RState* state, rsexp list)
 {
-    rsize length = r_length (list);
-    rsexp res = r_bytevector_new (state, length, R_UNSPECIFIED);
     rbyte byte;
     rsize k;
+    rsize length = r_length (list);
+    rsexp res = r_bytevector_new (state, length, R_UNSPECIFIED);
 
     for (k = 0; k < length; ++k) {
-        byte = (rbyte) r_int_from_sexp (r_car (list));
+        byte = r_cast (rbyte, r_int_from_sexp (r_car (list)));
         r_bytevector_set_x (res, k, byte);
         list = r_cdr (list);
     }

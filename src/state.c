@@ -1,5 +1,5 @@
-#include "detail/state.h"
 #include "detail/sexp.h"
+#include "detail/state.h"
 
 #include "rose/env.h"
 #include "rose/memory.h"
@@ -107,7 +107,7 @@ rchar* r_strdup (RState* state, rchar const* str)
     rchar* res;
 
     size = strlen (str);
-    res = (rchar*) r_alloc (state, size + 1);
+    res = r_cast (rchar*, r_alloc (state, size + 1));
     memcpy (res, str, size + 1);
 
     return res;

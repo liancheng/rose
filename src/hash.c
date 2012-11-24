@@ -64,7 +64,7 @@ static const rsize prime_mod [] = {
 
 static ruint direct_hash (rconstpointer data)
 {
-    return (ruint) data;
+    return r_cast (ruint, data);
 }
 
 static rint direct_euqal (rconstpointer lhs, rconstpointer rhs)

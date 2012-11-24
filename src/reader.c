@@ -21,10 +21,13 @@ static rint feed_lexer (RDatumReader* reader)
 {
     QUEX_NAME (buffer_fill_region_prepare) (reader->lexer);
 
-    char* begin = (char*) QUEX_NAME (buffer_fill_region_begin) (reader->lexer);
-    rint  size  = QUEX_NAME (buffer_fill_region_size) (reader->lexer);
-    char* line  = r_port_gets (reader->input_port, begin, size);
-    rint  len   = line ? strlen (line) : 0;
+    char* begin = r_cast (char*,
+                          QUEX_NAME (buffer_fill_region_begin)
+                                    (reader->lexer));
+
+    rint  size = QUEX_NAME (buffer_fill_region_size) (reader->lexer);
+    char* line = r_port_gets (reader->input_port, begin, size);
+    rint  len  = line ? strlen (line) : 0;
 
     QUEX_NAME (buffer_fill_region_finish) (reader->lexer, len);
 
@@ -177,7 +180,7 @@ static rsexp read_full_list (RDatumReader* reader)
 
     list = r_cons (reader->state, datum, R_NULL);
 
-    while (true) {
+    while (TRUE) {
         rtokenid id = lookahead (reader)->_id;
 
         if (id == TKN_DOT || id == TKN_RP)

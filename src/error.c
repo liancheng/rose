@@ -12,8 +12,8 @@ struct RError {
     rsexp irritants;
 };
 
-#define ERROR_FROM_SEXP(obj) ((RError*) (obj))
-#define ERROR_TO_SEXP(error) ((rsexp) error)
+#define ERROR_FROM_SEXP(obj) (r_cast (RError*, (obj)))
+#define ERROR_TO_SEXP(error) (r_cast (rsexp, (error)))
 
 static void write_error (rsexp port, rsexp obj)
 {
@@ -57,9 +57,10 @@ rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 {
     assert (r_string_p (message));
 
-    RError* res = (RError*) r_object_new (state,
-                                          R_TYPE_ERROR,
-                                          error_type_info ());
+    RError* res = r_cast (RError*,
+                          r_object_new (state,
+                                        R_TYPE_ERROR,
+                                        error_type_info ()));
 
     res->message = message;
     res->irritants = irritants;

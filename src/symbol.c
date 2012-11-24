@@ -45,7 +45,7 @@ static rquark string_to_quark_internal (RState*       state,
                                         rbool         duplicate,
                                         RSymbolTable* st)
 {
-    rquark quark = (rquark) r_hash_table_get (st->quark_ht, symbol);
+    rquark quark = r_cast (rquark, r_hash_table_get (st->quark_ht, symbol));
 
     if (!quark) {
         rchar* str = duplicate ? r_strdup (state, symbol) : (rchar*) symbol;
@@ -143,8 +143,12 @@ void register_symbol_type (RState* state)
         .size = 0,
         .name = "symbol",
         .ops = {
-            .write = write_symbol,
-            .display = write_symbol
+            .write    = write_symbol,
+            .display  = write_symbol,
+            .eqv_p    = NULL,
+            .equal_p  = NULL,
+            .mark     = NULL,
+            .destruct = NULL
         }
     };
 

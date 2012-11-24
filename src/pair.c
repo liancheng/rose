@@ -14,8 +14,8 @@ struct RPair {
     rsexp cdr;
 };
 
-#define PAIR_TO_SEXP(pair)  (((rsexp) (pair)) | R_PAIR_TAG)
-#define PAIR_FROM_SEXP(obj) ((RPair*) ((obj) & (~R_PAIR_TAG)))
+#define PAIR_TO_SEXP(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
+#define PAIR_FROM_SEXP(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
 
 typedef void (*ROutputFunction) (rsexp, rsexp);
 
@@ -75,6 +75,14 @@ static rsexp vlist (RState* state, rsize k, va_list args)
     return r_reverse (state, res);
 }
 
+static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
+{
+    return r_pair_p (lhs) &&
+           r_pair_p (rhs) &&
+           r_equal_p (state, r_car (lhs), r_car (rhs)) &&
+           r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
+}
+
 rsexp r_cons (RState* state, rsexp car, rsexp cdr)
 {
     RPair* pair;
@@ -112,14 +120,6 @@ rsexp r_set_cdr_x (rsexp pair, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-rbool r_pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
-{
-    return r_pair_p (lhs) &&
-           r_pair_p (rhs) &&
-           r_equal_p (state, r_car (lhs), r_car (rhs)) &&
-           r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
-}
-
 rsexp r_reverse (RState* state, rsexp list)
 {
     assert (r_null_p (list) || r_pair_p (list));
@@ -145,8 +145,23 @@ rsexp r_append_x (rsexp list, rsexp obj)
 
 rbool r_list_p (rsexp obj)
 {
-    return r_null_p (obj) ||
-           (r_pair_p (obj) && r_list_p (r_cdr (obj)));
+    rbool res;
+
+    while (TRUE) {
+        if (r_null_p (obj)) {
+            res = TRUE;
+            break;
+        }
+
+        if (!r_pair_p (obj)) {
+            res = FALSE;
+            break;
+        }
+
+        obj = r_cdr (obj);
+    }
+
+    return res;
 }
 
 rsexp r_list (RState* state, rsize k, ...)
@@ -188,7 +203,7 @@ void register_pair_type (RState* state)
             .write    = write_pair,
             .display  = display_pair,
             .eqv_p    = NULL,
-            .equal_p  = r_pair_equal_p,
+            .equal_p  = pair_equal_p,
             .mark     = NULL,
             .destruct = NULL
         }

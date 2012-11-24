@@ -88,7 +88,7 @@ static rbool flonum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 
 static void destruct_fixnum (RState* state, RObject* obj)
 {
-    RFixnum* fixnum = (RFixnum*) obj;
+    RFixnum* fixnum = r_cast (RFixnum*, obj);
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
@@ -130,9 +130,10 @@ static RTypeDescriptor* flonum_type_info ()
 
 static RFixnum* fixnum_new (RState* state)
 {
-    RFixnum* fixnum = (RFixnum*) r_object_new (state,
-                                               R_TYPE_FIXNUM,
-                                               fixnum_type_info ());
+    RFixnum* fixnum = r_cast (RFixnum*,
+                              r_object_new (state,
+                                            R_TYPE_FIXNUM,
+                                            fixnum_type_info ()));
 
     mpq_inits (fixnum->real, fixnum->imag, NULL);
 
@@ -187,9 +188,10 @@ rsexp r_fixnum_normalize (rsexp obj)
 
 rsexp r_flonum_new (RState* state, double real, double imag)
 {
-    RFlonum* flonum = (RFlonum*) r_object_new (state,
-                                               R_TYPE_FLONUM,
-                                               flonum_type_info ());
+    RFlonum* flonum = r_cast (RFlonum*,
+                              r_object_new (state,
+                                            R_TYPE_FLONUM,
+                                            flonum_type_info ()));
 
     flonum->real = real;
     flonum->imag = imag;
@@ -226,7 +228,7 @@ rsexp r_int_to_sexp (rint n)
 rint r_int_from_sexp (rsexp obj)
 {
     assert (r_small_int_p (obj));
-    return ((rint) obj) >> R_SMI_BITS;
+    return (r_cast (rint, obj)) >> R_SMI_BITS;
 }
 
 rbool r_byte_p (rsexp obj)

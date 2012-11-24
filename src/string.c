@@ -12,8 +12,8 @@ struct RString {
     char* data;
 };
 
-#define STRING_FROM_SEXP(obj)   ((RString*) (obj))
-#define STRING_TO_SEXP(string)  ((rsexp) (string))
+#define STRING_FROM_SEXP(obj)   (r_cast (RString*, (obj)))
+#define STRING_TO_SEXP(string)  (r_cast (rsexp, (string)))
 
 static void write_string (rsexp port, rsexp obj)
 {
@@ -37,7 +37,7 @@ static void display_string (rsexp port, rsexp obj)
 
 static void destruct_string (RState* state, RObject* obj)
 {
-    RString* str = (RString*) obj;
+    RString* str = r_cast (RString*, obj);
     r_free (state, str->data);
 }
 
@@ -61,9 +61,10 @@ static RTypeDescriptor* string_type_info ()
 
 rsexp r_string_new (RState* state, rchar const* str)
 {
-    RString* res = (RString*) r_object_new (state,
-                                            R_TYPE_STRING,
-                                            string_type_info ());
+    RString* res = r_cast (RString*,
+                           r_object_new (state,
+                                         R_TYPE_STRING,
+                                         string_type_info ()));
 
     res->length = strlen (str) + 1;
     res->data = r_strdup (state, str);

@@ -55,7 +55,8 @@ static void display_vector (rsexp port, rsexp obj)
 
 static void destruct_vector (RState* state, RObject* obj)
 {
-    r_free (state, ((RVector*) obj)->data);
+    RVector* v = r_cast (RVector*, obj);
+    r_free (state, v->data);
 }
 
 static RTypeDescriptor* vector_type_info ()
@@ -91,12 +92,9 @@ static rsexp vvector (RState* state, rsize k, va_list args)
 
 rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 {
-    RVector* res;
     rsize i;
-
-    res = (RVector*) r_object_new (state,
-                                   R_TYPE_VECTOR,
-                                   vector_type_info ());
+    RObject* obj = r_object_new (state, R_TYPE_VECTOR, vector_type_info ());
+    RVector* res = r_cast (RVector*, obj);
 
     res->length = k;
     res->data = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;

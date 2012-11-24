@@ -137,9 +137,7 @@ static void register_char_type (RState* state)
 
 ruint r_type_tag (rsexp obj)
 {
-    return r_boxed_p (obj)
-           ? ((RObject*) obj)->type_tag
-           : R_GET_TAG (obj);
+    return r_boxed_p (obj) ? r_cast (RObject*, obj)->tag : R_GET_TAG (obj);
 }
 
 RTypeDescriptor* r_describe (RState* state, rsexp obj)
@@ -162,25 +160,25 @@ void r_register_types (RState* state)
 // TODO remove me when the GC mechanism is ready
 static void finalize_object (rpointer obj, rpointer client_data)
 {
-    RObjDestruct destruct = ((RObject*) obj)->type_desc->ops.destruct;
-    RState*      state    = (RState*) client_data;
+    RObjDestruct destruct = r_cast (RObject*, obj)->meta->ops.destruct;
+    RState*      state    = r_cast (RState*, client_data);
 
     destruct (state, obj);
 }
 
 RObject* r_object_new (RState*          state,
-                       RBoxedTypeTag    type_tag,
-                       RTypeDescriptor* type_desc)
+                       RBoxedTypeTag    tag,
+                       RTypeDescriptor* meta)
 {
-    RObject* obj = r_alloc (state, type_desc->size);
+    RObject* obj = r_alloc (state, meta->size);
 
     if (obj == NULL) {
         // TODO trigger GC
         return NULL;
     }
 
-    obj->type_desc = type_desc;
-    obj->type_tag = type_tag;
+    obj->meta = meta;
+    obj->tag = tag;
 
     // TODO remove me when the GC mechanism is ready
     GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);

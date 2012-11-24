@@ -23,8 +23,8 @@ typedef struct RObject         RObject;
 typedef struct RTypeDescriptor RTypeDescriptor;
 
 #define R_OBJECT_HEADER\
-        RTypeDescriptor* type_desc;\
-        RBoxedTypeTag    type_tag : 8;\
+        RTypeDescriptor* meta;\
+        RBoxedTypeTag    tag: 8;\
         ruint            gc_color : 3;\
         RObject*         gc_next;
 
@@ -61,7 +61,7 @@ RTypeDescriptor* r_describe       (RState*          state,
                                    rsexp            obj);
 void             r_register_types (RState*          state);
 RObject*         r_object_new     (RState*          state,
-                                   RBoxedTypeTag    type_tag,
-                                   RTypeDescriptor* type_desc);
+                                   RBoxedTypeTag    tag,
+                                   RTypeDescriptor* meta);
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

@@ -12,8 +12,8 @@ struct REnv{
     RHashTable* bindings;
 };
 
-#define ENV_FROM_SEXP(obj)  ((REnv*) (obj))
-#define ENV_TO_SEXP(env)    ((rsexp) env)
+#define ENV_FROM_SEXP(obj)  (r_cast (REnv*, (obj)))
+#define ENV_TO_SEXP(env)    (r_cast (rsexp, (env)))
 
 static RTypeDescriptor* env_type_info ();
 
@@ -34,7 +34,8 @@ static void write_env (rsexp port, rsexp obj)
 
 static void destruct_env (RState* state, RObject* obj)
 {
-    r_hash_table_free (ENV_FROM_SEXP ((rsexp) obj)->bindings);
+    REnv* env = r_cast (REnv*, obj);
+    r_hash_table_free (env->bindings);
 }
 
 static RTypeDescriptor* env_type_info ()
@@ -58,7 +59,7 @@ static RTypeDescriptor* env_type_info ()
 static rsexp frame_lookup (rsexp frame, rsexp var)
 {
     rpointer val = r_hash_table_get (ENV_FROM_SEXP (frame)->bindings,
-                                     (rconstpointer) var);
+                                     r_cast (rconstpointer, var));
 
     return val ? (rsexp) val : R_UNDEFINED;
 }
@@ -70,10 +71,12 @@ rbool r_env_p (rsexp obj)
 
 rsexp r_env_new (RState* state)
 {
-    REnv* res;
+    REnv* res = r_cast (REnv*,
+                        r_object_new (state,
+                                      R_TYPE_ENV,
+                                      env_type_info ()));
 
-    res           = (REnv*) r_object_new (state, R_TYPE_ENV, env_type_info ());
-    res->parent   = R_UNDEFINED;
+    res->parent = R_UNDEFINED;
     res->bindings = r_hash_table_new (NULL, NULL);
 
     return ENV_TO_SEXP (res);
@@ -126,6 +129,6 @@ void r_env_set_x (rsexp env, rsexp var, rsexp val)
     assert (r_env_p (env));
 
     r_hash_table_put (ENV_FROM_SEXP (env)->bindings,
-                      (rpointer) var,
-                      (rpointer) val);
+                      r_cast (rpointer, var),
+                      r_cast (rpointer, val));
 }

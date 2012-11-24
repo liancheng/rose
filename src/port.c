@@ -16,9 +16,10 @@ static rsexp make_file_port (RState*     state,
                              char const* name,
                              rint        mode)
 {
-    RPort* port = (RPort*) r_object_new (state,
-                                         R_TYPE_PORT,
-                                         port_type_info ());
+    RPort* port = r_cast (RPort*,
+                          r_object_new (state,
+                                        R_TYPE_PORT,
+                                        port_type_info ()));
 
     port->state  = state;
     port->stream = file;
@@ -84,7 +85,7 @@ rsexp r_open_output_file (RState* state, char const* filename)
 
 rsexp r_open_input_string (RState* state, char const* string)
 {
-    FILE* file = fmemopen ((void*) string, strlen (string), "r");
+    FILE* file = fmemopen (r_cast (void*, string), strlen (string), "r");
     return make_file_port (state, file, "(string-input)", INPUT_PORT);
 }
 
