@@ -42,7 +42,7 @@ struct RTypeInfo {
 #define R_SEXP_TYPE(obj)    (*(RTypeInfo**) (obj))
 
 ruint      r_type_tag   (rsexp    obj);
-RTypeInfo* r_describe   (RState*  state,
+RTypeInfo* r_type_info  (RState*  state,
                          rsexp    obj);
 RObject*   r_object_new (RState*  state,
                          RTypeTag type_tag);

@@ -130,7 +130,7 @@ ruint r_type_tag (rsexp obj)
            : R_GET_TAG (obj);
 }
 
-RTypeInfo* r_describe (RState* state, rsexp obj)
+RTypeInfo* r_type_info (RState* state, rsexp obj)
 {
     return (r_boxed_p (obj))
            ? R_SEXP_TYPE (obj)

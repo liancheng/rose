@@ -5,17 +5,17 @@
 void r_write (rsexp port, rsexp obj)
 {
     RState* state = r_port_get_state (port);
-    RTypeInfo* type = r_describe (state, obj);
+    RTypeInfo* type_info = r_type_info (state, obj);
 
-    if (type)
-        type->ops.write (port, obj);
+    if (type_info)
+        type_info->ops.write (port, obj);
 }
 
 void r_display (rsexp port, rsexp obj)
 {
     RState* state = r_port_get_state (port);
-    RTypeInfo* type = r_describe (state, obj);
+    RTypeInfo* type_info = r_type_info (state, obj);
 
-    if (type)
-        type->ops.display (port, obj);
+    if (type_info)
+        type_info->ops.display (port, obj);
 }
