@@ -59,24 +59,6 @@ static void destruct_vector (RState* state, RObject* obj)
     r_free (state, v->data);
 }
 
-static RTypeDescriptor* vector_type_info ()
-{
-    static RTypeDescriptor type = {
-        .size = sizeof (RVector),
-        .name = "vector",
-        .ops = {
-            .write = write_vector,
-            .display = display_vector,
-            .eqv_p = NULL,
-            .equal_p = r_vector_equal_p,
-            .mark = NULL,
-            .destruct = destruct_vector
-        }
-    };
-
-    return &type;
-}
-
 static rsexp vvector (RState* state, rsize k, va_list args)
 {
     rsexp res;
@@ -90,10 +72,53 @@ static rsexp vvector (RState* state, rsize k, va_list args)
     return res;
 }
 
+static rbool vector_equal_p (RState* state, rsexp lhs, rsexp rhs)
+{
+    rsize  k;
+    rsize  lhs_len;
+    rsize  rhs_len;
+    rsexp* lhs_data;
+    rsexp* rhs_data;
+
+    if (!r_vector_p (lhs) || !r_vector_p (rhs))
+        return FALSE;
+
+    lhs_len = VECTOR_FROM_SEXP (lhs)->length;
+    rhs_len = VECTOR_FROM_SEXP (rhs)->length;
+
+    if (lhs_len != rhs_len)
+        return FALSE;
+
+    lhs_data = VECTOR_FROM_SEXP (lhs)->data;
+    rhs_data = VECTOR_FROM_SEXP (rhs)->data;
+
+    for (k = 0; k < lhs_len; ++k)
+        if (!r_equal_p (state, lhs_data [k], rhs_data [k]))
+            return FALSE;
+
+    return TRUE;
+}
+
+RTypeInfo* init_vector_type_info (RState* state)
+{
+    RTypeInfo* type_info = R_NEW0 (state, RTypeInfo);
+
+    type_info->size         = sizeof (RVector);
+    type_info->name         = "vector";
+    type_info->ops.write    = write_vector;
+    type_info->ops.display  = display_vector;
+    type_info->ops.eqv_p    = NULL;
+    type_info->ops.equal_p  = vector_equal_p;
+    type_info->ops.mark     = NULL;
+    type_info->ops.destruct = destruct_vector;
+
+    return type_info;
+}
+
 rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 {
     rsize i;
-    RObject* obj = r_object_new (state, R_TYPE_VECTOR, vector_type_info ());
+    RObject* obj = r_object_new (state, R_VECTOR_TAG);
     RVector* res = r_cast (RVector*, obj);
 
     res->length = k;
@@ -119,34 +144,7 @@ rsexp r_vector (RState* state, rsize k, ...)
 
 rbool r_vector_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_VECTOR;
-}
-
-rbool r_vector_equal_p (RState* state, rsexp lhs, rsexp rhs)
-{
-    rsize  k;
-    rsize  lhs_len;
-    rsize  rhs_len;
-    rsexp* lhs_data;
-    rsexp* rhs_data;
-
-    if (!r_vector_p (lhs) || !r_vector_p (rhs))
-        return FALSE;
-
-    lhs_len = VECTOR_FROM_SEXP (lhs)->length;
-    rhs_len = VECTOR_FROM_SEXP (rhs)->length;
-
-    if (lhs_len != rhs_len)
-        return FALSE;
-
-    lhs_data = VECTOR_FROM_SEXP (lhs)->data;
-    rhs_data = VECTOR_FROM_SEXP (rhs)->data;
-
-    for (k = 0; k < lhs_len; ++k)
-        if (!r_equal_p (state, lhs_data [k], rhs_data [k]))
-            return FALSE;
-
-    return TRUE;
+    return r_type_tag (obj) == R_VECTOR_TAG;
 }
 
 rsexp r_vector_ref (rsexp vector, rsize k)

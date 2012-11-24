@@ -194,20 +194,18 @@ rsexp r_list_ref (rsexp list, rsize k)
     return r_car (list);
 }
 
-void register_pair_type (RState* state)
+RTypeInfo* init_pair_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = sizeof (RPair),
-        .name = "pair",
-        .ops = {
-            .write    = write_pair,
-            .display  = display_pair,
-            .eqv_p    = NULL,
-            .equal_p  = pair_equal_p,
-            .mark     = NULL,
-            .destruct = NULL
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    state->types [R_PAIR_TAG] = &type;
+    type->size         = sizeof (RPair);
+    type->name         = "pair";
+    type->ops.write    = write_pair;
+    type->ops.display  = display_pair;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = pair_equal_p;
+    type->ops.mark     = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
 }

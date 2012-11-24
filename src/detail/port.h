@@ -2,7 +2,6 @@
 #define __ROSE_DETAIL_PORT_H__
 
 #include "detail/sexp.h"
-#include "rose/state.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -40,5 +39,7 @@ struct RPort {
 #define PORT_FROM_SEXP(obj) ((RPort*) (obj))
 #define PORT_TO_SEXP(port)  ((rsexp) (port))
 #define PORT_TO_FILE(obj)   ((FILE*) (PORT_FROM_SEXP (obj)->stream))
+
+RTypeInfo* init_port_type_info (RState* state);
 
 #endif  /* __ROSE_DETAIL_PORT_H__ */

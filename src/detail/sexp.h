@@ -4,29 +4,14 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
-typedef enum {
-    R_TYPE_STRING = R_TAG_MAX + 1,
-    R_TYPE_VECTOR,
-    R_TYPE_BYTEVECTOR,
-    R_TYPE_PROCEDURE,
-    R_TYPE_CONTINUATION,
-    R_TYPE_ENV,
-    R_TYPE_PORT,
-    R_TYPE_ERROR,
-    R_TYPE_FIXNUM,
-    R_TYPE_FLONUM,
-    R_TYPE_END
-}
-RBoxedTypeTag;
-
-typedef struct RObject         RObject;
-typedef struct RTypeDescriptor RTypeDescriptor;
+typedef struct RObject   RObject;
+typedef struct RTypeInfo RTypeInfo;
 
 #define R_OBJECT_HEADER\
-        RTypeDescriptor* meta;\
-        RBoxedTypeTag    tag: 8;\
-        ruint            gc_color : 3;\
-        RObject*         gc_next;
+        RTypeInfo* type_info;\
+        RTypeTag   type_tag : 8;\
+        ruint      gc_color : 3;\
+        RObject*   gc_next;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
 typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
@@ -39,7 +24,7 @@ struct RObject {
     R_OBJECT_HEADER
 };
 
-struct RTypeDescriptor {
+struct RTypeInfo {
     rsize size;
     char* name;
 
@@ -54,14 +39,17 @@ struct RTypeDescriptor {
     ops;
 };
 
-#define R_SEXP_TYPE(obj)    (*(RTypeDescriptor**) (obj))
+#define R_SEXP_TYPE(obj)    (*(RTypeInfo**) (obj))
 
-ruint            r_type_tag       (rsexp            obj);
-RTypeDescriptor* r_describe       (RState*          state,
-                                   rsexp            obj);
-void             r_register_types (RState*          state);
-RObject*         r_object_new     (RState*          state,
-                                   RBoxedTypeTag    tag,
-                                   RTypeDescriptor* meta);
+ruint      r_type_tag   (rsexp    obj);
+RTypeInfo* r_describe   (RState*  state,
+                         rsexp    obj);
+RObject*   r_object_new (RState*  state,
+                         RTypeTag type_tag);
+
+RTypeInfo* init_bool_type_info          (RState* state);
+RTypeInfo* init_char_type_info          (RState* state);
+RTypeInfo* init_special_const_type_info (RState* state);
+RTypeInfo* init_smi_type_info           (RState* state);
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

@@ -40,30 +40,26 @@ static void destruct_bytevector (RState* state, RObject* obj)
     r_free (state, r_cast (RBytevector*, obj)->data);
 }
 
-static RTypeDescriptor* bytevector_type_info ()
+RTypeInfo* init_bytevector_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = sizeof (RBytevector),
-        .name = "bytevector",
-        .ops = {
-            .write    = write_bytevector,
-            .display  = write_bytevector,
-            .eqv_p    = NULL,
-            .equal_p  = r_bytevector_equal_p,
-            .mark     = NULL,
-            .destruct = destruct_bytevector
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    return &type;
+    type->size         = sizeof (RBytevector);
+    type->name         = "bytevector";
+    type->ops.write    = write_bytevector;
+    type->ops.display  = write_bytevector;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = r_bytevector_equal_p;
+    type->ops.mark     = NULL;
+    type->ops.destruct = destruct_bytevector;
+
+    return type;
 }
 
 rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
-    RBytevector* res = r_cast (RBytevector*,
-                               r_object_new (state,
-                                             R_TYPE_BYTEVECTOR,
-                                             bytevector_type_info ()));
+    RObject* obj = r_object_new (state, R_BYTEVECTOR_TAG);
+    RBytevector* res = r_cast (RBytevector*, obj);
 
     res->length = k;
     res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;
@@ -76,7 +72,7 @@ rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 
 rbool r_bytevector_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_BYTEVECTOR;
+    return r_type_tag (obj) == R_BYTEVECTOR_TAG;
 }
 
 rsize r_bytevector_length (rsexp obj)

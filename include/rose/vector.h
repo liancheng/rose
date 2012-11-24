@@ -12,9 +12,6 @@ rsexp r_vector         (RState* state,
                         rsize   k,
                         ...);
 rbool r_vector_p       (rsexp   obj);
-rbool r_vector_equal_p (RState* state,
-                        rsexp   lhs,
-                        rsexp   rhs);
 rsexp r_vector_ref     (rsexp   vector,
                         rsize   k);
 rsexp r_vector_set_x   (rsexp   vector,

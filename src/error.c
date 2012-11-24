@@ -1,5 +1,6 @@
 #include "detail/sexp.h"
 #include "rose/error.h"
+#include "rose/memory.h"
 #include "rose/port.h"
 #include "rose/string.h"
 #include "rose/writer.h"
@@ -35,32 +36,28 @@ static void display_error (rsexp port, rsexp obj)
               r_error_get_irritants (obj));
 }
 
-static RTypeDescriptor* error_type_info ()
+RTypeInfo* init_error_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = sizeof (RError),
-        .name = "port",
-        .ops = {
-            .write    = write_error,
-            .display  = display_error,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .mark     = NULL,
-            .destruct = NULL
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    return &type;
+    type->size         = sizeof (RError);
+    type->name         = "port";
+    type->ops.write    = write_error;
+    type->ops.display  = display_error;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.mark     = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
 }
 
 rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 {
     assert (r_string_p (message));
 
-    RError* res = r_cast (RError*,
-                          r_object_new (state,
-                                        R_TYPE_ERROR,
-                                        error_type_info ()));
+    RObject* obj = r_object_new (state, R_ERROR_TAG);
+    RError* res = r_cast (RError*, obj);
 
     res->message = message;
     res->irritants = irritants;
@@ -70,7 +67,7 @@ rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 
 rbool r_error_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_ERROR;
+    return r_type_tag (obj) == R_ERROR_TAG;
 }
 
 rsexp r_error_get_message (rsexp error)

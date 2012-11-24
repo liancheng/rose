@@ -5,7 +5,7 @@
 
 rpointer r_realloc (RState* state, rpointer ptr, rsize size)
 {
-    return state->alloc_fn (state, ptr, size, state->user_data);
+    return state->alloc_fn (state, ptr, size, state->alloc_aux);
 }
 
 rpointer r_alloc (RState* state, rsize size)
@@ -22,5 +22,5 @@ rpointer r_calloc (RState* state, rsize element_size, rsize count)
 
 void r_free (RState* state, rpointer ptr)
 {
-    state->alloc_fn (state, ptr, 0u, state->user_data);
+    state->alloc_fn (state, ptr, 0u, state->alloc_aux);
 }

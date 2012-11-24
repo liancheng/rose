@@ -1,6 +1,7 @@
 #include "detail/state.h"
 #include "detail/port.h"
 #include "rose/error.h"
+#include "rose/memory.h"
 #include "rose/port.h"
 #include "rose/string.h"
 #include "rose/writer.h"
@@ -9,17 +10,13 @@
 #include <stdio.h>
 #include <string.h>
 
-static RTypeDescriptor* port_type_info ();
-
 static rsexp make_file_port (RState*     state,
                              FILE*       file,
                              char const* name,
                              rint        mode)
 {
-    RPort* port = r_cast (RPort*,
-                          r_object_new (state,
-                                        R_TYPE_PORT,
-                                        port_type_info ()));
+    RObject* obj = r_object_new (state, R_PORT_TAG);
+    RPort* port = r_cast (RPort*, obj);
 
     port->state  = state;
     port->stream = file;
@@ -50,22 +47,20 @@ static void destruct_port (RState* state, RObject* obj)
 {
 }
 
-static RTypeDescriptor* port_type_info ()
+RTypeInfo* init_port_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = sizeof (RPort),
-        .name = "port",
-        .ops = {
-            .write    = write_port,
-            .display  = write_port,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .mark     = NULL,
-            .destruct = destruct_port
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    return &type;
+    type->size         = sizeof (RPort);
+    type->name         = "port";
+    type->ops.write    = write_port;
+    type->ops.display  = write_port;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.mark     = NULL;
+    type->ops.destruct = destruct_port;
+
+    return type;
 }
 
 RState* r_port_get_state (rsexp port)
@@ -126,7 +121,7 @@ rbool r_eof_p (rsexp port)
 
 rbool r_port_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_PORT;
+    return r_type_tag (obj) == R_PORT_TAG;
 }
 
 rbool r_input_port_p (rsexp obj)

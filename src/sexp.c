@@ -6,29 +6,9 @@
 
 #include <gc/gc.h>
 
-void register_pair_type   (RState* state);
-void register_symbol_type (RState* state);
-
 static void write_bool (rsexp port, rsexp obj)
 {
     r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
-}
-
-static void register_bool_type (RState* state)
-{
-    static RTypeDescriptor type = {
-        .size = 0,
-        .name = "boolean",
-        .ops = {
-            .write    = write_bool,
-            .display  = write_bool,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .destruct = NULL
-        }
-    };
-
-    state->types [R_BOOL_TAG] = &type;
 }
 
 static void write_special_const (rsexp port, rsexp obj)
@@ -48,44 +28,9 @@ static void display_special_const (rsexp port, rsexp obj)
     r_port_puts (port, r_null_p (obj) ? "()" : "");
 }
 
-static void register_special_const_type (RState* state)
-{
-    static RTypeDescriptor type = {
-        .size = 0,
-        .name = "special-const",
-        .ops = {
-            .write    = write_special_const,
-            .display  = display_special_const,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .destruct = NULL
-        }
-    };
-
-    state->types [R_SPECIAL_CONST_TAG] = &type;
-}
-
 static void write_smi (rsexp port, rsexp obj)
 {
     r_port_printf (port, "%d", r_int_from_sexp (obj));
-}
-
-static void register_smi_type (RState* state)
-{
-    static RTypeDescriptor type = {
-        .size = 0,
-        .name = "small-integer",
-        .ops = {
-            .write    = write_smi,
-            .display  = write_smi,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .destruct = NULL
-        }
-    };
-
-    state->types [R_SMI_EVEN_TAG] = &type;
-    state->types [R_SMI_ODD_TAG]  = &type;
 }
 
 static void write_char (rsexp port, rsexp obj)
@@ -118,67 +63,101 @@ static void display_char (rsexp port, rsexp obj)
     r_write_char (port, r_char_from_sexp (obj));
 }
 
-static void register_char_type (RState* state)
+RTypeInfo* init_bool_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = 0,
-        .name = "character",
-        .ops = {
-            .write    = write_char,
-            .display  = display_char,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .destruct = NULL
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    state->types [R_CHAR_TAG] = &type;
+    type->size         = 0;
+    type->name         = "boolean";
+    type->ops.write    = write_bool;
+    type->ops.display  = write_bool;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
+}
+
+RTypeInfo* init_char_type_info (RState* state)
+{
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+
+    type->size         = 0;
+    type->name         = "character";
+    type->ops.write    = write_char;
+    type->ops.display  = display_char;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
+}
+
+RTypeInfo* init_smi_type_info (RState* state)
+{
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+
+    type->size         = 0;
+    type->name         = "small-integer";
+    type->ops.write    = write_smi;
+    type->ops.display  = write_smi;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
+}
+
+RTypeInfo* init_special_const_type_info (RState* state)
+{
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+
+    type->size         = 0;
+    type->name         = "special-const";
+    type->ops.write    = write_special_const;
+    type->ops.display  = display_special_const;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
 }
 
 ruint r_type_tag (rsexp obj)
 {
-    return r_boxed_p (obj) ? r_cast (RObject*, obj)->tag : R_GET_TAG (obj);
+    return r_boxed_p (obj)
+           ? r_cast (RObject*, obj)->type_tag
+           : R_GET_TAG (obj);
 }
 
-RTypeDescriptor* r_describe (RState* state, rsexp obj)
+RTypeInfo* r_describe (RState* state, rsexp obj)
 {
     return (r_boxed_p (obj))
            ? R_SEXP_TYPE (obj)
            : state->types [R_GET_TAG (obj)];
 }
 
-void r_register_types (RState* state)
-{
-    register_bool_type          (state);
-    register_special_const_type (state);
-    register_pair_type          (state);
-    register_symbol_type        (state);
-    register_smi_type           (state);
-    register_char_type          (state);
-}
-
 // TODO remove me when the GC mechanism is ready
 static void finalize_object (rpointer obj, rpointer client_data)
 {
-    RObjDestruct destruct = r_cast (RObject*, obj)->meta->ops.destruct;
+    RObjDestruct destruct = r_cast (RObject*, obj)->type_info->ops.destruct;
     RState*      state    = r_cast (RState*, client_data);
 
     destruct (state, obj);
 }
 
-RObject* r_object_new (RState*          state,
-                       RBoxedTypeTag    tag,
-                       RTypeDescriptor* meta)
+RObject* r_object_new (RState* state, RTypeTag type_tag)
 {
-    RObject* obj = r_alloc (state, meta->size);
+    RTypeInfo* type_info = state->types [type_tag];
+    RObject* obj = r_alloc (state, type_info->size);
 
     if (obj == NULL) {
         // TODO trigger GC
         return NULL;
     }
 
-    obj->meta = meta;
-    obj->tag = tag;
+    obj->type_info = type_info;
+    obj->type_tag = type_tag;
 
     // TODO remove me when the GC mechanism is ready
     GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);

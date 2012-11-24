@@ -4,6 +4,7 @@
 #include "detail/number_reader.h"
 #include "detail/port.h"
 #include "detail/sexp.h"
+#include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/port.h"
 
@@ -92,62 +93,56 @@ static void destruct_fixnum (RState* state, RObject* obj)
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
-static RTypeDescriptor* fixnum_type_info ()
-{
-    static RTypeDescriptor type = {
-        .size = sizeof (RFixnum),
-        .name = "fixnum",
-        .ops = {
-            .write    = write_fixnum,
-            .display  = write_fixnum,
-            .eqv_p    = fixnum_eqv_p,
-            .equal_p  = fixnum_eqv_p,
-            .mark     = NULL,
-            .destruct = destruct_fixnum
-        }
-    };
-
-    return &type;
-}
-
-static RTypeDescriptor* flonum_type_info ()
-{
-    static RTypeDescriptor type = {
-        .size = sizeof (RFlonum),
-        .name = "flonum",
-        .ops = {
-            .write    = write_flonum,
-            .display  = write_flonum,
-            .eqv_p    = flonum_eqv_p,
-            .equal_p  = flonum_eqv_p,
-            .mark     = NULL,
-            .destruct = NULL
-        }
-    };
-
-    return &type;
-}
-
 static RFixnum* fixnum_new (RState* state)
 {
-    RFixnum* fixnum = r_cast (RFixnum*,
-                              r_object_new (state,
-                                            R_TYPE_FIXNUM,
-                                            fixnum_type_info ()));
+    RObject* obj = r_object_new (state, R_FIXNUM_TAG);
+    RFixnum* fixnum = r_cast (RFixnum*, obj);
 
     mpq_inits (fixnum->real, fixnum->imag, NULL);
 
     return fixnum;
 }
 
+RTypeInfo* init_fixnum_type_info (RState* state)
+{
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+
+    type->size         = sizeof (RFixnum);
+    type->name         = "fixnum";
+    type->ops.write    = write_fixnum;
+    type->ops.display  = write_fixnum;
+    type->ops.eqv_p    = fixnum_eqv_p;
+    type->ops.equal_p  = fixnum_eqv_p;
+    type->ops.mark     = NULL;
+    type->ops.destruct = destruct_fixnum;
+
+    return type;
+}
+
+RTypeInfo* init_flonum_type_info (RState* state)
+{
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+
+    type->size         = sizeof (RFlonum);
+    type->name         = "flonum";
+    type->ops.write    = write_flonum;
+    type->ops.display  = write_flonum;
+    type->ops.eqv_p    = flonum_eqv_p;
+    type->ops.equal_p  = flonum_eqv_p;
+    type->ops.mark     = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
+}
+
 rbool r_fixnum_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_FIXNUM;
+    return r_type_tag (obj) == R_FIXNUM_TAG;
 }
 
 rbool r_flonum_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_FLONUM;
+    return r_type_tag (obj) == R_FLONUM_TAG;
 }
 
 rsexp r_string_to_number (RState* state, rchar const* text)
@@ -188,10 +183,8 @@ rsexp r_fixnum_normalize (rsexp obj)
 
 rsexp r_flonum_new (RState* state, double real, double imag)
 {
-    RFlonum* flonum = r_cast (RFlonum*,
-                              r_object_new (state,
-                                            R_TYPE_FLONUM,
-                                            flonum_type_info ()));
+    RObject* obj = r_object_new (state, R_FLONUM_TAG);
+    RFlonum* flonum = r_cast (RFlonum*, obj);
 
     flonum->real = real;
     flonum->imag = imag;
@@ -249,18 +242,4 @@ rbool r_number_p (rsexp obj)
 rbool r_exact_p (rsexp obj)
 {
     return r_small_int_p (obj) || r_fixnum_p (obj);
-}
-
-rbool r_number_eqv_p (RState* state, rsexp lhs, rsexp rhs)
-{
-    if (r_small_int_p (lhs) && r_small_int_p (rhs))
-        return lhs == rhs;
-
-    if (r_fixnum_p (lhs) && r_fixnum_p (rhs))
-        return fixnum_eqv_p (state, lhs, rhs);
-
-    if (r_flonum_p (lhs) && r_flonum_p (rhs))
-        return flonum_eqv_p (state, lhs, rhs);
-
-    return FALSE;
 }

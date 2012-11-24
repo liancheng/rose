@@ -41,30 +41,26 @@ static void destruct_string (RState* state, RObject* obj)
     r_free (state, str->data);
 }
 
-static RTypeDescriptor* string_type_info ()
+RTypeInfo* init_string_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = sizeof (RString),
-        .name = "string",
-        .ops = {
-            .write    = write_string,
-            .display  = display_string,
-            .eqv_p    = NULL,
-            .equal_p  = r_string_equal_p,
-            .mark     = NULL,
-            .destruct = destruct_string
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    return &type;
+    type->size         = sizeof (RString);
+    type->name         = "string";
+    type->ops.write    = write_string;
+    type->ops.display  = display_string;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = r_string_equal_p;
+    type->ops.mark     = NULL;
+    type->ops.destruct = destruct_string;
+
+    return type;
 }
 
 rsexp r_string_new (RState* state, rchar const* str)
 {
-    RString* res = r_cast (RString*,
-                           r_object_new (state,
-                                         R_TYPE_STRING,
-                                         string_type_info ()));
+    RObject* obj = r_object_new (state, R_STRING_TAG);
+    RString* res = r_cast (RString*, obj);
 
     res->length = strlen (str) + 1;
     res->data = r_strdup (state, str);
@@ -74,7 +70,7 @@ rsexp r_string_new (RState* state, rchar const* str)
 
 rbool r_string_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TYPE_STRING;
+    return r_type_tag (obj) == R_STRING_TAG;
 }
 
 char const* r_string_to_cstr (rsexp obj)

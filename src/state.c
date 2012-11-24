@@ -1,5 +1,14 @@
+#include "detail/bytevector.h"
+#include "detail/env.h"
+#include "detail/error.h"
+#include "detail/number.h"
+#include "detail/pair.h"
+#include "detail/port.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "detail/string.h"
+#include "detail/symbol.h"
+#include "detail/vector.h"
 
 #include "rose/env.h"
 #include "rose/memory.h"
@@ -60,24 +69,42 @@ static rpointer default_alloc_fn (RState*  state,
     return GC_REALLOC (ptr, size);
 }
 
-RState* r_state_new (RAllocFunc alloc_fn, rpointer user_data)
+static void register_type_info (RState* state)
 {
-    RState* state = malloc (sizeof (RState));
+    state->types [R_BOOL_TAG         ] = init_bool_type_info          (state);
+    state->types [R_BYTEVECTOR_TAG   ] = init_bytevector_type_info    (state);
+    state->types [R_CHAR_TAG         ] = init_char_type_info          (state);
+    state->types [R_ENV_TAG          ] = init_env_type_info           (state);
+    state->types [R_ERROR_TAG        ] = init_error_type_info         (state);
+    state->types [R_FIXNUM_TAG       ] = init_fixnum_type_info        (state);
+    state->types [R_FLONUM_TAG       ] = init_flonum_type_info        (state);
+    state->types [R_PAIR_TAG         ] = init_pair_type_info          (state);
+    state->types [R_PORT_TAG         ] = init_port_type_info          (state);
+    state->types [R_SMI_EVEN_TAG     ] = init_smi_type_info           (state);
+    state->types [R_SMI_ODD_TAG      ] = init_smi_type_info           (state);
+    state->types [R_SPECIAL_CONST_TAG] = init_special_const_type_info (state);
+    state->types [R_STRING_TAG       ] = init_string_type_info        (state);
+    state->types [R_SYMBOL_TAG       ] = init_symbol_type_info        (state);
+    state->types [R_VECTOR_TAG       ] = init_vector_type_info        (state);
+}
 
-    memset (state, 0, sizeof (RState));
+RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
+{
+    RState* state = calloc (sizeof (RState), 1u);
 
+    /* Initialize memory allocator first */
     state->alloc_fn  = alloc_fn;
-    state->user_data = user_data;
+    state->alloc_aux = aux;
 
-    state->symbol_table        = r_symbol_table_new (state);
-    state->env                 = r_env_new (state);
-    state->current_input_port  = r_stdin_port (state);
+    register_type_info (state);
+
+    state->env = r_env_new (state);
+    state->current_input_port = r_stdin_port (state);
     state->current_output_port = r_stdout_port (state);
-    state->error_jmp           = NULL;
+    state->error_jmp = NULL;
 
-    state->types = r_calloc (state, sizeof (RTypeDescriptor*), 8);
-
-    r_register_types (state);
+    /* Symbol table must be initialized before keywords registration */
+    state->symbol_table = r_symbol_table_new (state);
     register_keywords (state);
 
     return state;
@@ -91,7 +118,6 @@ RState* r_state_open ()
 void r_state_free (RState* state)
 {
     r_symbol_table_free (state, state->symbol_table);
-    r_free (state, state->types);
     free (state);
 }
 

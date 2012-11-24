@@ -32,15 +32,20 @@ typedef enum {
 RKeyword;
 
 struct RState {
-    RSymbolTable*     symbol_table;
-    rsexp             env;
-    rsexp             current_input_port;
-    rsexp             current_output_port;
-    RNestedJump*      error_jmp;
-    RTypeDescriptor** types;
-    rsexp             keywords [R_KEYWORD_COUNT];
-    RAllocFunc        alloc_fn;
-    rpointer          user_data;
+    /* Memory allocation function */
+    RAllocFunc    alloc_fn;
+    rpointer      alloc_aux;
+
+    /* Runtime data */
+    RSymbolTable* symbol_table;
+    rsexp         env;
+    rsexp         current_input_port;
+    rsexp         current_output_port;
+    RNestedJump*  error_jmp;
+    rsexp         keywords [R_KEYWORD_COUNT];
+
+    /* Type information */
+    RTypeInfo*    types [R_TAG_MAX];
 };
 
 rsexp  r_keyword (RState*      state,

@@ -137,20 +137,18 @@ char const* r_symbol_name (RState* state, rsexp obj)
     return quark_to_symbol (state, QUARK_FROM_SEXP (obj));
 }
 
-void register_symbol_type (RState* state)
+RTypeInfo* init_symbol_type_info (RState* state)
 {
-    static RTypeDescriptor type = {
-        .size = 0,
-        .name = "symbol",
-        .ops = {
-            .write    = write_symbol,
-            .display  = write_symbol,
-            .eqv_p    = NULL,
-            .equal_p  = NULL,
-            .mark     = NULL,
-            .destruct = NULL
-        }
-    };
+    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
 
-    state->types [R_SYMBOL_TAG] = &type;
+    type->size         = 0;
+    type->name         = "symbol";
+    type->ops.write    = write_symbol;
+    type->ops.display  = write_symbol;
+    type->ops.eqv_p    = NULL;
+    type->ops.equal_p  = NULL;
+    type->ops.mark     = NULL;
+    type->ops.destruct = NULL;
+
+    return type;
 }
