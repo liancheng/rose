@@ -4,20 +4,21 @@
 #include "rose/port.h"
 #include "rose/string.h"
 
+#include <assert.h>
 #include <string.h>
 
 struct RString {
     R_OBJECT_HEADER
-    rsize length;
-    char* data;
+    rsize    length;
+    rcstring data;
 };
 
 #define STRING_FROM_SEXP(obj)   (r_cast (RString*, (obj)))
 #define STRING_TO_SEXP(string)  (r_cast (rsexp, (string)))
 
-static void write_string (rsexp port, rsexp obj)
+static void write_string (RState* state, rsexp port, rsexp obj)
 {
-    char* p;
+    rcstring p;
 
     r_write_char (port, '"');
 
@@ -30,7 +31,7 @@ static void write_string (rsexp port, rsexp obj)
     r_write_char (port, '"');
 }
 
-static void display_string (rsexp port, rsexp obj)
+static void display_string (RState* state, rsexp port, rsexp obj)
 {
     r_port_puts (port, STRING_FROM_SEXP (obj)->data);
 }
@@ -43,7 +44,7 @@ static void destruct_string (RState* state, RObject* obj)
 
 RTypeInfo* init_string_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (RString);
     type->name         = "string";
@@ -57,10 +58,9 @@ RTypeInfo* init_string_type_info (RState* state)
     return type;
 }
 
-rsexp r_string_new (RState* state, rchar const* str)
+rsexp r_string_new (RState* state, rconstcstring str)
 {
-    RObject* obj = r_object_new (state, R_STRING_TAG);
-    RString* res = r_cast (RString*, obj);
+    RString* res = r_object_new (state, RString, R_STRING_TAG);
 
     res->length = strlen (str) + 1;
     res->data = r_strdup (state, str);
@@ -73,7 +73,7 @@ rbool r_string_p (rsexp obj)
     return r_type_tag (obj) == R_STRING_TAG;
 }
 
-char const* r_string_to_cstr (rsexp obj)
+rconstcstring r_string_to_cstr (rsexp obj)
 {
     return STRING_FROM_SEXP (obj)->data;
 }
@@ -93,4 +93,16 @@ rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
         && 0 == memcmp (lhs_str->data,
                         rhs_str->data,
                         lhs_str->length * sizeof (char));
+}
+
+rint r_string_byte_count (rsexp obj)
+{
+    assert (r_string_p (obj));
+    return STRING_FROM_SEXP (obj)->length;
+}
+
+rint r_string_length (rsexp obj)
+{
+    assert (r_string_p (obj));
+    return STRING_FROM_SEXP (obj)->length;
 }

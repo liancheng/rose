@@ -15,8 +15,8 @@ typedef struct RTypeInfo RTypeInfo;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
 typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
-typedef void  (*RWriteFunc)   (rsexp,   rsexp);
-typedef void  (*RDisplayFunc) (rsexp,   rsexp);
+typedef void  (*RWriteFunc)   (RState*, rsexp, rsexp);
+typedef void  (*RDisplayFunc) (RState*, rsexp, rsexp);
 typedef void  (*RGcMarkFunc)  (RState*, rsexp);
 typedef void  (*RObjDestruct) (RState*, RObject*);
 
@@ -41,11 +41,14 @@ struct RTypeInfo {
 
 #define R_SEXP_TYPE(obj)    (*(RTypeInfo**) (obj))
 
-ruint      r_type_tag   (rsexp    obj);
-RTypeInfo* r_type_info  (RState*  state,
-                         rsexp    obj);
-RObject*   r_object_new (RState*  state,
-                         RTypeTag type_tag);
+ruint      r_type_tag     (rsexp    obj);
+RTypeInfo* r_type_info    (RState*  state,
+                           rsexp    obj);
+RObject*   r_object_alloc (RState*  state,
+                           RTypeTag type_tag);
+
+#define r_object_new(state, type, tag)\
+        (r_cast (type*, r_object_alloc (state, tag)))
 
 RTypeInfo* init_bool_type_info          (RState* state);
 RTypeInfo* init_char_type_info          (RState* state);

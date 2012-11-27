@@ -8,7 +8,6 @@
 #include <setjmp.h>
 
 struct RDatumReader {
-    RState* state;
     jmp_buf jmp;
     rsexp   input_port;
     rsexp   last_error;

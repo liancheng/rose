@@ -4,7 +4,6 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/vector.h"
-#include "rose/writer.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -18,11 +17,12 @@ struct RVector {
 #define VECTOR_FROM_SEXP(obj)   ((RVector*) (obj))
 #define VECTOR_TO_SEXP(vector)  ((rsexp) (vector))
 
-typedef void (*ROutputFunction) (rsexp, rsexp);
+typedef void (*ROutputFunc) (RState* state, rsexp, rsexp);
 
-static void output_vector (rsexp           port,
-                           rsexp           obj,
-                           ROutputFunction output_fn)
+static void output_vector (RState*     state,
+                           rsexp       port,
+                           rsexp       obj,
+                           ROutputFunc output_fn)
 {
     assert (r_vector_p (obj));
 
@@ -32,25 +32,25 @@ static void output_vector (rsexp           port,
     r_port_puts (port, "#(");
 
     if (length) {
-        output_fn (port, r_vector_ref (obj, 0));
+        output_fn (state, port, r_vector_ref (obj, 0));
 
         for (i = 1; i < length; ++i) {
             r_port_puts (port, " ");
-            output_fn (port, r_vector_ref (obj, i));
+            output_fn (state, port, r_vector_ref (obj, i));
         }
     }
 
     r_port_puts (port, ")");
 }
 
-static void write_vector (rsexp port, rsexp obj)
+static void write_vector (RState* state, rsexp port, rsexp obj)
 {
-    output_vector (port, obj, r_write);
+    output_vector (state, port, obj, r_port_write);
 }
 
-static void display_vector (rsexp port, rsexp obj)
+static void display_vector (RState* state, rsexp port, rsexp obj)
 {
-    output_vector (port, obj, r_display);
+    output_vector (state, port, obj, r_port_display);
 }
 
 static void destruct_vector (RState* state, RObject* obj)
@@ -101,7 +101,7 @@ static rbool vector_equal_p (RState* state, rsexp lhs, rsexp rhs)
 
 RTypeInfo* init_vector_type_info (RState* state)
 {
-    RTypeInfo* type_info = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type_info = r_new0 (state, RTypeInfo);
 
     type_info->size         = sizeof (RVector);
     type_info->name         = "vector";
@@ -118,8 +118,7 @@ RTypeInfo* init_vector_type_info (RState* state)
 rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 {
     rsize i;
-    RObject* obj = r_object_new (state, R_VECTOR_TAG);
-    RVector* res = r_cast (RVector*, obj);
+    RVector* res = r_object_new (state, RVector, R_VECTOR_TAG);
 
     res->length = k;
     res->data = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;

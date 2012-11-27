@@ -87,15 +87,15 @@ RTypeTag;
 #define R_TAG_MASK              0x07    /* #b111 */
 #define R_SMI_MASK              0x03    /* #b011 */
 
-#define R_MAKE_BOOL(b)          (((b) << R_TAG_BITS) | R_BOOL_TAG)
-#define R_FALSE                 (R_MAKE_BOOL (0))
-#define R_TRUE                  (R_MAKE_BOOL (1))
+#define __R_BOOL(b)             (((b) << R_TAG_BITS) | R_BOOL_TAG)
+#define R_FALSE                 (__R_BOOL (0))
+#define R_TRUE                  (__R_BOOL (1))
 
-#define R_MAKE_SPECIAL_CONST(n) ((((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG))
-#define R_NULL                  (R_MAKE_SPECIAL_CONST (0))
-#define R_EOF                   (R_MAKE_SPECIAL_CONST (1))
-#define R_UNSPECIFIED           (R_MAKE_SPECIAL_CONST (2))
-#define R_UNDEFINED             (R_MAKE_SPECIAL_CONST (3))
+#define __R_SPECIAL_CONST(n)    ((((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG))
+#define R_NULL                  (__R_SPECIAL_CONST (0))
+#define R_EOF                   (__R_SPECIAL_CONST (1))
+#define R_UNSPECIFIED           (__R_SPECIAL_CONST (2))
+#define R_UNDEFINED             (__R_SPECIAL_CONST (3))
 
 #define R_GET_TAG(obj)          ((obj) & R_TAG_MASK)
 

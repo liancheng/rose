@@ -21,9 +21,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-static void register_keyword (RState*     state,
-                              ruint       index,
-                              char const* symbol)
+static void register_keyword (RState*       state,
+                              ruint         index,
+                              rconstcstring symbol)
 {
     state->keywords [index] = r_symbol_new_static (state, symbol);
 }
@@ -90,7 +90,15 @@ static void register_type_info (RState* state)
 
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 {
-    RState* state = calloc (sizeof (RState), 1u);
+    RState* state;
+    RNestedJump jmp;
+
+    state = calloc (sizeof (RState), 1u);
+
+    if (!state)
+        return NULL;
+
+    state->error_jmp = NULL;
 
     /* Initialize memory allocator first */
     state->alloc_fn  = alloc_fn;
@@ -98,14 +106,21 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 
     register_type_info (state);
 
-    state->env = r_env_new (state);
-    state->current_input_port = r_stdin_port (state);
-    state->current_output_port = r_stdout_port (state);
-    state->error_jmp = NULL;
+    R_TRY (jmp, state) {
+        state->env = r_env_new (state);
+        state->current_input_port  = r_stdin_port (state);
+        state->current_output_port = r_stdout_port (state);
+        state->current_error_port  = r_stderr_port (state);
 
-    /* Symbol table must be initialized before keywords registration */
-    state->symbol_table = r_symbol_table_new (state);
-    register_keywords (state);
+        /* Symbol table must be initialized before keywords registration */
+        state->symbol_table = r_symbol_table_new (state);
+        register_keywords (state);
+    }
+    R_CATCH {
+        free (state);
+        return NULL;
+    }
+    R_END_TRY (state)
 
     return state;
 }
@@ -127,13 +142,13 @@ rsexp r_keyword (RState* state, ruint index)
     return state->keywords [index];
 }
 
-rchar* r_strdup (RState* state, rchar const* str)
+rcstring r_strdup (RState* state, rconstcstring str)
 {
     rsize  size;
-    rchar* res;
+    rcstring res;
 
     size = strlen (str);
-    res = r_cast (rchar*, r_alloc (state, size + 1));
+    res = r_cast (rcstring, r_alloc (state, size + 1));
     memcpy (res, str, size + 1);
 
     return res;

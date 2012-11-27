@@ -14,10 +14,10 @@ rpointer r_calloc  (RState*  state,
 void     r_free    (RState*  state,
                     rpointer ptr);
 
-#define R_NEW(state, type)\
+#define r_new(state, type)\
         ((type*) r_alloc (state, sizeof (type)))
 
-#define R_NEW0(state, type)\
+#define r_new0(state, type)\
         ((type*) r_calloc (state, sizeof (type), 1u))
 
 #endif  //  __ROSE_MEMORY_H__

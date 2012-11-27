@@ -4,7 +4,6 @@
 #include "rose/memory.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/writer.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -17,7 +16,7 @@ struct RPair {
 #define PAIR_TO_SEXP(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
 #define PAIR_FROM_SEXP(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
 
-typedef void (*ROutputFunction) (rsexp, rsexp);
+typedef void (*ROutputFunc) (RState* state, rsexp, rsexp);
 
 static rsexp reverse_internal (RState* state, rsexp list, rsexp acc)
 {
@@ -28,41 +27,43 @@ static rsexp reverse_internal (RState* state, rsexp list, rsexp acc)
                                r_cons (state, r_car (list), acc));
 }
 
-static void output_cdr (rsexp           port,
-                        rsexp           obj,
-                        ROutputFunction output_fn)
+static void output_cdr (RState*     state,
+                        rsexp       port,
+                        rsexp       obj,
+                        ROutputFunc output_fn)
 {
     if (r_pair_p (obj)) {
         r_port_puts (port, " ");
-        output_fn (port, r_car (obj));
-        output_cdr (port, r_cdr (obj), output_fn);
+        output_fn (state, port, r_car (obj));
+        output_cdr (state, port, r_cdr (obj), output_fn);
     }
     else if (!r_null_p (obj)) {
         r_port_puts (port, " . ");
-        output_fn (port, obj);
+        output_fn (state, port, obj);
     }
 }
 
-static void output_pair (rsexp           port,
-                         rsexp           obj,
-                         ROutputFunction output_fn)
+static void output_pair (RState*     state,
+                         rsexp       port,
+                         rsexp       obj,
+                         ROutputFunc output_fn)
 {
     assert (r_pair_p (obj));
 
     r_port_puts (port, "(");
-    output_fn (port, r_car (obj));
-    output_cdr (port, r_cdr (obj), output_fn);
+    output_fn (state, port, r_car (obj));
+    output_cdr (state, port, r_cdr (obj), output_fn);
     r_port_puts (port, ")");
 }
 
-static void write_pair (rsexp port, rsexp obj)
+static void write_pair (RState* state, rsexp port, rsexp obj)
 {
-    output_pair (port, obj, r_write);
+    output_pair (state, port, obj, r_port_write);
 }
 
-static void display_pair (rsexp port, rsexp obj)
+static void display_pair (RState* state, rsexp port, rsexp obj)
 {
-    output_pair (port, obj, r_display);
+    output_pair (state, port, obj, r_port_display);
 }
 
 static rsexp vlist (RState* state, rsize k, va_list args)
@@ -87,7 +88,7 @@ rsexp r_cons (RState* state, rsexp car, rsexp cdr)
 {
     RPair* pair;
 
-    pair = R_NEW (state, RPair);
+    pair = r_new (state, RPair);
     pair->car = car;
     pair->cdr = cdr;
 
@@ -196,7 +197,7 @@ rsexp r_list_ref (rsexp list, rsize k)
 
 RTypeInfo* init_pair_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (RPair);
     type->name         = "pair";

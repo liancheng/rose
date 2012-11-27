@@ -75,9 +75,9 @@ static rbool fix_exactness (RNumberReader* reader,
     return FALSE;
 }
 
-static rsexp i_am_feeling_lucky (char const* text)
+static rsexp i_am_feeling_lucky (rconstcstring text)
 {
-    char* end;
+    rcstring end;
     rint number = strtol (text, &end, 10);
 
     if ('\0' != *end || number > R_SMI_MAX || number < R_SMI_MIN)
@@ -86,7 +86,7 @@ static rsexp i_am_feeling_lucky (char const* text)
     return r_int_to_sexp (number);
 }
 
-static void feed_input (RNumberReader* reader, char const* text)
+static void feed_input (RNumberReader* reader, rconstcstring text)
 {
     reader->begin = text;
     reader->end   = text + strlen (text);
@@ -114,12 +114,12 @@ static rbool eoi_p (RNumberReader* reader)
     return reader->pos == reader->end;
 }
 
-static char const* mark (RNumberReader* reader)
+static rconstcstring mark (RNumberReader* reader)
 {
     return reader->pos;
 }
 
-static rbool reset (RNumberReader* reader, char const* mark)
+static rbool reset (RNumberReader* reader, rconstcstring mark)
 {
     reader->pos = mark;
     return FALSE;
@@ -132,7 +132,7 @@ static rbool reset (RNumberReader* reader, char const* mark)
  */
 static rbool read_radix (RNumberReader* reader)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     if ('#' != next_char (reader))
         return reset (reader, pos);
@@ -154,7 +154,7 @@ static rbool read_radix (RNumberReader* reader)
  */
 static rbool read_exactness (RNumberReader* reader)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     if ('#' != next_char (reader))
         return reset (reader, pos);
@@ -197,7 +197,7 @@ static rbool read_prefix (RNumberReader* reader)
  */
 static rbool read_sign (RNumberReader* reader, rint* sign)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     switch (next_char (reader)) {
         case '+': *sign =  1; return TRUE;
@@ -229,7 +229,7 @@ static rbool read_digit (RNumberReader* reader, ruint* digit)
 
 static rbool read_digits (RNumberReader* reader, mpz_t digits)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     ruint digit;
 
@@ -253,7 +253,7 @@ static rbool read_digits (RNumberReader* reader, mpz_t digits)
  */
 static rbool read_uinteger (RNumberReader* reader, mpz_t uinteger)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     if (!read_digits (reader, uinteger))
         return reset (reader, pos);
@@ -275,7 +275,7 @@ static rbool read_rational (RNumberReader* reader, mpq_t ureal)
     mpz_t denom;
     rbool success;
 
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpz_init_set_ui (numer, 0u);
     mpz_init_set_ui (denom, 1u);
@@ -313,7 +313,7 @@ static rbool read_suffix (RNumberReader* reader, rint* exponent)
 {
     rint sign = 1;
     ruint digit;
-    char const* pos;
+    rconstcstring pos;
 
     pos = mark (reader);
     *exponent = 0;
@@ -350,7 +350,7 @@ static rbool read_decimal_frac (RNumberReader* reader, mpq_t ureal)
     ruint size;
     rbool success;
     rint exponent = 0;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
     mpz_inits (numer, denom, NULL);
@@ -402,7 +402,7 @@ static rbool read_decimal_int_frac (RNumberReader* reader,
     ruint size;
     rbool success;
     rint exponent = 0;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
     mpz_inits (numer, denom, NULL);
@@ -448,7 +448,7 @@ static rbool read_decimal_uint (RNumberReader* reader, mpq_t ureal)
     mpz_t numer;
     rbool success;
     rint exponent = 0;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
     mpz_init (numer);
@@ -484,7 +484,7 @@ clear:
  */
 static rbool read_decimal (RNumberReader* reader, mpq_t ureal)
 {
-    char const* pos;
+    rconstcstring pos;
 
     if (10 != reader->radix)
         return FALSE;
@@ -506,7 +506,7 @@ static rbool read_ureal_uint (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     rbool success;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpz_init (numer);
     mpq_set_ui (ureal, 0u, 1u);
@@ -536,7 +536,7 @@ clear:
  */
 static rbool read_ureal (RNumberReader* reader, mpq_t ureal)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     return read_rational (reader, ureal)
         || read_decimal (reader, ureal)
@@ -552,7 +552,7 @@ static rbool read_ureal (RNumberReader* reader, mpq_t ureal)
 static rbool read_real (RNumberReader* reader, mpq_t real)
 {
     rint sign = 1;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     read_sign (reader, &sign);
 
@@ -577,7 +577,7 @@ static rbool read_polar_complex (RNumberReader* reader,
     mpq_t r;
     mpq_t t;
     rbool success;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_inits (r, t, NULL);
 
@@ -615,7 +615,7 @@ static rbool read_rect_ri (RNumberReader* reader,
 {
     char i;
     rint sign = 1;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     if (!read_real (reader, real))
         return reset (reader, pos);
@@ -648,7 +648,7 @@ static rbool read_rect_i (RNumberReader* reader,
 {
     char i;
     rint sign = 1;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_set_ui (real, 0u, 1u);
 
@@ -678,7 +678,7 @@ static rbool read_rect_r (RNumberReader* reader,
                           mpq_t          real,
                           mpq_t          imag)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     if (!read_real (reader, real))
         return reset (reader, pos);
@@ -699,7 +699,7 @@ static rbool read_rect_complex (RNumberReader* reader,
                                 mpq_t          real,
                                 mpq_t          imag)
 {
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     return read_rect_i (reader, real, imag)
         || read_rect_ri (reader, real, imag)
@@ -719,7 +719,7 @@ static rsexp read_number (RNumberReader* reader)
     double theta;
     mpq_t real;
     mpq_t imag;
-    char const* pos = mark (reader);
+    rconstcstring pos = mark (reader);
 
     mpq_inits (real, imag, NULL);
 
@@ -755,10 +755,10 @@ clear:
  *      : number <EOI>
  *      ;
  */
-rsexp r_number_read (RNumberReader* reader, char const* text)
+rsexp r_number_read (RNumberReader* reader, rconstcstring text)
 {
     rsexp number;
-    char const* pos;
+    rconstcstring pos;
 
     number = i_am_feeling_lucky (text);
 
@@ -782,7 +782,7 @@ rsexp r_number_read (RNumberReader* reader, char const* text)
 
 RNumberReader* r_number_reader_new (RState* state)
 {
-    RNumberReader* reader = R_NEW0 (state, RNumberReader);
+    RNumberReader* reader = r_new0 (state, RNumberReader);
 
     reader->state = state;
 

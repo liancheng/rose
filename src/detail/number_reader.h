@@ -8,19 +8,19 @@
 typedef struct RNumberReader RNumberReader;
 
 struct RNumberReader {
-    RState*     state;
+    RState*       state;
 
-    char const* begin;
-    char const* end;
-    char const* pos;
+    rconstcstring begin;
+    rconstcstring end;
+    rconstcstring pos;
 
-    rtribool    exact;
-    rtribool    decimal;
-    ruint       radix;
+    rtribool      exact;
+    rtribool      decimal;
+    ruint         radix;
 };
 
 RNumberReader*  r_number_reader_new (RState*        state);
 rsexp           r_number_read       (RNumberReader* reader,
-                                     char const*    text);
+                                     rconstcstring  text);
 
 #endif  /* __ROSE_DETAIL_NUMBER_READER_H__ */

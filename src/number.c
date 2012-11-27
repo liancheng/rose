@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <string.h>
 
-static void write_fixnum (rsexp port, rsexp obj)
+static void write_fixnum (RState* state, rsexp port, rsexp obj)
 {
     RFixnum* fixnum = FIXNUM_FROM_SEXP (obj);
     FILE*    stream = PORT_TO_FILE (port);
@@ -27,17 +27,17 @@ static void write_fixnum (rsexp port, rsexp obj)
     }
 }
 
-static void write_flonum (rsexp port, rsexp obj)
+static void write_flonum (RState* state, rsexp port, rsexp obj)
 {
     RFlonum* flonum = FLONUM_FROM_SEXP (obj);
 
-    r_port_printf (port, "%f", flonum->real);
+    r_port_printf (state, port, "%f", flonum->real);
 
     if (flonum->imag != 0.) {
         if (flonum->imag > 0.)
             r_write_char (port, '+');
 
-        r_port_printf (port, "%f", flonum->imag);
+        r_port_printf (state, port, "%f", flonum->imag);
         r_write_char (port, 'i');
     }
 }
@@ -95,8 +95,7 @@ static void destruct_fixnum (RState* state, RObject* obj)
 
 static RFixnum* fixnum_new (RState* state)
 {
-    RObject* obj = r_object_new (state, R_FIXNUM_TAG);
-    RFixnum* fixnum = r_cast (RFixnum*, obj);
+    RFixnum* fixnum = r_object_new (state, RFixnum, R_FIXNUM_TAG);
 
     mpq_inits (fixnum->real, fixnum->imag, NULL);
 
@@ -105,7 +104,7 @@ static RFixnum* fixnum_new (RState* state)
 
 RTypeInfo* init_fixnum_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (RFixnum);
     type->name         = "fixnum";
@@ -121,7 +120,7 @@ RTypeInfo* init_fixnum_type_info (RState* state)
 
 RTypeInfo* init_flonum_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (RFlonum);
     type->name         = "flonum";
@@ -145,7 +144,7 @@ rbool r_flonum_p (rsexp obj)
     return r_type_tag (obj) == R_FLONUM_TAG;
 }
 
-rsexp r_string_to_number (RState* state, rchar const* text)
+rsexp r_string_to_number (RState* state, rconstcstring text)
 {
     return r_number_read (r_number_reader_new (state), text);
 }
@@ -183,8 +182,7 @@ rsexp r_fixnum_normalize (rsexp obj)
 
 rsexp r_flonum_new (RState* state, double real, double imag)
 {
-    RObject* obj = r_object_new (state, R_FLONUM_TAG);
-    RFlonum* flonum = r_cast (RFlonum*, obj);
+    RFlonum* flonum = r_object_new (state, RFlonum, R_FLONUM_TAG);
 
     flonum->real = real;
     flonum->imag = imag;

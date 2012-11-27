@@ -1,7 +1,9 @@
 #include "detail/hash.h"
 #include "detail/sexp.h"
 #include "rose/env.h"
+#include "rose/error.h"
 #include "rose/memory.h"
+#include "rose/error.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 
@@ -26,10 +28,9 @@ static rsexp get_parent_frame (rsexp env)
     return ENV_FROM_SEXP (env)->parent;
 }
 
-static void write_env (rsexp port, rsexp obj)
+static void write_env (RState* state, rsexp port, rsexp obj)
 {
-    RState* state = r_port_get_state (port);
-    r_port_printf (port, "#<%s>", r_type_info (state, obj)->name);
+    r_port_printf (state, port, "#<%s>", r_type_info (state, obj)->name);
 }
 
 static void destruct_env (RState* state, RObject* obj)
@@ -40,7 +41,7 @@ static void destruct_env (RState* state, RObject* obj)
 
 RTypeInfo* init_env_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (REnv);
     type->name         = "environment";
@@ -69,11 +70,13 @@ rbool r_env_p (rsexp obj)
 
 rsexp r_env_new (RState* state)
 {
-    RObject* obj = r_object_new (state, R_ENV_TAG);
-    REnv* res = r_cast (REnv*, obj);
+    REnv* res = r_object_new (state, REnv, R_ENV_TAG);
 
     res->parent = R_UNDEFINED;
     res->bindings = r_hash_table_new (NULL, NULL);
+
+    if (!res->bindings)
+        r_error (state, "Failed");
 
     return ENV_TO_SEXP (res);
 }

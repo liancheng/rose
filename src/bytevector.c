@@ -4,7 +4,6 @@
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/writer.h"
 
 #include <assert.h>
 #include <string.h>
@@ -18,7 +17,7 @@ struct RBytevector {
 #define BYTEVECTOR_FROM_SEXP(obj)   (r_cast (RBytevector*, (obj)))
 #define BYTEVECTOR_TO_SEXP(bytevec) (r_cast (rsexp, (bytevec)))
 
-static void write_bytevector (rsexp port, rsexp obj)
+static void write_bytevector (RState* state, rsexp port, rsexp obj)
 {
     rsize i;
     RBytevector* vec = BYTEVECTOR_FROM_SEXP (obj);
@@ -26,10 +25,10 @@ static void write_bytevector (rsexp port, rsexp obj)
     r_port_puts (port, "#u8(");
 
     if (vec->length > 0u) {
-        r_write (port, r_int_to_sexp (vec->data [0u]));
+        r_port_write (state, port, r_int_to_sexp (vec->data [0u]));
 
         for (i = 1u; i < vec->length; ++i)
-            r_format (port, " ~s", r_int_to_sexp (vec->data [i]));
+            r_port_format (state, port, " ~s", r_int_to_sexp (vec->data [i]));
     }
 
     r_write_char (port, ')');
@@ -42,7 +41,7 @@ static void destruct_bytevector (RState* state, RObject* obj)
 
 RTypeInfo* init_bytevector_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = sizeof (RBytevector);
     type->name         = "bytevector";
@@ -58,8 +57,7 @@ RTypeInfo* init_bytevector_type_info (RState* state)
 
 rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
-    RObject* obj = r_object_new (state, R_BYTEVECTOR_TAG);
-    RBytevector* res = r_cast (RBytevector*, obj);
+    RBytevector* res = r_object_new (state, RBytevector, R_BYTEVECTOR_TAG);
 
     res->length = k;
     res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;

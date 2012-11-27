@@ -1,19 +1,20 @@
 #include "detail/state.h"
 #include "detail/sexp.h"
+#include "rose/error.h"
 #include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/port.h"
 
 #include <gc/gc.h>
 
-static void write_bool (rsexp port, rsexp obj)
+static void write_bool (RState* state, rsexp port, rsexp obj)
 {
     r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
 }
 
-static void write_special_const (rsexp port, rsexp obj)
+static void write_special_const (RState* state, rsexp port, rsexp obj)
 {
-    static char* str[] = {
+    static rconstcstring str[] = {
         "()",
         "#<eof>",
         "#<undefined>",
@@ -23,20 +24,20 @@ static void write_special_const (rsexp port, rsexp obj)
     r_port_puts (port, str [obj >> R_TAG_BITS]);
 }
 
-static void display_special_const (rsexp port, rsexp obj)
+static void display_special_const (RState* state, rsexp port, rsexp obj)
 {
     r_port_puts (port, r_null_p (obj) ? "()" : "");
 }
 
-static void write_smi (rsexp port, rsexp obj)
+static void write_smi (RState* state, rsexp port, rsexp obj)
 {
-    r_port_printf (port, "%d", r_int_from_sexp (obj));
+    r_port_printf (state, port, "%d", r_int_from_sexp (obj));
 }
 
-static void write_char (rsexp port, rsexp obj)
+static void write_char (RState* state, rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
-    char* name = NULL;
+    rcstring name = NULL;
 
     switch (ch) {
         case ' ':    name = "space";     break;
@@ -58,14 +59,14 @@ static void write_char (rsexp port, rsexp obj)
         r_write_char (port, ch);
 }
 
-static void display_char (rsexp port, rsexp obj)
+static void display_char (RState* state, rsexp port, rsexp obj)
 {
     r_write_char (port, r_char_from_sexp (obj));
 }
 
 RTypeInfo* init_bool_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = 0;
     type->name         = "boolean";
@@ -80,7 +81,7 @@ RTypeInfo* init_bool_type_info (RState* state)
 
 RTypeInfo* init_char_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = 0;
     type->name         = "character";
@@ -95,7 +96,7 @@ RTypeInfo* init_char_type_info (RState* state)
 
 RTypeInfo* init_smi_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = 0;
     type->name         = "small-integer";
@@ -110,7 +111,7 @@ RTypeInfo* init_smi_type_info (RState* state)
 
 RTypeInfo* init_special_const_type_info (RState* state)
 {
-    RTypeInfo* type = R_NEW0 (state, RTypeInfo);
+    RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = 0;
     type->name         = "special-const";
@@ -146,14 +147,14 @@ static void finalize_object (rpointer obj, rpointer client_data)
     destruct (state, obj);
 }
 
-RObject* r_object_new (RState* state, RTypeTag type_tag)
+RObject* r_object_alloc (RState* state, RTypeTag type_tag)
 {
     RTypeInfo* type_info = state->types [type_tag];
     RObject* obj = r_alloc (state, type_info->size);
 
     if (obj == NULL) {
         // TODO trigger GC
-        return NULL;
+        r_error (state, "Out of memory");
     }
 
     obj->type_info = type_info;

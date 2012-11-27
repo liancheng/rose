@@ -6,39 +6,36 @@
 #include <stdio.h>
 #include <stdint.h>
 
-enum {
-    INPUT_PORT,
-    OUTPUT_PORT
-};
-
-typedef rint (*RPortReadFunction)  (rpointer, rbyte*, rsize);
-typedef rint (*RPortWriteFunction) (rpointer, rbyte*, rsize);
-typedef rint (*RPortSeekFunction)  (rpointer, rint64, rint);
-typedef rint (*RPortCloseFunction) (rpointer);
-
-typedef struct RPortIOFunctions {
-    RPortReadFunction  read;
-    RPortWriteFunction write;
-    RPortSeekFunction  seek;
-    RPortCloseFunction close;
+typedef enum RPortMode {
+    MODE_INPUT      = 0x01,
+    MODE_OUTPUT     = 0x02,
+    MODE_BINARY     = 0x04,
+    MODE_DONT_CLOSE = 0x08,
+    MODE_CLOSED     = 0x10,
+    MODE_FOLD_CASE  = 0x20,
+    MODE_STRING_IO  = 0x40
 }
-RPortIOFunctions;
+RPortMode;
+
+typedef void (*RPortClearFunc) (RState*, rpointer);
+typedef void (*RPortMarkFunc)  (RState*, rpointer);
 
 struct RPort {
     R_OBJECT_HEADER
-    RState*          state;
-    rint             mode;
-    rsexp            name;
-    rbool            closed;
-    rbool            fold_case;
-    RPortIOFunctions io;
-    rpointer         cookie;
-    FILE*            stream;
+
+    RState*        state;
+    FILE*          stream;
+    rsexp          name;
+    RPortMode      mode;
+
+    rpointer       cookie;
+    RPortClearFunc clear;
+    RPortMarkFunc  mark;
 };
 
-#define PORT_FROM_SEXP(obj) ((RPort*) (obj))
-#define PORT_TO_SEXP(port)  ((rsexp) (port))
-#define PORT_TO_FILE(obj)   ((FILE*) (PORT_FROM_SEXP (obj)->stream))
+#define PORT_FROM_SEXP(obj) (r_cast (RPort*, (obj)))
+#define PORT_TO_SEXP(port)  (r_cast (rsexp, (port)))
+#define PORT_TO_FILE(obj)   (r_cast (FILE*, (PORT_FROM_SEXP (obj)->stream)))
 
 RTypeInfo* init_port_type_info (RState* state);
 

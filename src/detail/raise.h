@@ -23,6 +23,4 @@ struct RNestedJump {
 #define R_END_TRY(state)\
         (state)->error_jmp = jmp.previous;
 
-#define R_RAISE(state)  longjmp (state->error_jmp->buf, 1)
-
 #endif  /* __ROSE_DETAIL_RAISE_H__ */

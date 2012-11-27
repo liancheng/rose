@@ -8,25 +8,43 @@
 #define TRUE    (!FALSE)
 #define UNKNOWN (-1)
 
-typedef char         rchar;
-typedef int16_t      rint16;
-typedef int32_t      rint32;
-typedef int64_t      rint64;
-typedef int8_t       rint8;
-typedef int          rbool;
-typedef int          rint;
-typedef int          rtribool;
-typedef size_t       rsize;
-typedef uint16_t     ruint16;
-typedef uint32_t     ruint32;
-typedef uint32_t     runichar;
-typedef uint64_t     ruint64;
-typedef uint8_t      rbyte;
-typedef uint8_t      ruint8;
-typedef uintptr_t    rword;
-typedef unsigned int ruint;
-typedef void const*  rconstpointer;
-typedef void*        rpointer;
+typedef int             rint;
+typedef unsigned int    ruint;
+
+typedef int8_t          rbyte;
+typedef uint8_t         rubyte;
+
+typedef int8_t          rint8;
+typedef uint8_t         ruint8;
+
+typedef int16_t         rint16;
+typedef uint16_t        ruint16;
+
+typedef int32_t         rint32;
+typedef uint32_t        ruint32;
+
+typedef int64_t         rint64;
+typedef uint64_t        ruint64;
+
+typedef void const*     rconstpointer;
+typedef void*           rpointer;
+
+typedef char            rchar;
+typedef uint32_t        runichar;
+
+typedef rchar*          rcstring;
+typedef rchar const*    rconstcstring;
+
+typedef runichar*       runistring;
+typedef runichar const* rconstunistring;
+
+typedef int             rbool;
+typedef int             rtribool;
+typedef uintptr_t       rword;
+typedef off_t           roffset;
+typedef off64_t         roffset64;
+typedef size_t          rsize;
+typedef ssize_t         rssize;
 
 #define r_cast(to, from) ((to) (from))
 

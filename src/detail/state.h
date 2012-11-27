@@ -41,16 +41,20 @@ struct RState {
     rsexp         env;
     rsexp         current_input_port;
     rsexp         current_output_port;
-    RNestedJump*  error_jmp;
+    rsexp         current_error_port;
     rsexp         keywords [R_KEYWORD_COUNT];
+
+    /* Error handling */
+    rsexp         error;
+    RNestedJump*  error_jmp;
 
     /* Type information */
     RTypeInfo*    types [R_TAG_MAX];
 };
 
-rsexp  r_keyword (RState*      state,
-                  ruint        index);
-rchar* r_strdup  (RState*      state,
-                  rchar const* str);
+rsexp    r_keyword (RState*       state,
+                    ruint         index);
+rcstring r_strdup  (RState*       state,
+                    rconstcstring str);
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */

@@ -6,32 +6,32 @@
 #include <limits.h>
 #include <gmp.h>
 
-rsexp r_string_to_number    (RState*      state,
-                             rchar const* text);
-rsexp r_flonum_new          (RState*      state,
-                             double       real,
-                             double       imag);
-rbool r_flonum_p            (rsexp        obj);
-void  r_flonum_set_real_x   (rsexp        obj,
-                             double       real);
-void  r_flonum_set_imag_x   (rsexp        obj,
-                             double       imag);
-rsexp r_fixnum_new          (RState*      state,
-                             mpq_t        real,
-                             mpq_t        imag);
-rsexp r_fixreal_new         (RState*      state,
-                             mpq_t        real);
-rsexp r_fixnum_normalize    (rsexp        obj);
-rbool r_fixnum_p            (rsexp        obj);
-void  r_fixnum_set_real_x   (rsexp        obj,
-                             mpq_t        real);
-void  r_fixnum_set_imag_x   (rsexp        obj,
-                             mpq_t        imag);
-rsexp r_int_to_sexp         (rint         n);
-rint  r_int_from_sexp       (rsexp        obj);
-rbool r_byte_p              (rsexp        obj);
-rbool r_number_p            (rsexp        obj);
-rbool r_exact_p             (rsexp        obj);
+rsexp r_string_to_number    (RState*       state,
+                             rconstcstring text);
+rsexp r_flonum_new          (RState*       state,
+                             double        real,
+                             double        imag);
+rbool r_flonum_p            (rsexp         obj);
+void  r_flonum_set_real_x   (rsexp         obj,
+                             double        real);
+void  r_flonum_set_imag_x   (rsexp         obj,
+                             double        imag);
+rsexp r_fixnum_new          (RState*       state,
+                             mpq_t         real,
+                             mpq_t         imag);
+rsexp r_fixreal_new         (RState*       state,
+                             mpq_t         real);
+rsexp r_fixnum_normalize    (rsexp         obj);
+rbool r_fixnum_p            (rsexp         obj);
+void  r_fixnum_set_real_x   (rsexp         obj,
+                             mpq_t         real);
+void  r_fixnum_set_imag_x   (rsexp         obj,
+                             mpq_t         imag);
+rsexp r_int_to_sexp         (rint          n);
+rint  r_int_from_sexp       (rsexp         obj);
+rbool r_byte_p              (rsexp         obj);
+rbool r_number_p            (rsexp         obj);
+rbool r_exact_p             (rsexp         obj);
 
 #define R_ZERO              r_int_to_sexp (0)
 #define R_ONE               r_int_to_sexp (1)
