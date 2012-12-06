@@ -32,29 +32,33 @@ typedef enum {
 RKeyword;
 
 struct RState {
-    /* Memory allocation function */
-    RAllocFunc    alloc_fn;
-    rpointer      alloc_aux;
-
-    /* Runtime data */
-    RSymbolTable* symbol_table;
-    rsexp         env;
-    rsexp         current_input_port;
-    rsexp         current_output_port;
-    rsexp         current_error_port;
-    rsexp         keywords [R_KEYWORD_COUNT];
+    /* Memory management */
+    RObject*     gc_list;
 
     /* Error handling */
-    rsexp         error;
-    RNestedJump*  error_jmp;
+    rsexp        last_error;
+    RNestedJump* error_jmp;
+
+    /* Memory allocation function */
+    RAllocFunc   alloc_fn;
+    rpointer     alloc_aux;
+
+    /* Runtime data */
+    rsexp        current_input_port;
+    rsexp        current_output_port;
+    rsexp        current_error_port;
+    rsexp        keywords [R_KEYWORD_COUNT];
 
     /* Type information */
-    RTypeInfo*    types [R_TAG_MAX];
+    RTypeInfo*    builtin_types [R_TAG_MAX];
 };
 
-rsexp    r_keyword (RState*       state,
-                    ruint         index);
-rcstring r_strdup  (RState*       state,
-                    rconstcstring str);
+rpointer default_alloc_fn (rpointer      aux,
+                           rpointer      ptr,
+                           rsize         size);
+rsexp    keyword          (RState*       state,
+                           ruint         index);
+rcstring cstring_dup      (RState*       state,
+                           rconstcstring str);
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */

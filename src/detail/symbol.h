@@ -2,7 +2,8 @@
 #define __ROSE_DETAIL_SYMBOL_H__
 
 #include "detail/sexp.h"
+#include "rose/symbol.h"
 
-RTypeInfo* init_symbol_type_info (RState* state);
+void init_symbol_type_info (RState* state);
 
 #endif  //  __ROSE_DETAIL_SYMBOL_H__

@@ -3,6 +3,6 @@
 
 #include "detail/sexp.h"
 
-RTypeInfo* init_bytevector_type_info (RState* state);
+void init_bytevector_type_info (RState* state);
 
 #endif  //  __ROSE_DETAIL_BYTEVECTOR_H__

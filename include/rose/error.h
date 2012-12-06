@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+#define R_ERROR_OOM (__R_SPECIAL_CONST (4))
+
 typedef struct RError RError;
 
 rsexp r_error_new             (RState*       state,

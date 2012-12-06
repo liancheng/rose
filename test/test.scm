@@ -48,3 +48,5 @@
 #\delete
 #\return
 #\escape
+
+; vim:ft=racket

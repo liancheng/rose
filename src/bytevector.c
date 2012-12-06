@@ -1,4 +1,5 @@
 #include "detail/sexp.h"
+#include "detail/state.h"
 #include "rose/bytevector.h"
 #include "rose/memory.h"
 #include "rose/number.h"
@@ -14,21 +15,23 @@ struct RBytevector {
     rbyte* data;
 };
 
-#define BYTEVECTOR_FROM_SEXP(obj)   (r_cast (RBytevector*, (obj)))
-#define BYTEVECTOR_TO_SEXP(bytevec) (r_cast (rsexp, (bytevec)))
+#define bytevector_from_sexp(obj)   (r_cast (RBytevector*, (obj)))
+#define bytevector_to_sexp(bytevec) (r_cast (rsexp, (bytevec)))
 
 static void write_bytevector (RState* state, rsexp port, rsexp obj)
 {
+    rsize length = r_bytevector_length (obj);
     rsize i;
-    RBytevector* vec = BYTEVECTOR_FROM_SEXP (obj);
 
     r_port_puts (port, "#u8(");
 
-    if (vec->length > 0u) {
-        r_port_write (state, port, r_int_to_sexp (vec->data [0u]));
+    if (length > 0u) {
+        r_port_write (state, port, r_bytevector_u8_ref (obj, 0u));
 
-        for (i = 1u; i < vec->length; ++i)
-            r_port_format (state, port, " ~s", r_int_to_sexp (vec->data [i]));
+        for (i = 1u; i < length; ++i) {
+            r_port_write (state, port, r_bytevector_u8_ref (obj, i));
+            r_write_char (port, '\n');
+        }
     }
 
     r_write_char (port, ')');
@@ -39,7 +42,7 @@ static void destruct_bytevector (RState* state, RObject* obj)
     r_free (state, r_cast (RBytevector*, obj)->data);
 }
 
-RTypeInfo* init_bytevector_type_info (RState* state)
+void init_bytevector_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
@@ -52,12 +55,15 @@ RTypeInfo* init_bytevector_type_info (RState* state)
     type->ops.mark     = NULL;
     type->ops.destruct = destruct_bytevector;
 
-    return type;
+    state->builtin_types [R_BYTEVECTOR_TAG] = type;
 }
 
 rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
     RBytevector* res = r_object_new (state, RBytevector, R_BYTEVECTOR_TAG);
+
+    if (!res)
+        return R_FALSE;
 
     res->length = k;
     res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;
@@ -65,7 +71,7 @@ rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
     while (k--)
         res->data [k] = fill;
 
-    return BYTEVECTOR_TO_SEXP (res);
+    return bytevector_to_sexp (res);
 }
 
 rbool r_bytevector_p (rsexp obj)
@@ -75,24 +81,21 @@ rbool r_bytevector_p (rsexp obj)
 
 rsize r_bytevector_length (rsexp obj)
 {
-    assert (r_bytevector_p (obj));
-    return BYTEVECTOR_FROM_SEXP (obj)->length;
+    return bytevector_from_sexp (obj)->length;
 }
 
-rbyte r_bytevector_ref (rsexp obj, rsize k)
+rbyte r_bytevector_u8_ref (rsexp obj, rsize k)
 {
     assert (r_bytevector_p (obj));
     assert (r_bytevector_length (obj) > k);
-    return BYTEVECTOR_FROM_SEXP (obj)->data [k];
+    return bytevector_from_sexp (obj)->data [k];
 }
 
-rsexp r_bytevector_set_x (rsexp obj, rsize k, rbyte byte)
+rsexp r_bytevector_u8_set_x (rsexp obj, rsize k, rbyte byte)
 {
     assert (r_bytevector_p (obj));
     assert (r_bytevector_length (obj) > k);
-
-    BYTEVECTOR_FROM_SEXP (obj)->data [k] = byte;
-
+    bytevector_from_sexp (obj)->data [k] = byte;
     return R_UNSPECIFIED;
 }
 
@@ -105,7 +108,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     for (k = 0; k < length; ++k) {
         byte = r_cast (rbyte, r_int_from_sexp (r_car (list)));
-        r_bytevector_set_x (res, k, byte);
+        r_bytevector_u8_set_x (res, k, byte);
         list = r_cdr (list);
     }
 
@@ -114,17 +117,11 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
 rbool r_bytevector_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
-    RBytevector* lhs_bv;
-    RBytevector* rhs_bv;
-
     if (!r_bytevector_p (lhs) || !r_bytevector_p (rhs))
         return FALSE;
 
-    lhs_bv = BYTEVECTOR_FROM_SEXP (lhs);
-    rhs_bv = BYTEVECTOR_FROM_SEXP (rhs);
-
-    return lhs_bv->length == rhs_bv->length
-        && 0 == memcmp (lhs_bv->data,
-                        rhs_bv->data,
-                        lhs_bv->length * sizeof (rbyte));
+    return r_bytevector_length (lhs) == r_bytevector_length (rhs)
+        && 0 == memcmp (bytevector_from_sexp (lhs)->data,
+                        bytevector_from_sexp (rhs)->data,
+                        r_bytevector_length (lhs) * sizeof (rbyte));
 }

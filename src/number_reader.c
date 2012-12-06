@@ -766,9 +766,7 @@ rsexp r_number_read (RNumberReader* reader, rconstcstring text)
         return number;
 
     feed_input (reader, text);
-
     pos = mark (reader);
-
     number = read_number (reader);
 
     if (r_false_p (number))
@@ -780,10 +778,8 @@ rsexp r_number_read (RNumberReader* reader, rconstcstring text)
     return number;
 }
 
-RNumberReader* r_number_reader_new (RState* state)
+void r_number_reader_init (RState* state, RNumberReader* reader)
 {
-    RNumberReader* reader = r_new0 (state, RNumberReader);
-
     reader->state = state;
 
     reader->begin = NULL;
@@ -793,6 +789,4 @@ RNumberReader* r_number_reader_new (RState* state)
     reader->exact   = UNKNOWN;
     reader->decimal = UNKNOWN;
     reader->radix   = 10u;
-
-    return reader;
 }

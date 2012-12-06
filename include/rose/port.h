@@ -3,6 +3,8 @@
 
 #include "rose/sexp.h"
 
+#include <stdarg.h>
+
 typedef struct RPort RPort;
 
 RState*  r_port_get_state            (rsexp         port);
@@ -12,6 +14,9 @@ rsexp    r_open_output_file          (RState*       state,
                                       rconstcstring filename);
 rsexp    r_open_input_string         (RState*       state,
                                       rsexp         string);
+rsexp    r_open_output_string        (RState*       state);
+rsexp    r_get_output_string         (RState*       state,
+                                      rsexp         port);
 rsexp    r_stdin_port                (RState*       state);
 rsexp    r_stdout_port               (RState*       state);
 rsexp    r_stderr_port               (RState*       state);
@@ -21,8 +26,10 @@ rbool    r_eof_p                     (rsexp         port);
 rbool    r_port_p                    (rsexp         obj);
 rbool    r_input_port_p              (rsexp         obj);
 rbool    r_output_port_p             (rsexp         obj);
-rint     r_port_printf               (RState*       state,
-                                      rsexp         port,
+rint     r_port_vprintf              (rsexp         port,
+                                      rconstcstring format,
+                                      va_list       args);
+rint     r_port_printf               (rsexp         port,
                                       rconstcstring format,
                                       ...);
 rcstring r_port_gets                 (rsexp         port,
@@ -33,6 +40,10 @@ rint     r_port_puts                 (rsexp         port,
 rchar    r_read_char                 (rsexp         port);
 void     r_write_char                (rsexp         port,
                                       rchar         ch);
+void     r_port_vformat              (RState*       state,
+                                      rsexp         port,
+                                      rconstcstring format,
+                                      va_list       args);
 void     r_port_format               (RState*       state,
                                       rsexp         port,
                                       rconstcstring format,

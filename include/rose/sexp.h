@@ -1,7 +1,6 @@
 #ifndef __ROSE_SEXP_H__
 #define __ROSE_SEXP_H__
 
-#include "rose/state.h"
 #include "rose/types.h"
 
 typedef rword rsexp;
@@ -25,7 +24,7 @@ typedef rword rsexp;
  *
  * Immediate types:
  *
- * - \c #b001: boolean
+ * - \c #b001: inline error
  * - \c #b010: character (see below)
  * - \c #b011: even small integer (SMI)
  * - \c #b101: special constant (see below)
@@ -37,23 +36,43 @@ typedef rword rsexp;
  * - Immediate type:
  *
  *   All types whose value can fit into one \c sexp (a single machine word).
- *   Their type tag are none-zero.  Immediate types include: boolean, character,
- *   small integer, special constant and symbol.
+ *   Their type tag are none-zero.  Immediate types include:
+ *
+ *   - inline error
+ *   - character
+ *   - small integer
+ *   - special constant
+ *   - symbol
  *
  * - Boxed type:
  *
- *   All types that are allocated on heap, except pair.  Their type tag is zero,
- *   which means the \c sexp is exactly the pointer to those heap allocated
- *   objects.
+ *   All types that are allocated on heap, except pair.  Their type tags are
+ *   zero, which means the \c sexp is exactly the pointer to those heap
+ *   allocated objects.  Boxed types include:
+ *
+ *   - string
+ *   - vector
+ *   - bytevector
+ *   - procedure
+ *   - continuation
+ *   - environment
+ *   - port
+ *   - error object
+ *   - fixnum
+ *   - flonum
  *
  * - Tagged type:
  *
  *   All types whose type tag is none-zero, i.e. immediate types and pair.
+ *
+ * - Non-immediate type:
+ *
+ *   All types that are not immediate type, i.e., all boxed types plus pair.
  */
 
 typedef enum {
     /* Tagged types */
-    R_BOOL_TAG          = 0x01,     /* #b001 */
+    R_INLINE_ERROR_TAG  = 0x01,     /* #b001 */
     R_CHAR_TAG          = 0x02,     /* #b010 */
     R_PAIR_TAG          = 0x04,     /* #b100 */
     R_SPECIAL_CONST_TAG = 0x05,     /* #b101 */
@@ -87,29 +106,27 @@ RTypeTag;
 #define R_TAG_MASK              0x07    /* #b111 */
 #define R_SMI_MASK              0x03    /* #b011 */
 
-#define __R_BOOL(b)             (((b) << R_TAG_BITS) | R_BOOL_TAG)
-#define R_FALSE                 (__R_BOOL (0))
-#define R_TRUE                  (__R_BOOL (1))
-
 #define __R_SPECIAL_CONST(n)    ((((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG))
-#define R_NULL                  (__R_SPECIAL_CONST (0))
-#define R_EOF                   (__R_SPECIAL_CONST (1))
-#define R_UNSPECIFIED           (__R_SPECIAL_CONST (2))
-#define R_UNDEFINED             (__R_SPECIAL_CONST (3))
+#define R_FALSE                 (__R_SPECIAL_CONST (0))
+#define R_TRUE                  (__R_SPECIAL_CONST (1))
+#define R_NULL                  (__R_SPECIAL_CONST (2))
+#define R_EOF                   (__R_SPECIAL_CONST (3))
+#define R_UNSPECIFIED           (__R_SPECIAL_CONST (4))
+#define R_UNDEFINED             (__R_SPECIAL_CONST (5))
 
-#define R_GET_TAG(obj)          ((obj) & R_TAG_MASK)
+#define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
-#define r_boxed_p(obj)          (R_GET_TAG (obj) == R_BOXED_TAG)
-#define r_pair_p(obj)           (R_GET_TAG (obj) == R_PAIR_TAG)
+#define r_boxed_p(obj)          (r_get_tag (obj) == R_BOXED_TAG)
+#define r_pair_p(obj)           (r_get_tag (obj) == R_PAIR_TAG)
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
 #define r_tagged_p(obj)         (!(r_boxed_p (obj)))
 
-#define r_bool_p(obj)           (R_GET_TAG (obj) == R_BOOL_TAG)
+#define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
 #define r_true_p(obj)           (!r_false_p (obj))
 
-#define r_char_p(obj)           (R_GET_TAG (obj) == R_CHAR_TAG)
-#define r_special_const_p(obj)  (R_GET_TAG (obj) == R_SPECIAL_CONST_TAG)
+#define r_char_p(obj)           (r_get_tag (obj) == R_CHAR_TAG)
+#define r_special_const_p(obj)  (r_get_tag (obj) == R_SPECIAL_CONST_TAG)
 #define r_null_p(obj)           ((obj) == R_NULL)
 #define r_eof_object_p(obj)     ((obj) == R_EOF)
 #define r_unspecified_p(obj)    ((obj) == R_UNSPECIFIED)

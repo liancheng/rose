@@ -19,11 +19,13 @@ rsexp r_set_cdr_x    (rsexp   pair,
 rbool r_pair_equal_p (RState* state,
                       rsexp   lhs,
                       rsexp   rhs);
-rsexp r_reverse      (RState* state,
-                      rsexp   list);
+rsexp r_reverse      (rsexp   list);
 rsexp r_append_x     (rsexp   list,
                       rsexp   value);
 rbool r_list_p       (rsexp   obj);
+rsexp r_vlist        (RState* state,
+                      rsize   k,
+                      va_list args);
 rsexp r_list         (RState* state,
                       rsize   k,
                       ...);

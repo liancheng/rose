@@ -16,4 +16,18 @@ rbool         r_string_equal_p    (RState*       state,
 rint          r_string_byte_count (rsexp         obj);
 rint          r_string_length     (rsexp         obj);
 
+rsexp         r_string_format     (RState*       state,
+                                   rconstcstring format,
+                                   ...);
+rsexp         r_string_vformat    (RState*       state,
+                                   rconstcstring format,
+                                   va_list       args);
+
+rsexp         r_string_printf     (RState*       state,
+                                   rconstcstring format,
+                                   ...);
+rsexp         r_string_vprintf    (RState*       state,
+                                   rconstcstring format,
+                                   va_list       args);
+
 #endif  /* __ROSE_STRING_H__ */

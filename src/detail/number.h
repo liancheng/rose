@@ -19,13 +19,13 @@ typedef struct {
 }
 RFlonum;
 
-#define FIXNUM_TO_SEXP(fixnum)  ((rsexp) (fixnum))
-#define FIXNUM_FROM_SEXP(obj)   ((RFixnum*) (obj))
+#define fixnum_to_sexp(fixnum)  ((rsexp) (fixnum))
+#define fixnum_from_sexp(obj)   ((RFixnum*) (obj))
 
-#define FLONUM_TO_SEXP(flonum)  ((rsexp) (flonum))
-#define FLONUM_FROM_SEXP(obj)   ((RFlonum*) (obj))
+#define flonum_to_sexp(flonum)  ((rsexp) (flonum))
+#define flonum_from_sexp(obj)   ((RFlonum*) (obj))
 
-RTypeInfo* init_fixnum_type_info (RState* state);
-RTypeInfo* init_flonum_type_info (RState* state);
+void init_fixnum_type_info (RState* state);
+void init_flonum_type_info (RState* state);
 
 #endif  /* __ROSE_DETAIL_NUMBER_H__ */

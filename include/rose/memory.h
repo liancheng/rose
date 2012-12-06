@@ -20,4 +20,10 @@ void     r_free    (RState*  state,
 #define r_new0(state, type)\
         ((type*) r_calloc (state, sizeof (type), 1u))
 
+#define r_new_array(state, type, n)\
+        ((type*) r_alloc (state, sizeof (type) * (n)))
+
+#define r_new0_array(state, type, n)\
+        ((type*) r_calloc (state, sizeof (type), (n)))
+
 #endif  //  __ROSE_MEMORY_H__

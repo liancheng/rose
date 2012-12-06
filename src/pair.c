@@ -18,15 +18,6 @@ struct RPair {
 
 typedef void (*ROutputFunc) (RState* state, rsexp, rsexp);
 
-static rsexp reverse_internal (RState* state, rsexp list, rsexp acc)
-{
-    return r_null_p (list)
-           ? acc
-           : reverse_internal (state,
-                               r_cdr (list),
-                               r_cons (state, r_car (list), acc));
-}
-
 static void output_cdr (RState*     state,
                         rsexp       port,
                         rsexp       obj,
@@ -64,16 +55,6 @@ static void write_pair (RState* state, rsexp port, rsexp obj)
 static void display_pair (RState* state, rsexp port, rsexp obj)
 {
     output_pair (state, port, obj, r_port_display);
-}
-
-static rsexp vlist (RState* state, rsize k, va_list args)
-{
-    rsexp res = R_NULL;
-
-    while (k--)
-        res = r_cons (state, va_arg (args, rsexp), res);
-
-    return r_reverse (state, res);
 }
 
 static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
@@ -121,10 +102,24 @@ rsexp r_set_cdr_x (rsexp pair, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-rsexp r_reverse (RState* state, rsexp list)
+rsexp r_reverse (rsexp list)
 {
-    assert (r_null_p (list) || r_pair_p (list));
-    return reverse_internal (state, list, R_NULL);
+    rsexp node;
+    rsexp next;
+    rsexp prev;
+
+    node = list;
+    prev = R_NULL;
+
+    while (!r_null_p (node)) {
+        assert (r_pair_p (node));
+        next = r_cdr (node);
+        r_set_cdr_x (node, prev);
+        prev = node;
+        node = next;
+    }
+
+    return prev;
 }
 
 rsexp r_append_x (rsexp list, rsexp obj)
@@ -165,13 +160,24 @@ rbool r_list_p (rsexp obj)
     return res;
 }
 
+rsexp r_vlist (RState* state, rsize k, va_list args)
+{
+    rsize i;
+    rsexp res = R_NULL;
+
+    for (i = 0; i < k; ++i)
+        res = r_cons (state, va_arg (args, rsexp), res);
+
+    return r_reverse (res);
+}
+
 rsexp r_list (RState* state, rsize k, ...)
 {
     va_list args;
     rsexp   res;
 
     va_start (args, k);
-    res = vlist (state, k, args);
+    res = r_vlist (state, k, args);
     va_end (args);
 
     return res;
@@ -195,7 +201,7 @@ rsexp r_list_ref (rsexp list, rsize k)
     return r_car (list);
 }
 
-RTypeInfo* init_pair_type_info (RState* state)
+void init_pair_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
@@ -208,5 +214,5 @@ RTypeInfo* init_pair_type_info (RState* state)
     type->ops.mark     = NULL;
     type->ops.destruct = NULL;
 
-    return type;
+    state->builtin_types [R_PAIR_TAG] = type;
 }

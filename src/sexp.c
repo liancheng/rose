@@ -7,18 +7,10 @@
 
 #include <gc/gc.h>
 
-static void write_bool (RState* state, rsexp port, rsexp obj)
-{
-    r_port_puts (port, (r_false_p (obj) ? "#f" : "#t"));
-}
-
 static void write_special_const (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
-        "()",
-        "#<eof>",
-        "#<undefined>",
-        "#<unspecified>",
+        "#f", "#t", "()", "#<eof>", "#<undefined>", "#<unspecified>",
     };
 
     r_port_puts (port, str [obj >> R_TAG_BITS]);
@@ -26,12 +18,17 @@ static void write_special_const (RState* state, rsexp port, rsexp obj)
 
 static void display_special_const (RState* state, rsexp port, rsexp obj)
 {
-    r_port_puts (port, r_null_p (obj) ? "()" : "");
+
+    static rconstcstring str[] = {
+        "#f", "#t", "()", "", "", "",
+    };
+
+    r_port_puts (port, str [obj >> R_TAG_BITS]);
 }
 
 static void write_smi (RState* state, rsexp port, rsexp obj)
 {
-    r_port_printf (state, port, "%d", r_int_from_sexp (obj));
+    r_port_printf (port, "%d", r_int_from_sexp (obj));
 }
 
 static void write_char (RState* state, rsexp port, rsexp obj)
@@ -64,22 +61,7 @@ static void display_char (RState* state, rsexp port, rsexp obj)
     r_write_char (port, r_char_from_sexp (obj));
 }
 
-RTypeInfo* init_bool_type_info (RState* state)
-{
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
-
-    type->size         = 0;
-    type->name         = "boolean";
-    type->ops.write    = write_bool;
-    type->ops.display  = write_bool;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.destruct = NULL;
-
-    return type;
-}
-
-RTypeInfo* init_char_type_info (RState* state)
+void init_char_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
@@ -87,14 +69,11 @@ RTypeInfo* init_char_type_info (RState* state)
     type->name         = "character";
     type->ops.write    = write_char;
     type->ops.display  = display_char;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.destruct = NULL;
 
-    return type;
+    state->builtin_types [R_CHAR_TAG] = type;
 }
 
-RTypeInfo* init_smi_type_info (RState* state)
+void init_smi_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
@@ -102,40 +81,35 @@ RTypeInfo* init_smi_type_info (RState* state)
     type->name         = "small-integer";
     type->ops.write    = write_smi;
     type->ops.display  = write_smi;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.destruct = NULL;
 
-    return type;
+    state->builtin_types [R_SMI_EVEN_TAG] = type;
+    state->builtin_types [R_SMI_ODD_TAG ] = type;
 }
 
-RTypeInfo* init_special_const_type_info (RState* state)
+void init_special_const_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
     type->size         = 0;
-    type->name         = "special-const";
+    type->name         = "special-constant";
     type->ops.write    = write_special_const;
     type->ops.display  = display_special_const;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.destruct = NULL;
 
-    return type;
+    state->builtin_types [R_SPECIAL_CONST_TAG] = type;
 }
 
 ruint r_type_tag (rsexp obj)
 {
     return r_boxed_p (obj)
            ? r_cast (RObject*, obj)->type_tag
-           : R_GET_TAG (obj);
+           : r_get_tag (obj);
 }
 
 RTypeInfo* r_type_info (RState* state, rsexp obj)
 {
     return (r_boxed_p (obj))
-           ? R_SEXP_TYPE (obj)
-           : state->types [R_GET_TAG (obj)];
+           ? r_get_type_info (obj)
+           : state->builtin_types [r_get_tag (obj)];
 }
 
 // TODO remove me when the GC mechanism is ready
@@ -149,12 +123,12 @@ static void finalize_object (rpointer obj, rpointer client_data)
 
 RObject* r_object_alloc (RState* state, RTypeTag type_tag)
 {
-    RTypeInfo* type_info = state->types [type_tag];
+    RTypeInfo* type_info = state->builtin_types [type_tag];
     RObject* obj = r_alloc (state, type_info->size);
 
     if (obj == NULL) {
         // TODO trigger GC
-        r_error (state, "Out of memory");
+        return NULL;
     }
 
     obj->type_info = type_info;

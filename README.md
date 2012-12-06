@@ -1,3 +1,7 @@
+# Overview
+
+As the name suggests, ROSE is an Obscure Scheme Evaluator.
+
 # Naming Conventions
 
 These naming conventions are basically borrowed from GLib, with some personal
@@ -38,7 +42,7 @@ Use lowercase, words should be separated by `_`.  For example::
 ### General rule
 
 Function names use lowercase, words should be separated by `_`.  Public
-interface function names must be prefixed with `r_`, while private (static)
+interface function names must be prefixed with `r_`, while private and static
 functions should not.
 
 ### "Object methods"
@@ -71,5 +75,8 @@ There, you see the rule:
 Macro Names
 -----------
 
-Use uppercase, with `_` as word separator.  Macros that appear as public
-interface must be named with the `R_` prefix.
+For constants, use uppercase, with `_` as word separator.
+
+For macros looks like functions, use lowercase, with `_` as word separator.
+
+Macros that appear as public interface must be named with the `R_` or `r_` prefix.

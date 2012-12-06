@@ -5,6 +5,7 @@
 #include "rose/string.h"
 
 #include <assert.h>
+#include <stdarg.h>
 #include <string.h>
 
 struct RString {
@@ -13,8 +14,8 @@ struct RString {
     rcstring data;
 };
 
-#define STRING_FROM_SEXP(obj)   (r_cast (RString*, (obj)))
-#define STRING_TO_SEXP(string)  (r_cast (rsexp, (string)))
+#define string_from_sexp(obj)   (r_cast (RString*, (obj)))
+#define string_to_sexp(string)  (r_cast (rsexp, (string)))
 
 static void write_string (RState* state, rsexp port, rsexp obj)
 {
@@ -22,7 +23,7 @@ static void write_string (RState* state, rsexp port, rsexp obj)
 
     r_write_char (port, '"');
 
-    for (p = STRING_FROM_SEXP (obj)->data; *p; ++p)
+    for (p = string_from_sexp (obj)->data; *p; ++p)
         if ('"' == *p)
             r_port_puts (port, "\\\"");
         else
@@ -33,7 +34,7 @@ static void write_string (RState* state, rsexp port, rsexp obj)
 
 static void display_string (RState* state, rsexp port, rsexp obj)
 {
-    r_port_puts (port, STRING_FROM_SEXP (obj)->data);
+    r_port_puts (port, string_from_sexp (obj)->data);
 }
 
 static void destruct_string (RState* state, RObject* obj)
@@ -42,7 +43,7 @@ static void destruct_string (RState* state, RObject* obj)
     r_free (state, str->data);
 }
 
-RTypeInfo* init_string_type_info (RState* state)
+void init_string_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
 
@@ -55,17 +56,20 @@ RTypeInfo* init_string_type_info (RState* state)
     type->ops.mark     = NULL;
     type->ops.destruct = destruct_string;
 
-    return type;
+    state->builtin_types [R_STRING_TAG] = type;
 }
 
 rsexp r_string_new (RState* state, rconstcstring str)
 {
     RString* res = r_object_new (state, RString, R_STRING_TAG);
 
-    res->length = strlen (str) + 1;
-    res->data = r_strdup (state, str);
+    if (!res)
+        return R_FALSE;
 
-    return STRING_TO_SEXP (res);
+    res->length = strlen (str) + 1;
+    res->data = cstring_dup (state, str);
+
+    return string_to_sexp (res);
 }
 
 rbool r_string_p (rsexp obj)
@@ -75,7 +79,7 @@ rbool r_string_p (rsexp obj)
 
 rconstcstring r_string_to_cstr (rsexp obj)
 {
-    return STRING_FROM_SEXP (obj)->data;
+    return string_from_sexp (obj)->data;
 }
 
 rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
@@ -86,8 +90,8 @@ rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
     if (!r_string_p (lhs) || !r_string_p (rhs))
         return FALSE;
 
-    lhs_str = STRING_FROM_SEXP (lhs);
-    rhs_str = STRING_FROM_SEXP (rhs);
+    lhs_str = string_from_sexp (lhs);
+    rhs_str = string_from_sexp (rhs);
 
     return lhs_str->length == rhs_str->length
         && 0 == memcmp (lhs_str->data,
@@ -98,11 +102,62 @@ rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
 rint r_string_byte_count (rsexp obj)
 {
     assert (r_string_p (obj));
-    return STRING_FROM_SEXP (obj)->length;
+    return string_from_sexp (obj)->length;
 }
 
 rint r_string_length (rsexp obj)
 {
     assert (r_string_p (obj));
-    return STRING_FROM_SEXP (obj)->length;
+    return string_from_sexp (obj)->length;
+}
+
+rsexp r_string_vformat (RState* state, rconstcstring format, va_list args)
+{
+    rsexp port;
+    rsexp res;
+
+    port = r_open_output_string (state);
+    r_port_vformat (state, port, format, args);
+    res = r_get_output_string (state, port);
+
+    return res;
+}
+
+rsexp r_string_format (RState* state, rconstcstring format, ...)
+{
+    va_list args;
+    rsexp   res;
+
+    va_start (args, format);
+    res = r_string_vformat (state, format, args);
+    va_end (args);
+
+    return res;
+}
+
+rsexp r_string_vprintf (RState* state, rconstcstring format, va_list args)
+{
+    rsexp port;
+    rsexp res;
+
+    port = r_open_output_string (state);
+
+    if (r_port_vprintf (port, format, args) < 0)
+        return R_UNSPECIFIED;
+
+    res = r_get_output_string (state, port);
+
+    return res;
+}
+
+rsexp r_string_printf (RState* state, rconstcstring format, ...)
+{
+    va_list args;
+    rsexp   res;
+
+    va_start (args, format);
+    res = r_string_vprintf (state, format, args);
+    va_end (args);
+
+    return res;
 }

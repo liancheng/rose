@@ -19,8 +19,9 @@ struct RNumberReader {
     ruint         radix;
 };
 
-RNumberReader*  r_number_reader_new (RState*        state);
-rsexp           r_number_read       (RNumberReader* reader,
-                                     rconstcstring  text);
+void  r_number_reader_init (RState*        state,
+                            RNumberReader* reader);
+rsexp r_number_read        (RNumberReader* reader,
+                            rconstcstring  text);
 
 #endif  /* __ROSE_DETAIL_NUMBER_READER_H__ */

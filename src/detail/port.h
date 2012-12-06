@@ -2,6 +2,7 @@
 #define __ROSE_DETAIL_PORT_H__
 
 #include "detail/sexp.h"
+#include "rose/port.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -33,10 +34,10 @@ struct RPort {
     RPortMarkFunc  mark;
 };
 
-#define PORT_FROM_SEXP(obj) (r_cast (RPort*, (obj)))
-#define PORT_TO_SEXP(port)  (r_cast (rsexp, (port)))
-#define PORT_TO_FILE(obj)   (r_cast (FILE*, (PORT_FROM_SEXP (obj)->stream)))
+#define port_from_sexp(obj) (r_cast (RPort*, (obj)))
+#define port_to_sexp(port)  (r_cast (rsexp, (port)))
+#define port_to_file(obj)   (port_from_sexp (obj)->stream)
 
-RTypeInfo* init_port_type_info (RState* state);
+void init_port_type_info (RState* state);
 
 #endif  /* __ROSE_DETAIL_PORT_H__ */

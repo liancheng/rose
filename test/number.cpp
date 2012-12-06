@@ -35,4 +35,5 @@ TEST_F (test_number_reader, string_to_number)
 {
     EXPECT_TRUE (r_exact_p (r_string_to_number (state, "#e1e128")));
     EXPECT_TRUE (r_exact_p (r_string_to_number (state, "1/2")));
+    EXPECT_TRUE (r_exact_p (r_string_to_number (state, "#e1.2")));
 }

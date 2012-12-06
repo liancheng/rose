@@ -39,7 +39,7 @@ struct RTypeInfo {
     ops;
 };
 
-#define R_SEXP_TYPE(obj)    (*(RTypeInfo**) (obj))
+#define r_get_type_info(obj)    (*(RTypeInfo**) (obj))
 
 ruint      r_type_tag     (rsexp    obj);
 RTypeInfo* r_type_info    (RState*  state,
@@ -50,9 +50,9 @@ RObject*   r_object_alloc (RState*  state,
 #define r_object_new(state, type, tag)\
         (r_cast (type*, r_object_alloc (state, tag)))
 
-RTypeInfo* init_bool_type_info          (RState* state);
-RTypeInfo* init_char_type_info          (RState* state);
-RTypeInfo* init_special_const_type_info (RState* state);
-RTypeInfo* init_smi_type_info           (RState* state);
+void init_bool_type_info          (RState* state);
+void init_char_type_info          (RState* state);
+void init_special_const_type_info (RState* state);
+void init_smi_type_info           (RState* state);
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

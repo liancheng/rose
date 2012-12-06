@@ -11,6 +11,8 @@ env = Environment(tools=['default', 'quex'],
                            '#build/src/',
                            environ['QUEX_PATH']])
 
+env.MergeFlags("!pkg-config glib-2.0 --cflags --libs")
+
 rose_lib = env.SConscript(dirs='src',
                           exports='env',
                           variant_dir='build/src/')

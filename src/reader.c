@@ -157,7 +157,7 @@ static rsexp read_vector (RState* state, RDatumReader* reader)
 
     consume (reader);
 
-    return r_list_to_vector (state, r_reverse (state, list));
+    return r_list_to_vector (state, r_reverse (list));
 }
 
 static rsexp read_full_list (RState* state, RDatumReader* reader)
@@ -196,7 +196,7 @@ static rsexp read_full_list (RState* state, RDatumReader* reader)
         list = r_cons (state, datum, list);
     }
 
-    list = r_reverse (state, list);
+    list = r_reverse (list);
 
     if (match (reader, TKN_DOT)) {
         record_source_location (reader, &line, &column);
@@ -226,19 +226,19 @@ static rsexp read_abbreviation (RState* state, RDatumReader* reader)
 
     switch (lookahead (reader)->_id) {
         case TKN_QUOTE:
-            prefix = r_keyword (state, R_QUOTE);
+            prefix = keyword (state, R_QUOTE);
             break;
 
         case TKN_BACKTICK:
-            prefix = r_keyword (state, R_QUASIQUOTE);
+            prefix = keyword (state, R_QUASIQUOTE);
             break;
 
         case TKN_COMMA:
-            prefix = r_keyword (state, R_UNQUOTE);
+            prefix = keyword (state, R_UNQUOTE);
             break;
 
         case TKN_COMMA_AT:
-            prefix = r_keyword (state, R_UNQUOTE_SPLICING);
+            prefix = keyword (state, R_UNQUOTE_SPLICING);
             break;
 
         default:
@@ -295,7 +295,7 @@ static rsexp read_bytevector (RState* state, RDatumReader* reader)
     if (!match (reader, TKN_RP))
         return R_UNSPECIFIED;
 
-    return r_list_to_bytevector (state, r_reverse (state, bytes));
+    return r_list_to_bytevector (state, r_reverse (bytes));
 }
 
 static rsexp read_simple_datum (RState* state, RDatumReader* reader)
