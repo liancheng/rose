@@ -4,4 +4,4 @@ cd `dirname $0`
 cd ..
 ROOT=`pwd`
 
-$ROOT/bin/rsi $ROOT/test/test.scm | diff - $ROOT/test/expected.scm
+$ROOT/bin/rsi "$ROOT/test/sample.scm" | diff - "$ROOT/test/expected.scm"
