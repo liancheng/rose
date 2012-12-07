@@ -14,7 +14,8 @@ typedef enum RPortMode {
     MODE_DONT_CLOSE = 0x08,
     MODE_CLOSED     = 0x10,
     MODE_FOLD_CASE  = 0x20,
-    MODE_STRING_IO  = 0x40
+    MODE_STRING_IO  = 0x40,
+    MODE_FLUSH      = 0x80
 }
 RPortMode;
 

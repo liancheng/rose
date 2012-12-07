@@ -2,6 +2,7 @@
 #define __ROSE_PORT_H__
 
 #include "rose/sexp.h"
+#include "rose/state.h"
 
 #include <stdarg.h>
 

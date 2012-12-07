@@ -2,7 +2,6 @@
 #include "detail/port.h"
 #include "rose/error.h"
 #include "rose/memory.h"
-#include "rose/port.h"
 #include "rose/string.h"
 
 #include <assert.h>
@@ -36,7 +35,9 @@ static rsexp make_port (RState*        state,
     port->state  = state;
     port->stream = stream;
     port->mode   = mode;
-    port->cookie = NULL;
+    port->cookie = cookie;
+    port->clear  = clear;
+    port->mark   = mark;
 
     return port_to_sexp (port);
 }
@@ -132,7 +133,7 @@ rsexp r_open_output_string (RState* state)
     ROutStringCookie* cookie;
     FILE* stream;
 
-    cookie = r_new (state, ROutStringCookie);
+    cookie = r_new0 (state, ROutStringCookie);
 
     if (!cookie)
         return R_FALSE;
@@ -146,7 +147,8 @@ rsexp r_open_output_string (RState* state)
     }
 
     return make_port (state, stream, "(output-string-port)",
-                      MODE_OUTPUT | MODE_STRING_IO, r_cast (rpointer, cookie),
+                      MODE_OUTPUT | MODE_STRING_IO | MODE_FLUSH,
+                      r_cast (rpointer, cookie),
                       output_string_port_clear, NULL);
 }
 
@@ -160,7 +162,9 @@ rsexp r_get_output_string (RState* state, rsexp port)
     port_ptr = port_from_sexp (port);
     cookie   = r_cast (ROutStringCookie*, port_ptr->cookie);
 
-    return r_string_new (state, cookie->buffer);
+    return cookie->buffer
+           ? r_string_new (state, cookie->buffer)
+           : r_string_new (state, "");
 }
 
 rsexp r_stdin_port (RState* state)
@@ -223,7 +227,12 @@ rint r_port_vprintf (rsexp         port,
                      rconstcstring format,
                      va_list       args)
 {
-    return vfprintf (port_to_file (port), format, args);
+    rint ret = vfprintf (port_to_file (port), format, args);
+
+    if (mode_set_p (port_from_sexp (port), MODE_FLUSH))
+        fflush (port_to_file (port));
+
+    return ret;
 }
 
 rint r_port_printf (rsexp port, rconstcstring format, ...)
@@ -245,7 +254,12 @@ rcstring r_port_gets (rsexp port, rcstring dest, rint size)
 
 rint r_port_puts (rsexp port, rconstcstring str)
 {
-    return fputs (str, port_to_file (port));
+    rint ret = fputs (str, port_to_file (port));
+
+    if (mode_set_p (port_from_sexp (port), MODE_FLUSH))
+        fflush (port_to_file (port));
+
+    return ret;
 }
 
 rchar r_read_char (rsexp port)
@@ -256,6 +270,9 @@ rchar r_read_char (rsexp port)
 void r_write_char (rsexp port, rchar ch)
 {
     fputc (ch, port_to_file (port));
+
+    if (mode_set_p (port_from_sexp (port), MODE_FLUSH))
+        fflush (port_to_file (port));
 }
 
 void r_port_vformat (RState*       state,
