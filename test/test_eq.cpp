@@ -1,30 +1,14 @@
+#include "utils.hpp"
+
 #include "rose/eq.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 
-#include <gtest/gtest.h>
-
-class test_equivalence : public testing:: Test {
-protected:
-    RState* state;
-
-    virtual void SetUp ()
-    {
-        state = r_state_open ();
-    }
-
-    virtual void TearDown ()
-    {
-        r_state_free (state);
-    }
-
-};
-
-class test_eq_p    : public test_equivalence {};
-class test_eqv_p   : public test_equivalence {};
-class test_equal_p : public test_equivalence {};
+class test_eq_p    : public fixture_base {};
+class test_eqv_p   : public fixture_base {};
+class test_equal_p : public fixture_base {};
 
 TEST_F (test_eq_p, symbol)
 {

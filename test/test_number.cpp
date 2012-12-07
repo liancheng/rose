@@ -1,23 +1,8 @@
-#include "detail/sexp.h"
+#include "utils.hpp"
+
 #include "rose/number.h"
 
-#include <gtest/gtest.h>
-
-class test_number_reader : public testing::Test {
-protected:
-    RState* state;
-
-    virtual void SetUp ()
-    {
-        state = r_state_open ();
-    }
-
-    virtual void TearDown ()
-    {
-        r_state_free (state);
-    }
-
-};
+class test_number_reader : public fixture_base {};
 
 TEST (test_small_int, smi_limit)
 {

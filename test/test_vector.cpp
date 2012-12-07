@@ -31,7 +31,7 @@ TEST_F (test_vector, r_vector_new)
     EXPECT_TRUE (r_equal_p (state, R_TRUE, r_vector_ref (actual, 0)));
 }
 
-TEST_F (test_vector, vector)
+TEST_F (test_vector, r_vector)
 {
     rsexp actual;
 

@@ -1,24 +1,22 @@
+#include "utils.hpp"
+
 #include "rose/eq.h"
 #include "rose/port.h"
-#include "rose/state.h"
 #include "rose/string.h"
 
-#include <gtest/gtest.h>
-
-class test_output_string_port : public testing::Test {
+class test_output_string_port : public fixture_base {
 protected:
     virtual void SetUp ()
     {
-        state = r_state_open ();
+        fixture_base::SetUp ();
         port = r_open_output_string (state);
     }
 
     virtual void TearDown ()
     {
-        r_state_free (state);
+        fixture_base::TearDown ();
     }
 
-    RState* state;
     rsexp port;
 };
 
