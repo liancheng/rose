@@ -4,6 +4,16 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+#   define R_BEGIN_DECLS    extern "C" {
+#   define R_END_DECLS      }
+#else
+#   define R_BEGIN_DECLS
+#   define R_END_DECLS
+#endif
+
+R_BEGIN_DECLS
+
 #define FALSE   0
 #define TRUE    (!FALSE)
 #define UNKNOWN (-1)
@@ -47,5 +57,7 @@ typedef size_t          rsize;
 typedef ssize_t         rssize;
 
 #define r_cast(to, from) ((to) (from))
+
+R_END_DECLS
 
 #endif  /* __ROSE_TYPES_H__ */

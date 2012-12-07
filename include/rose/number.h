@@ -1,10 +1,12 @@
 #ifndef __ROSE_NUMBER_H__
 #define __ROSE_NUMBER_H__
 
+#include "rose/gmp.h"
 #include "rose/sexp.h"
 
 #include <limits.h>
-#include <gmp.h>
+
+R_BEGIN_DECLS
 
 rsexp r_string_to_number    (RState*       state,
                              rconstcstring text);
@@ -41,5 +43,7 @@ rbool r_exact_p             (rsexp         obj);
 
 #define r_inexact_p(obj)    (r_flonum_p (obj))
 #define r_small_int_p(obj)  (((obj) & R_SMI_MASK) == R_SMI_TAG)
+
+R_END_DECLS
 
 #endif  /* __ROSE_NUMBER_H__ */

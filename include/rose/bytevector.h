@@ -3,6 +3,8 @@
 
 #include "rose/sexp.h"
 
+R_BEGIN_DECLS
+
 typedef struct RBytevector RBytevector;
 
 rsexp r_bytevector_new      (RState* state,
@@ -19,5 +21,7 @@ rsexp r_list_to_bytevector  (RState* state,
 rbool r_bytevector_equal_p  (RState* state,
                              rsexp   lhs,
                              rsexp   rhs);
+
+R_END_DECLS
 
 #endif  /* __ROSE_BYTEVECTOR_H__ */

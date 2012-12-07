@@ -3,6 +3,8 @@
 
 #include "rose/state.h"
 
+R_BEGIN_DECLS
+
 rpointer r_alloc   (RState*  state,
                     rsize    size);
 rpointer r_realloc (RState*  state,
@@ -25,5 +27,7 @@ void     r_free    (RState*  state,
 
 #define r_new0_array(state, type, n)\
         ((type*) r_calloc (state, sizeof (type), (n)))
+
+R_END_DECLS
 
 #endif  //  __ROSE_MEMORY_H__

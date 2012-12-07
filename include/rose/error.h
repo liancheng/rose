@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+R_BEGIN_DECLS
+
 #define R_ERROR_OOM (__R_SPECIAL_CONST (4))
 
 typedef struct RError RError;
@@ -20,5 +22,7 @@ void  r_error_set_irritants_x (rsexp         error,
                                rsexp         irritants);
 void  r_error                 (RState*       state,
                                rconstcstring message);
+
+R_END_DECLS
 
 #endif  /* __ROSE_ERROR_H__ */

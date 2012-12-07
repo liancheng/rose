@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+R_BEGIN_DECLS
+
 typedef struct RString RString;
 
 rsexp         r_string_new        (RState*       state,
@@ -29,5 +31,7 @@ rsexp         r_string_printf     (RState*       state,
 rsexp         r_string_vprintf    (RState*       state,
                                    rconstcstring format,
                                    va_list       args);
+
+R_END_DECLS
 
 #endif  /* __ROSE_STRING_H__ */

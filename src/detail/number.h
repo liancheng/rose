@@ -1,8 +1,8 @@
 #ifndef __ROSE_DETAIL_NUMBER_H__
 #define __ROSE_DETAIL_NUMBER_H__
 
-#include "detail/gmp.h"
 #include "detail/sexp.h"
+#include "rose/gmp.h"
 #include "rose/number.h"
 
 typedef struct {

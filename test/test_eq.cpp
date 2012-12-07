@@ -1,14 +1,8 @@
-#include <gmpxx.h>
-
-extern "C" {
-
 #include "rose/eq.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
-
-}
 
 #include <gtest/gtest.h>
 

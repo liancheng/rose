@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/types.h"
 
+R_BEGIN_DECLS
+
 typedef struct RState RState;
 
 typedef rpointer (*RAllocFunc) (rpointer, rpointer, rsize);
@@ -17,5 +19,7 @@ void    r_set_last_error_x (RState*    state,
                             rsexp      error);
 void    r_inherit_errno_x  (RState*    state,
                             rint       errnum);
+
+R_END_DECLS
 
 #endif  /* __ROSE_STATE_H__ */

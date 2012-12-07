@@ -1,11 +1,5 @@
-#include <gmpxx.h>
-
-extern "C" {
-
 #include "detail/sexp.h"
 #include "rose/number.h"
-
-}
 
 #include <gtest/gtest.h>
 

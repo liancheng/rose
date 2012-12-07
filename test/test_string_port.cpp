@@ -1,11 +1,7 @@
-extern "C" {
-
 #include "rose/eq.h"
 #include "rose/port.h"
 #include "rose/state.h"
 #include "rose/string.h"
-
-}
 
 #include <gtest/gtest.h>
 

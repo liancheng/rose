@@ -3,6 +3,8 @@
 
 #include "rose/sexp.h"
 
+R_BEGIN_DECLS
+
 typedef struct RDatumReader RDatumReader;
 
 RDatumReader* r_reader_new         (RState*       state);
@@ -20,5 +22,7 @@ void          r_reader_clear_error (RState*       state,
                                     RDatumReader* reader);
 rsexp         r_read               (RState*       state,
                                     RDatumReader* reader);
+
+R_END_DECLS
 
 #endif  /* __ROSE_READER_H__ */

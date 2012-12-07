@@ -3,6 +3,8 @@
 
 #include "rose/types.h"
 
+R_BEGIN_DECLS
+
 typedef rword rsexp;
 
 /**
@@ -138,5 +140,7 @@ RTypeTag;
 #define r_char_from_sexp(obj)   ((obj) >> R_TAG_BITS)
 
 /** \} */
+
+R_END_DECLS
 
 #endif  /* __ROSE_SEXP_H__ */

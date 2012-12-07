@@ -6,6 +6,8 @@
 
 #include <stdarg.h>
 
+R_BEGIN_DECLS
+
 typedef struct RPort RPort;
 
 RState*  r_port_get_state            (rsexp         port);
@@ -71,5 +73,7 @@ void     r_port_display              (RState*       state,
                                       rsexp         obj);
 void     r_display                   (RState*       state,
                                       rsexp         obj);
+
+R_END_DECLS
 
 #endif  /* __ROSE_PORT_H__ */

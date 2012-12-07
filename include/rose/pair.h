@@ -5,6 +5,8 @@
 
 #include <stdarg.h>
 
+R_BEGIN_DECLS
+
 typedef struct RPair RPair;
 
 rsexp r_cons         (RState* state,
@@ -61,5 +63,7 @@ rsexp r_list_ref     (rsexp   list,
 #define r_cddadr(obj)   r_cdr (r_cdadr (obj))
 #define r_cdddar(obj)   r_cdr (r_cddar (obj))
 #define r_cddddr(obj)   r_cdr (r_cdddr (obj))
+
+R_END_DECLS
 
 #endif  /* __ROSE_PAIR_H__ */
