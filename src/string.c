@@ -66,7 +66,7 @@ rsexp r_string_new (RState* state, rconstcstring str)
     if (!res)
         return R_FALSE;
 
-    res->length = strlen (str) + 1;
+    res->length = strlen (str);
     res->data = cstring_dup (state, str);
 
     return string_to_sexp (res);
