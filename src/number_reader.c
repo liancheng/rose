@@ -780,12 +780,10 @@ rsexp r_number_read (RNumberReader* reader, rconstcstring text)
 
 void r_number_reader_init (RState* state, RNumberReader* reader)
 {
-    reader->state = state;
-
-    reader->begin = NULL;
-    reader->end   = NULL;
-    reader->pos   = NULL;
-
+    reader->state   = state;
+    reader->begin   = NULL;
+    reader->end     = NULL;
+    reader->pos     = NULL;
     reader->exact   = UNKNOWN;
     reader->decimal = UNKNOWN;
     reader->radix   = 10u;

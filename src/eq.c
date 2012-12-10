@@ -15,8 +15,8 @@ rbool r_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 
     return r_eq_p (state, lhs, rhs)
            ? TRUE
-           : pred ? pred (state, lhs, rhs)
-                  : FALSE;
+           : (pred ? pred (state, lhs, rhs)
+                   : FALSE);
 }
 
 rbool r_equal_p (RState* state, rsexp lhs, rsexp rhs)
@@ -29,6 +29,6 @@ rbool r_equal_p (RState* state, rsexp lhs, rsexp rhs)
 
     return r_eqv_p (state, lhs, rhs)
            ? TRUE
-           : pred ? pred (state, lhs, rhs)
-                  : FALSE;
+           : (pred ? pred (state, lhs, rhs)
+                   : FALSE);
 }

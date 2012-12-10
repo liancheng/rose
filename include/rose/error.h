@@ -4,9 +4,10 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
-R_BEGIN_DECLS
+#include <stdarg.h>
+#include <setjmp.h>
 
-#define R_ERROR_OOM (__R_SPECIAL_CONST (4))
+R_BEGIN_DECLS
 
 typedef struct RError RError;
 
@@ -20,8 +21,48 @@ void  r_error_set_message_x   (rsexp         error,
                                rsexp         message);
 void  r_error_set_irritants_x (rsexp         error,
                                rsexp         irritants);
-void  r_error                 (RState*       state,
+rsexp r_error_printf          (RState*       state,
+                               rconstcstring format,
+                               ...);
+rsexp r_error_format          (RState*       state,
+                               rconstcstring format,
+                               ...);
+rsexp r_error                 (RState*       state,
                                rconstcstring message);
+rsexp r_last_error            (RState*       state);
+rsexp r_set_last_error_x      (RState*       state,
+                               rsexp         error);
+rsexp r_clear_last_error_x    (RState*       state);
+rsexp r_inherit_errno_x       (RState*       state,
+                               rint          errnum);
+
+typedef struct RNestedJump RNestedJump;
+
+struct RNestedJump {
+    RNestedJump* previous;
+    jmp_buf      buf;
+};
+
+#define r_try(jmp, state)\
+        (jmp).previous = (state)->error_jmp;\
+        (state)->error_jmp = &(jmp);\
+        if (0 == setjmp ((state)->error_jmp->buf))
+
+#define r_catch else
+
+#define r_end_try(state)\
+        (state)->error_jmp = jmp.previous;
+
+void r_raise (RState* state, rsexp obj);
+
+#define ensure(stmt)\
+        do {\
+            rsexp res = stmt;\
+            if (r_error_p (res)) {\
+                return res;\
+            }\
+        }\
+        while (0)
 
 R_END_DECLS
 

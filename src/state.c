@@ -108,12 +108,6 @@ static void free_builtin_types (RState* state)
             r_free (state, state->builtin_types [i]);
 }
 
-void r_state_free (RState* state)
-{
-    free_builtin_types (state);
-    r_free (state, state);
-}
-
 rsexp keyword (RState* state, ruint index)
 {
     assert (index < R_KEYWORD_COUNT);
@@ -131,22 +125,8 @@ rcstring cstring_dup (RState* state, rconstcstring str)
     return res;
 }
 
-rsexp r_last_error (RState* state)
+void r_state_free (RState* state)
 {
-    return state->last_error;
-}
-
-void r_set_last_error_x (RState* state, rsexp error)
-{
-    state->last_error = error;
-}
-
-void r_inherit_errno_x (RState* state, rint errnum)
-{
-    char buffer [BUFSIZ];
-    strerror_r (errnum, buffer, BUFSIZ);
-    r_set_last_error_x (state,
-                        r_error_new (state,
-                                     r_string_new (state, buffer),
-                                     R_NULL));
+    free_builtin_types (state);
+    r_free (state, state);
 }

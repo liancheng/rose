@@ -7,31 +7,31 @@
 
 #include <gc/gc.h>
 
-static void write_special_const (RState* state, rsexp port, rsexp obj)
+static rsexp write_special_const (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
         "#f", "#t", "()", "#<eof>", "#<undefined>", "#<unspecified>",
     };
 
-    r_port_puts (port, str [obj >> R_TAG_BITS]);
+    return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
 }
 
-static void display_special_const (RState* state, rsexp port, rsexp obj)
+static rsexp display_special_const (RState* state, rsexp port, rsexp obj)
 {
 
     static rconstcstring str[] = {
         "#f", "#t", "()", "", "", "",
     };
 
-    r_port_puts (port, str [obj >> R_TAG_BITS]);
+    return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
 }
 
-static void write_smi (RState* state, rsexp port, rsexp obj)
+static rsexp write_smi (RState* state, rsexp port, rsexp obj)
 {
-    r_port_printf (port, "%d", r_int_from_sexp (obj));
+    return r_port_printf (state, port, "%d", r_int_from_sexp (obj));
 }
 
-static void write_char (RState* state, rsexp port, rsexp obj)
+static rsexp write_char (RState* state, rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
     rcstring name = NULL;
@@ -48,17 +48,19 @@ static void write_char (RState* state, rsexp port, rsexp obj)
         case '\x7f': name = "delete";    break;
     }
 
-    r_port_puts (port, "#\\");
+    ensure (r_port_puts (state, port, "#\\"));
 
     if (name)
-        r_port_puts (port, name);
+        ensure (r_port_puts (state, port, name));
     else
-        r_write_char (port, ch);
+        ensure (r_port_write_char (state, port, ch));
+
+    return R_UNSPECIFIED;
 }
 
-static void display_char (RState* state, rsexp port, rsexp obj)
+static rsexp display_char (RState* state, rsexp port, rsexp obj)
 {
-    r_write_char (port, r_char_from_sexp (obj));
+    return r_port_write_char (state, port, r_char_from_sexp (obj));
 }
 
 void init_char_type_info (RState* state)
@@ -110,32 +112,4 @@ RTypeInfo* r_type_info (RState* state, rsexp obj)
     return (r_boxed_p (obj))
            ? r_get_type_info (obj)
            : state->builtin_types [r_get_tag (obj)];
-}
-
-// TODO remove me when the GC mechanism is ready
-static void finalize_object (rpointer obj, rpointer client_data)
-{
-    RObjDestruct destruct = r_cast (RObject*, obj)->type_info->ops.destruct;
-    RState*      state    = r_cast (RState*, client_data);
-
-    destruct (state, obj);
-}
-
-RObject* r_object_alloc (RState* state, RTypeTag type_tag)
-{
-    RTypeInfo* type_info = state->builtin_types [type_tag];
-    RObject* obj = r_alloc (state, type_info->size);
-
-    if (obj == NULL) {
-        // TODO trigger GC
-        return NULL;
-    }
-
-    obj->type_info = type_info;
-    obj->type_tag = type_tag;
-
-    // TODO remove me when the GC mechanism is ready
-    GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);
-
-    return obj;
 }

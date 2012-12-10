@@ -1,9 +1,12 @@
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/eq.h"
+#include "rose/error.h"
 #include "rose/memory.h"
+#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/string.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -16,45 +19,49 @@ struct RPair {
 #define PAIR_TO_SEXP(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
 #define PAIR_FROM_SEXP(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
 
-typedef void (*ROutputFunc) (RState* state, rsexp, rsexp);
+typedef rsexp (*ROutputFunc) (RState* state, rsexp, rsexp);
 
-static void output_cdr (RState*     state,
-                        rsexp       port,
-                        rsexp       obj,
-                        ROutputFunc output_fn)
-{
-    if (r_pair_p (obj)) {
-        r_port_puts (port, " ");
-        output_fn (state, port, r_car (obj));
-        output_cdr (state, port, r_cdr (obj), output_fn);
-    }
-    else if (!r_null_p (obj)) {
-        r_port_puts (port, " . ");
-        output_fn (state, port, obj);
-    }
-}
-
-static void output_pair (RState*     state,
+static rsexp output_cdr (RState*     state,
                          rsexp       port,
                          rsexp       obj,
                          ROutputFunc output_fn)
 {
+    if (r_pair_p (obj)) {
+        r_port_puts (state, port, " ");
+        ensure (output_fn (state, port, r_car (obj)));
+        ensure (output_cdr (state, port, r_cdr (obj), output_fn));
+    }
+    else if (!r_null_p (obj)) {
+        ensure (r_port_puts (state, port, " . "));
+        ensure (output_fn (state, port, obj));
+    }
+
+    return R_UNSPECIFIED;
+}
+
+static rsexp output_pair (RState*     state,
+                          rsexp       port,
+                          rsexp       obj,
+                          ROutputFunc output_fn)
+{
     assert (r_pair_p (obj));
 
-    r_port_puts (port, "(");
-    output_fn (state, port, r_car (obj));
-    output_cdr (state, port, r_cdr (obj), output_fn);
-    r_port_puts (port, ")");
+    ensure (r_port_puts (state, port, "("));
+    ensure (output_fn (state, port, r_car (obj)));
+    ensure (output_cdr (state, port, r_cdr (obj), output_fn));
+    ensure (r_port_puts (state, port, ")"));
+
+    return R_UNSPECIFIED;
 }
 
-static void write_pair (RState* state, rsexp port, rsexp obj)
+static rsexp write_pair (RState* state, rsexp port, rsexp obj)
 {
-    output_pair (state, port, obj, r_port_write);
+    return output_pair (state, port, obj, r_port_write);
 }
 
-static void display_pair (RState* state, rsexp port, rsexp obj)
+static rsexp display_pair (RState* state, rsexp port, rsexp obj)
 {
-    output_pair (state, port, obj, r_port_display);
+    return output_pair (state, port, obj, r_port_display);
 }
 
 static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
@@ -183,14 +190,18 @@ rsexp r_list (RState* state, rsize k, ...)
     return res;
 }
 
-rsize r_length (rsexp list)
+rsexp r_length (RState* state, rsexp list)
 {
     rsize n;
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
-        ;
+        if (!r_pair_p (list))
+            return r_error_format (state,
+                                   "wrong type argument, "
+                                   "expecting: list, given: ~a",
+                                   list);
 
-    return n;
+    return r_uint_to_sexp (n);
 }
 
 rsexp r_list_ref (rsexp list, rsize k)

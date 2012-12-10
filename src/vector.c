@@ -1,9 +1,12 @@
 #include "detail/sexp.h"
 #include "detail/state.h"
 #include "rose/eq.h"
+#include "rose/error.h"
 #include "rose/memory.h"
+#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/string.h"
 #include "rose/vector.h"
 
 #include <assert.h>
@@ -18,40 +21,41 @@ struct RVector {
 #define vector_from_sexp(obj)   ((RVector*) (obj))
 #define vector_to_sexp(vector)  ((rsexp) (vector))
 
-typedef void (*ROutputFunc) (RState* state, rsexp, rsexp);
+typedef RWriteFunc ROutputFunc;
 
-static void output_vector (RState*     state,
-                           rsexp       port,
-                           rsexp       obj,
-                           ROutputFunc output_fn)
+static rsexp output_vector (RState*     state,
+                            rsexp       port,
+                            rsexp       obj,
+                            ROutputFunc output_fn)
 {
-    assert (r_vector_p (obj));
-
     rsize i;
-    rsize length = r_vector_length (obj);
+    rsize length;
 
-    r_port_puts (port, "#(");
+    length = r_uint_from_sexp (r_vector_length (obj));
+    ensure (r_port_puts (state, port, "#("));
 
     if (length) {
-        output_fn (state, port, r_vector_ref (obj, 0));
+        ensure (output_fn (state, port, r_vector_ref (state, obj, 0)));
 
-        for (i = 1; i < length; ++i) {
-            r_port_puts (port, " ");
-            output_fn (state, port, r_vector_ref (obj, i));
+        for (i = 1u; i < length; ++i) {
+            ensure (r_port_puts (state, port, " "));
+            ensure (output_fn (state, port, r_vector_ref (state, obj, i)));
         }
     }
 
-    r_port_puts (port, ")");
+    ensure (r_port_puts (state, port, ")"));
+
+    return R_UNSPECIFIED;
 }
 
-static void write_vector (RState* state, rsexp port, rsexp obj)
+static rsexp write_vector (RState* state, rsexp port, rsexp obj)
 {
-    output_vector (state, port, obj, r_port_write);
+    return output_vector (state, port, obj, r_port_write);
 }
 
-static void display_vector (RState* state, rsexp port, rsexp obj)
+static rsexp display_vector (RState* state, rsexp port, rsexp obj)
 {
-    output_vector (state, port, obj, r_port_display);
+    return output_vector (state, port, obj, r_port_display);
 }
 
 static void destruct_vector (RState* state, RObject* obj)
@@ -63,10 +67,10 @@ static void destruct_vector (RState* state, RObject* obj)
 static rsexp vvector (RState* state, rsize k, va_list args)
 {
     rsize i;
-    rsexp res = r_vector_new (state, k, R_FALSE);
+    rsexp res = r_vector_new (state, k, R_UNDEFINED);
 
     for (i = 0; i < k; ++i)
-        r_vector_set_x (res, i, va_arg (args, rsexp));
+        r_vector_set_x (state, res, i, va_arg (args, rsexp));
 
     return res;
 }
@@ -98,6 +102,20 @@ static rbool vector_equal_p (RState* state, rsexp lhs, rsexp rhs)
     return TRUE;
 }
 
+static rbool check_index_overflow (RState* state, rsexp vec, rsize k)
+{
+    rsize length = r_uint_from_sexp (r_vector_length (vec));
+
+    if (k < length)
+        return TRUE;
+
+    r_error_printf (state,
+                    "vector index overflow, length: %u, index: %u",
+                    length, k);
+
+    return FALSE;
+}
+
 void init_vector_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
@@ -119,8 +137,11 @@ rsexp r_vector_new (RState* state, rsize k, rsexp fill)
     rsize i;
     RVector* res = r_object_new (state, RVector, R_VECTOR_TAG);
 
+    if (!res)
+        return r_last_error (state);
+
     res->length = k;
-    res->data = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;
+    res->data   = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;
 
     for (i = 0; i < k; ++i)
         res->data [i] = fill;
@@ -131,7 +152,7 @@ rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 rsexp r_vector (RState* state, rsize k, ...)
 {
     va_list args;
-    rsexp res;
+    rsexp   res;
 
     va_start (args, k);
     res = vvector (state, k, args);
@@ -145,27 +166,25 @@ rbool r_vector_p (rsexp obj)
     return r_type_tag (obj) == R_VECTOR_TAG;
 }
 
-rsexp r_vector_ref (rsexp vector, rsize k)
+rsexp r_vector_ref (RState* state, rsexp vector, rsize k)
 {
-    assert (r_vector_p (vector));
-    assert (r_vector_length (vector) > k);
-    return vector_from_sexp (vector)->data [k];
+    return check_index_overflow (state, vector, k)
+           ? vector_from_sexp (vector)->data [k]
+           : r_last_error (state);
 }
 
-rsexp r_vector_set_x (rsexp vector, rsize k, rsexp obj)
+rsexp r_vector_set_x (RState* state, rsexp vector, rsize k, rsexp obj)
 {
-    assert (r_vector_p (vector));
-    assert (vector_from_sexp (vector)->length > k);
+    if (!check_index_overflow (state, vector, k))
+        return r_last_error (state);
 
     vector_from_sexp (vector)->data [k] = obj;
-
-    return R_UNSPECIFIED;
+    return R_TRUE;
 }
 
-rsize r_vector_length (rsexp vector)
+rsexp r_vector_length (rsexp vector)
 {
-    assert (r_vector_p (vector));
-    return vector_from_sexp (vector)->length;
+    return r_uint_to_sexp (vector_from_sexp (vector)->length);
 }
 
 rsexp r_list_to_vector (RState* state, rsexp list)
@@ -173,10 +192,17 @@ rsexp r_list_to_vector (RState* state, rsexp list)
     rsexp res;
     rsize i;
 
-    res = r_vector_new (state, r_length (list), R_UNSPECIFIED);
+    res = r_length (state, list);
+
+    if (r_error_p (res))
+        return res;
+
+    res = r_vector_new (state,
+                        r_uint_from_sexp (res),
+                        R_UNDEFINED);
 
     for (i = 0; !r_null_p (list); ++i) {
-        r_vector_set_x (res, i, r_car (list));
+        r_vector_set_x (state, res, i, r_car (list));
         list = r_cdr (list);
     }
 
@@ -186,10 +212,10 @@ rsexp r_list_to_vector (RState* state, rsexp list)
 rsexp r_vector_to_list (RState* state, rsexp vector)
 {
     rsize i;
-    rsexp res;
+    rsexp res = R_NULL;
 
-    for (i = r_vector_length (vector), res = R_NULL; i > 0; --i)
-        res = r_cons (state, r_vector_ref (vector, i - 1), res);
+    for (i = r_uint_from_sexp (r_vector_length (vector)); i > 0; --i)
+        res = r_cons (state, r_vector_ref (state, vector, i - 1), res);
 
     return res;
 }

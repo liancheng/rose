@@ -1,11 +1,14 @@
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/memory.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 struct RError {
     R_OBJECT_HEADER
@@ -16,26 +19,46 @@ struct RError {
 #define error_from_sexp(obj) (r_cast (RError*, (obj)))
 #define error_to_sexp(error) (r_cast (rsexp, (error)))
 
-static void write_error (RState* state, rsexp port, rsexp obj)
+static rsexp write_error (RState* state, rsexp port, rsexp obj)
 {
-    assert (r_error_p (obj));
+    static rconstcstring inline_error_messages [] = {
+        "(error unknown)",
+        "(error out-of-memory)",
+        "(error parser-backtracking)"
+    };
 
-    r_port_format (state,
-                   port,
-                   "error: ~s, irritants: ~s",
-                   r_error_get_message (obj),
-                   r_error_get_irritants (obj));
+    if (r_inline_error_p (obj))
+        ensure (r_port_puts (state, port,
+                    inline_error_messages [obj >> R_TAG_BITS]));
+    else
+        ensure (r_port_format (state,
+                               port,
+                               "(error (message ~s) (irritants ~s))",
+                               r_error_get_message (obj),
+                               r_error_get_irritants (obj)));
+
+    return R_UNSPECIFIED;
 }
 
-static void display_error (RState* state, rsexp port, rsexp obj)
+static rsexp display_error (RState* state, rsexp port, rsexp obj)
 {
-    assert (r_error_p (obj));
+    static rconstcstring inline_error_messages [] = {
+        "unknown error",
+        "out of memory",
+        "parser backtracking"
+    };
 
-    r_port_format (state,
-                   port,
-                   "error: ~a, irritants: ~a",
-                   r_error_get_message (obj),
-                   r_error_get_irritants (obj));
+    if (r_inline_error_p (obj))
+        ensure (r_port_puts (state, port,
+                    inline_error_messages [obj >> R_TAG_BITS]));
+    else
+        ensure (r_port_format (state,
+                               port,
+                               "message: ~a; irritants: ~a",
+                               r_error_get_message (obj),
+                               r_error_get_irritants (obj)));
+
+    return R_UNSPECIFIED;
 }
 
 void init_error_type_info (RState* state)
@@ -56,8 +79,6 @@ void init_error_type_info (RState* state)
 
 rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 {
-    assert (r_string_p (message));
-
     RError* res = r_object_new (state, RError, R_ERROR_TAG);
 
     res->message = message;
@@ -69,7 +90,7 @@ rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 rbool r_error_p (rsexp obj)
 {
     return r_type_tag (obj) == R_ERROR_TAG
-        || obj == R_ERROR_OOM;
+        || r_type_tag (obj) == R_INLINE_ERROR_TAG;
 }
 
 rsexp r_error_get_message (rsexp error)
@@ -92,8 +113,77 @@ void r_error_set_irritants_x (rsexp error, rsexp irritants)
     error_from_sexp (error)->irritants = irritants;
 }
 
-void r_error (RState* state, rconstcstring message)
+rsexp r_error_printf (RState* state, rconstcstring format, ...)
 {
-    rsexp e = r_error_new (state, r_string_new (state, message), R_NULL);
-    r_raise (state, e);
+    va_list args;
+    rsexp   message;
+    rsexp   res;
+
+    va_start (args, format);
+    message = r_string_vprintf (state, format, args);
+    res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
+    va_end (args);
+
+    return res;
+}
+
+rsexp r_error_format (RState* state, rconstcstring format, ...)
+{
+    va_list args;
+    rsexp   message;
+    rsexp   res;
+
+    va_start (args, format);
+    message = r_string_vformat (state, format, args);
+    res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
+    va_end (args);
+
+    return res;
+}
+
+rsexp r_error (RState* state, rconstcstring message)
+{
+    rsexp error = r_error_new (state, r_string_new (state, message), R_NULL);
+    return r_set_last_error_x (state, error);
+}
+
+rsexp r_last_error (RState* state)
+{
+    return state->last_error;
+}
+
+rsexp r_set_last_error_x (RState* state, rsexp error)
+{
+    rsexp old = state->last_error;
+    state->last_error = error;
+    return old;
+}
+
+rsexp r_clear_last_error_x (RState* state)
+{
+    rsexp old = state->last_error;
+    state->last_error = R_UNDEFINED;
+    return old;
+}
+
+rsexp r_inherit_errno_x (RState* state, rint errnum)
+{
+    rchar buffer [BUFSIZ];
+    rsexp error;
+
+    strerror_r (errnum, buffer, BUFSIZ);
+    error = r_error_new (state, r_string_new (state, buffer), R_NULL);
+    r_set_last_error_x (state, error);
+
+    return error;
+}
+
+void r_raise (RState* state, rsexp obj)
+{
+    state->last_error = obj;
+
+    if (state->error_jmp)
+        longjmp (state->error_jmp->buf, 1);
+    else
+        abort ();
 }

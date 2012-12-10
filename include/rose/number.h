@@ -35,14 +35,17 @@ rbool r_byte_p              (rsexp         obj);
 rbool r_number_p            (rsexp         obj);
 rbool r_exact_p             (rsexp         obj);
 
-#define R_ZERO              r_int_to_sexp (0)
-#define R_ONE               r_int_to_sexp (1)
-#define R_SEXP_BITS         (sizeof (rsexp) * CHAR_BIT)
-#define R_SMI_MAX           ((1 << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
-#define R_SMI_MIN           (-R_SMI_MAX - 1)
+#define R_ZERO                  r_int_to_sexp (0)
+#define R_ONE                   r_int_to_sexp (1)
+#define R_SEXP_BITS             (sizeof (rsexp) * CHAR_BIT)
+#define R_SMI_MAX               ((1 << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
+#define R_SMI_MIN               (-R_SMI_MAX - 1)
 
-#define r_inexact_p(obj)    (r_flonum_p (obj))
-#define r_small_int_p(obj)  (((obj) & R_SMI_MASK) == R_SMI_TAG)
+#define r_inexact_p(obj)        (r_flonum_p (obj))
+#define r_small_int_p(obj)      (((obj) & R_SMI_MASK) == R_SMI_TAG)
+
+#define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rint, (obj))))
+#define r_uint_from_sexp(obj)   (r_cast (ruint, r_int_from_sexp ((obj))))
 
 R_END_DECLS
 

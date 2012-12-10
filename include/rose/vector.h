@@ -14,12 +14,14 @@ rsexp r_vector         (RState* state,
                         rsize   k,
                         ...);
 rbool r_vector_p       (rsexp   obj);
-rsexp r_vector_ref     (rsexp   vector,
+rsexp r_vector_ref     (RState* state,
+                        rsexp   vector,
                         rsize   k);
-rsexp r_vector_set_x   (rsexp   vector,
+rsexp r_vector_set_x   (RState* state,
+                        rsexp   vector,
                         rsize   k,
                         rsexp   obj);
-rsize r_vector_length  (rsexp   vector);
+rsexp r_vector_length  (rsexp   vector);
 rsexp r_list_to_vector (RState* state,
                         rsexp   list);
 rsexp r_vector_to_list (RState* state,

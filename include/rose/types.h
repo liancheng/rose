@@ -21,8 +21,7 @@ R_BEGIN_DECLS
 typedef int             rint;
 typedef unsigned int    ruint;
 
-typedef int8_t          rbyte;
-typedef uint8_t         rubyte;
+typedef uint8_t         rbyte;
 
 typedef int8_t          rint8;
 typedef uint8_t         ruint8;

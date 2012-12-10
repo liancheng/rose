@@ -8,9 +8,9 @@
 #define quark_to_sexp(q)    (((q) << R_TAG_BITS) | R_SYMBOL_TAG)
 #define quark_from_sexp(q)  (r_cast (GQuark, ((q) >> R_TAG_BITS)))
 
-static void write_symbol (RState* state, rsexp port, rsexp obj)
+static rsexp write_symbol (RState* state, rsexp port, rsexp obj)
 {
-    r_port_puts (port, r_symbol_name (state, obj));
+    return r_port_puts (state, port, r_symbol_name (state, obj));
 }
 
 rsexp r_symbol_new (RState* state, rconstcstring symbol)

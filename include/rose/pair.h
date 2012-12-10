@@ -31,7 +31,8 @@ rsexp r_vlist        (RState* state,
 rsexp r_list         (RState* state,
                       rsize   k,
                       ...);
-rsize r_length       (rsexp   list);
+rsexp r_length       (RState* state,
+                      rsexp   list);
 rsexp r_list_ref     (rsexp   list,
                       rsize   k);
 

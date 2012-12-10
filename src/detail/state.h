@@ -1,8 +1,8 @@
 #ifndef __ROSE_DETAIL_STATE_H__
 #define __ROSE_DETAIL_STATE_H__
 
-#include "detail/raise.h"
 #include "detail/sexp.h"
+#include "rose/error.h"
 #include "rose/state.h"
 #include "rose/symbol.h"
 

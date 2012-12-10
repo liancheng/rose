@@ -15,8 +15,8 @@ typedef struct RTypeInfo RTypeInfo;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
 typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
-typedef void  (*RWriteFunc)   (RState*, rsexp, rsexp);
-typedef void  (*RDisplayFunc) (RState*, rsexp, rsexp);
+typedef rsexp (*RWriteFunc)   (RState*, rsexp, rsexp);
+typedef rsexp (*RDisplayFunc) (RState*, rsexp, rsexp);
 typedef void  (*RGcMarkFunc)  (RState*, rsexp);
 typedef void  (*RObjDestruct) (RState*, RObject*);
 

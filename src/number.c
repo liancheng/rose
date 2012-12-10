@@ -11,35 +11,40 @@
 #include <assert.h>
 #include <string.h>
 
-static void write_fixnum (RState* state, rsexp port, rsexp obj)
+static rsexp write_fixnum (RState* state, rsexp port, rsexp obj)
 {
     RFixnum* fixnum = fixnum_from_sexp (obj);
     FILE*    stream = port_to_file (port);
 
-    mpq_out_str (stream, 10, fixnum->real);
+    if (0 == mpq_out_str (stream, 10, fixnum->real))
+        return R_ERROR_UNKNOWN;
 
     if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u)) {
         if (0 < mpq_cmp_ui (fixnum->imag, 0u, 1u))
-            r_write_char (port, '+');
+            ensure (r_port_write_char (state, port, '+'));
 
         mpq_out_str (stream, 10, fixnum->imag);
-        r_write_char (port, 'i');
+        ensure (r_port_write_char (state, port, 'i'));
     }
+
+    return R_UNSPECIFIED;
 }
 
-static void write_flonum (RState* state, rsexp port, rsexp obj)
+static rsexp write_flonum (RState* state, rsexp port, rsexp obj)
 {
     RFlonum* flonum = flonum_from_sexp (obj);
 
-    r_port_printf (port, "%f", flonum->real);
+    ensure (r_port_printf (state, port, "%f", flonum->real));
 
     if (flonum->imag != 0.) {
         if (flonum->imag > 0.)
-            r_write_char (port, '+');
+            ensure (r_port_write_char (state, port, '+'));
 
-        r_port_printf (port, "%f", flonum->imag);
-        r_write_char (port, 'i');
+        ensure (r_port_printf (state, port, "%f", flonum->imag));
+        ensure (r_port_write_char (state, port, 'i'));
     }
+
+    return R_UNSPECIFIED;
 }
 
 static rsexp try_small_int (mpq_t real, mpq_t imag)
@@ -170,6 +175,10 @@ rsexp r_fixnum_new (RState* state, mpq_t real, mpq_t imag)
 rsexp r_fixreal_new (RState* state, mpq_t real)
 {
     RFixnum* fixnum = fixnum_new (state);
+
+    if (!fixnum)
+        return r_last_error (state);
+
     mpq_set (fixnum->real, real);
     return fixnum_to_sexp (fixnum);
 }
@@ -187,6 +196,9 @@ rsexp r_fixnum_normalize (rsexp obj)
 rsexp r_flonum_new (RState* state, double real, double imag)
 {
     RFlonum* flonum = r_object_new (state, RFlonum, R_FLONUM_TAG);
+
+    if (!flonum)
+        return r_last_error (state);
 
     flonum->real = real;
     flonum->imag = imag;

@@ -103,18 +103,23 @@ typedef enum {
 RTypeTag;
 
 #define R_TAG_BITS              3
+#define R_TAG_MASK              0x07    /* #b111 */
 
 #define R_SMI_BITS              2
-#define R_TAG_MASK              0x07    /* #b111 */
 #define R_SMI_MASK              0x03    /* #b011 */
 
-#define __R_SPECIAL_CONST(n)    ((((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG))
-#define R_FALSE                 (__R_SPECIAL_CONST (0))
-#define R_TRUE                  (__R_SPECIAL_CONST (1))
-#define R_NULL                  (__R_SPECIAL_CONST (2))
-#define R_EOF                   (__R_SPECIAL_CONST (3))
-#define R_UNSPECIFIED           (__R_SPECIAL_CONST (4))
-#define R_UNDEFINED             (__R_SPECIAL_CONST (5))
+#define __SPECIAL_CONST(n)      (((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG)
+#define R_FALSE                 (__SPECIAL_CONST (0))
+#define R_TRUE                  (__SPECIAL_CONST (1))
+#define R_NULL                  (__SPECIAL_CONST (2))
+#define R_EOF                   (__SPECIAL_CONST (3))
+#define R_UNSPECIFIED           (__SPECIAL_CONST (4))
+#define R_UNDEFINED             (__SPECIAL_CONST (5))
+
+#define __INLINE_ERROR(n)       (((n) << R_TAG_BITS) | R_INLINE_ERROR_TAG)
+#define R_ERROR_UNKNOWN         (__INLINE_ERROR (0))
+#define R_ERROR_OOM             (__INLINE_ERROR (1))
+#define R_ERROR_BACKTRACK       (__INLINE_ERROR (2))
 
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
@@ -122,6 +127,8 @@ RTypeTag;
 #define r_pair_p(obj)           (r_get_tag (obj) == R_PAIR_TAG)
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
 #define r_tagged_p(obj)         (!(r_boxed_p (obj)))
+
+#define r_inline_error_p(obj)   (r_get_tag (obj) == R_INLINE_ERROR_TAG)
 
 #define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
