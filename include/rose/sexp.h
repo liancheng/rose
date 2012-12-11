@@ -124,8 +124,6 @@ RTypeTag;
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
 #define r_tagged_p(obj)         (!(r_boxed_p (obj)))
 
-#define r_inline_error_p(obj)   (r_get_tag (obj) == R_INLINE_ERROR_TAG)
-
 #define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
 #define r_true_p(obj)           (!r_false_p (obj))

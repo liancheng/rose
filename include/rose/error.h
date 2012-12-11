@@ -9,6 +9,8 @@
 
 R_BEGIN_DECLS
 
+#define r_inline_error_p(obj)   (r_get_tag (obj) == R_INLINE_ERROR_TAG)
+
 #define __INLINE_ERROR(n)       (((n) << R_TAG_BITS) | R_INLINE_ERROR_TAG)
 #define R_ERROR_INTERNAL        0
 #define R_ERROR_API             1024
