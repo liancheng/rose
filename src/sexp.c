@@ -109,7 +109,5 @@ ruint r_type_tag (rsexp obj)
 
 RTypeInfo* r_type_info (RState* state, rsexp obj)
 {
-    return (r_boxed_p (obj))
-           ? r_get_type_info (obj)
-           : state->builtin_types [r_get_tag (obj)];
+    return state->builtin_types [r_type_tag (obj)];
 }
