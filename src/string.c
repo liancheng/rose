@@ -144,18 +144,19 @@ rsexp r_string_vprintf (RState* state, rconstcstring format, va_list args)
 
     ensure (port = r_open_output_string (state));
 
-    if (r_error_p (r_port_vprintf (state, port, format, args))) {
-        res = r_last_error (state);
+    if (r_failure_p (r_port_vprintf (state, port, format, args))) {
+        res = R_FAILURE;
         goto exit;
     }
 
     res = r_get_output_string (state, port);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         goto exit;
 
 exit:
     r_close_port (port);
+
     return res;
 }
 

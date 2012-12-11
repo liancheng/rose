@@ -16,8 +16,8 @@ struct RPair {
     rsexp cdr;
 };
 
-#define PAIR_TO_SEXP(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
-#define PAIR_FROM_SEXP(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
+#define pair_to_sexp(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
+#define pair_from_sexp(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
 
 typedef rsexp (*ROutputFunc) (RState* state, rsexp, rsexp);
 
@@ -27,7 +27,7 @@ static rsexp output_cdr (RState*     state,
                          ROutputFunc output_fn)
 {
     if (r_pair_p (obj)) {
-        r_port_puts (state, port, " ");
+        r_port_write_char (state, port, ' ');
         ensure (output_fn (state, port, r_car (obj)));
         ensure (output_cdr (state, port, r_cdr (obj), output_fn));
     }
@@ -44,8 +44,6 @@ static rsexp output_pair (RState*     state,
                           rsexp       obj,
                           ROutputFunc output_fn)
 {
-    assert (r_pair_p (obj));
-
     ensure (r_port_puts (state, port, "("));
     ensure (output_fn (state, port, r_car (obj)));
     ensure (output_cdr (state, port, r_cdr (obj), output_fn));
@@ -80,63 +78,75 @@ rsexp r_cons (RState* state, rsexp car, rsexp cdr)
     pair->car = car;
     pair->cdr = cdr;
 
-    return PAIR_TO_SEXP (pair);
+    return pair_to_sexp (pair);
 }
 
 rsexp r_car (rsexp obj)
 {
-    assert (r_pair_p (obj));
-    return PAIR_FROM_SEXP (obj)->car;
+    return pair_from_sexp (obj)->car;
 }
 
 rsexp r_cdr (rsexp obj)
 {
-    assert (r_pair_p (obj));
-    return PAIR_FROM_SEXP (obj)->cdr;
+    return pair_from_sexp (obj)->cdr;
 }
 
-rsexp r_set_car_x (rsexp pair, rsexp obj)
+void r_set_car_x (rsexp pair, rsexp obj)
 {
-    assert (r_pair_p (pair));
-    PAIR_FROM_SEXP (pair)->car = obj;
-    return R_UNSPECIFIED;
+    pair_from_sexp (pair)->car = obj;
 }
 
-rsexp r_set_cdr_x (rsexp pair, rsexp obj)
+void r_set_cdr_x (rsexp pair, rsexp obj)
 {
-    assert (r_pair_p (pair));
-    PAIR_FROM_SEXP (pair)->cdr = obj;
-    return R_UNSPECIFIED;
+    pair_from_sexp (pair)->cdr = obj;
 }
 
-rsexp r_reverse (rsexp list)
+rsexp r_reverse (RState* state, rsexp list)
 {
     rsexp node;
     rsexp next;
     rsexp prev;
+    rsexp res;
 
     node = list;
     prev = R_NULL;
 
     while (!r_null_p (node)) {
-        assert (r_pair_p (node));
+        if (!r_pair_p (node)) {
+            res = r_error_format (state,
+                                  "wrong type argument, "
+                                  "expecting: pair, given: ~s~%",
+                                  list);
+            goto exit;
+        }
+
         next = r_cdr (node);
         r_set_cdr_x (node, prev);
         prev = node;
         node = next;
     }
 
-    return prev;
+    res = prev;
+
+exit:
+    return res;
 }
 
-rsexp r_append_x (rsexp list, rsexp obj)
+rsexp r_append_x (RState* state, rsexp list, rsexp obj)
 {
     rsexp tail;
 
     if (r_null_p (list))
         return obj;
 
-    assert (r_pair_p (list));
+    if (!r_pair_p (list)) {
+        r_error_format (state,
+                        "wrong type argument, "
+                        "expecting: pair, given: ~s~%",
+                        list);
+
+        return R_FAILURE;
+    }
 
     for (tail = list; r_pair_p (r_cdr (tail)); )
         tail = r_cdr (tail);
@@ -175,7 +185,7 @@ rsexp r_vlist (RState* state, rsize k, va_list args)
     for (i = 0; i < k; ++i)
         res = r_cons (state, va_arg (args, rsexp), res);
 
-    return r_reverse (res);
+    return r_reverse (state, res);
 }
 
 rsexp r_list (RState* state, rsize k, ...)
@@ -195,11 +205,14 @@ rsexp r_length (RState* state, rsexp list)
     rsize n;
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
-        if (!r_pair_p (list))
-            return r_error_format (state,
-                                   "wrong type argument, "
-                                   "expecting: list, given: ~a",
-                                   list);
+        if (!r_pair_p (list)) {
+            r_error_format (state,
+                            "wrong type argument, "
+                            "expecting: list, given: ~a",
+                            list);
+
+            return R_FAILURE;
+        }
 
     return r_uint_to_sexp (n);
 }

@@ -34,8 +34,8 @@ static rsexp make_port (RState*        state,
 
     port->name = r_string_new (state, name);
 
-    if (r_error_p (port->name)) {
-        res = r_last_error (state);
+    if (r_failure_p (port->name)) {
+        res = R_FAILURE;
         goto exit;
     }
 
@@ -122,7 +122,7 @@ rsexp r_open_input_file (RState* state, rconstcstring filename)
 
     res = make_port (state, stream, filename, MODE_INPUT, NULL, NULL, NULL);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         fclose (stream);
 
 exit:
@@ -143,7 +143,7 @@ rsexp r_open_output_file (RState* state, rconstcstring filename)
 
     res = make_port (state, stream, filename, MODE_OUTPUT, NULL, NULL, NULL);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         fclose (stream);
 
 exit:
@@ -170,7 +170,7 @@ rsexp r_open_input_string (RState* state, rsexp string)
                      MODE_INPUT | MODE_STRING_IO, r_cast (rpointer, string),
                      NULL, input_string_port_mark);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         fclose (stream);
 
 exit:
@@ -205,7 +205,7 @@ rsexp r_open_output_string (RState* state)
                      r_cast (rpointer, cookie),
                      output_string_port_clear, NULL);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         fclose (stream);
 
 exit:

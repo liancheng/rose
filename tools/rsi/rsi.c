@@ -26,8 +26,8 @@ int main (int argc, char* argv[])
     while (1) {
         rsexp datum = r_read (state);
 
-        if (r_error_p (datum)) {
-            r_format (state, "~a~%", datum);
+        if (r_failure_p (datum)) {
+            r_format (state, "~a~%", r_last_error (state));
             break;
         }
 

@@ -93,14 +93,14 @@ static void syntax_error (RDatumReader* reader,
                           rsize         column,
                           char const*   message)
 {
-    rsexp str = r_string_format (reader->state,
-                                 "~a:~a:~a: ~a~%",
-                                 r_port_get_name (reader->input_port),
-                                 r_int_to_sexp (line),
-                                 r_int_to_sexp (column),
-                                 r_string_new (reader->state, message));
+    r_error_format (reader->state,
+                    "~a:~a:~a: ~a~%",
+                    r_port_get_name (reader->input_port),
+                    r_int_to_sexp (line),
+                    r_int_to_sexp (column),
+                    r_string_new (reader->state, message));
 
-    r_raise (reader->state, r_error_new (reader->state, str, R_NULL));
+    r_raise (reader->state);
 }
 
 static void record_source_location (RDatumReader* reader,
@@ -119,7 +119,7 @@ static rsexp read_vector (RDatumReader* reader)
     rsize column;
 
     if (!match (reader, TKN_HASH_LP))
-        return R_ERROR_BACKTRACK;
+        return R_FAILURE;
 
     for (list = R_NULL; lookahead (reader)->_id != TKN_RP; ) {
         record_source_location (reader, &line, &column);
@@ -131,7 +131,7 @@ static rsexp read_vector (RDatumReader* reader)
             syntax_error (reader, line, column, message);
         }
 
-        if (r_error_p (datum)) {
+        if (r_failure_p (datum)) {
             rcstring message = "expecting a vector element";
             syntax_error (reader, line, column, message);
         }
@@ -141,7 +141,7 @@ static rsexp read_vector (RDatumReader* reader)
 
     consume (reader);
 
-    return r_list_to_vector (reader->state, r_reverse (list));
+    return r_list_to_vector (reader->state, r_reverse (reader->state, list));
 }
 
 static rsexp read_full_list (RDatumReader* reader)
@@ -152,7 +152,7 @@ static rsexp read_full_list (RDatumReader* reader)
     rsize column;
 
     if (!match (reader, TKN_LP))
-        return R_ERROR_BACKTRACK;
+        return R_FAILURE;
 
     if (match (reader, TKN_RP))
         return R_NULL;
@@ -160,7 +160,7 @@ static rsexp read_full_list (RDatumReader* reader)
     record_source_location (reader, &line, &column);
 
     datum = read_datum (reader);
-    if (r_error_p (datum))
+    if (r_failure_p (datum))
         syntax_error (reader, line, column, "bad syntax");
 
     list = r_cons (reader->state, datum, R_NULL);
@@ -174,22 +174,22 @@ static rsexp read_full_list (RDatumReader* reader)
         record_source_location (reader, &line, &column);
 
         datum = read_datum (reader);
-        if (r_error_p (datum))
+        if (r_failure_p (datum))
             syntax_error (reader, line, column, "bad syntax");
 
         list = r_cons (reader->state, datum, list);
     }
 
-    list = r_reverse (list);
+    list = r_reverse (reader->state, list);
 
     if (match (reader, TKN_DOT)) {
         record_source_location (reader, &line, &column);
 
         datum = read_datum (reader);
-        if (r_error_p (datum))
+        if (r_failure_p (datum))
             syntax_error (reader, line, column, "datum expected");
 
-        list = r_append_x (list, datum);
+        list = r_append_x (reader->state, list, datum);
     }
 
     record_source_location (reader, &line, &column);
@@ -226,14 +226,14 @@ static rsexp read_abbreviation (RDatumReader* reader)
             break;
 
         default:
-            return R_ERROR_BACKTRACK;
+            return R_FAILURE;
     }
 
     consume (reader);
     record_source_location (reader, &line, &column);
 
     datum = read_datum (reader);
-    if (r_error_p (datum))
+    if (r_failure_p (datum))
         syntax_error (reader, line, column, "bad syntax");
 
     return r_list (reader->state, 2, prefix, datum);
@@ -261,7 +261,7 @@ static rsexp read_bytevector (RDatumReader* reader)
     rsize column;
 
     if (!match (reader, TKN_HASH_U8_LP))
-        return R_ERROR_BACKTRACK;
+        return R_FAILURE;
 
     bytes = R_NULL;
 
@@ -277,9 +277,10 @@ static rsexp read_bytevector (RDatumReader* reader)
     }
 
     if (!match (reader, TKN_RP))
-        return R_ERROR_BACKTRACK;
+        return R_FAILURE;
 
-    return r_list_to_bytevector (reader->state, r_reverse (bytes));
+    return r_list_to_bytevector (reader->state,
+                                 r_reverse (reader->state, bytes));
 }
 
 static rsexp read_simple_datum (RDatumReader* reader)
@@ -325,7 +326,7 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         default:
-            return R_ERROR_BACKTRACK;
+            return R_FAILURE;
     }
 
     consume (reader);
@@ -338,12 +339,12 @@ static rsexp read_datum (RDatumReader* reader)
     rsexp datum;
 
     if (match (reader, TKN_HASH_SEMICOLON))
-        if (r_error_p (read_datum (reader)))
-            return R_ERROR_BACKTRACK;
+        if (r_failure_p (read_datum (reader)))
+            return R_FAILURE;
 
     datum = read_simple_datum (reader);
 
-    return r_error_p (datum) ? read_compound_datum (reader) : datum;
+    return r_failure_p (datum) ? read_compound_datum (reader) : datum;
 }
 
 static void reader_init (RState* state, RDatumReader* reader, rsexp port)

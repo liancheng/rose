@@ -131,21 +131,29 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
     res = r_length (state, list);
 
     /* If `list' is not a proper list... */
-    if (r_unspecified_p (res))
-        return r_last_error (state);
+    if (r_failure_p (res)) {
+        r_error_format (state,
+                        "wrong type argument, "
+                        "expecting: list, given: ~s",
+                        list);
+
+        return R_FAILURE;
+    }
 
     length = r_uint_from_sexp (res);
     res = r_bytevector_new (state, length, R_UNDEFINED);
 
-    if (r_unspecified_p (res))
-        return r_last_error (state);
+    if (r_failure_p (res))
+        return R_FAILURE;
 
     for (k = 0; k < length; ++k) {
-        if (!r_byte_p (r_car (list)))
-            return r_error_format (state,
-                                   "wrong type argument, "
-                                   "expecting: byte, given: ~a",
-                                   r_car (list));
+        if (!r_byte_p (r_car (list))) {
+            r_error_format (state,
+                            "wrong type argument, "
+                            "expecting: byte, given: ~a",
+                            r_car (list));
+            return R_FAILURE;
+        }
 
         byte = r_cast (rbyte, r_uint_from_sexp (r_car (list)));
         r_bytevector_u8_set_x (state, res, k, byte);

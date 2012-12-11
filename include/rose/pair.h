@@ -14,15 +14,17 @@ rsexp r_cons         (RState* state,
                       rsexp   cdr);
 rsexp r_car          (rsexp   obj);
 rsexp r_cdr          (rsexp   obj);
-rsexp r_set_car_x    (rsexp   pair,
+void  r_set_car_x    (rsexp   pair,
                       rsexp   obj);
-rsexp r_set_cdr_x    (rsexp   pair,
+void  r_set_cdr_x    (rsexp   pair,
                       rsexp   obj);
 rbool r_pair_equal_p (RState* state,
                       rsexp   lhs,
                       rsexp   rhs);
-rsexp r_reverse      (rsexp   list);
-rsexp r_append_x     (rsexp   list,
+rsexp r_reverse      (RState* state,
+                      rsexp   list);
+rsexp r_append_x     (RState* state,
+                      rsexp   list,
                       rsexp   value);
 rbool r_list_p       (rsexp   obj);
 rsexp r_vlist        (RState* state,

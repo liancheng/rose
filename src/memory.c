@@ -1,3 +1,4 @@
+#include "detail/sexp.h"
 #include "detail/state.h"
 #include "rose/error.h"
 #include "rose/memory.h"
@@ -8,10 +9,11 @@
 // TODO remove me when the GC mechanism is ready
 static void finalize_object (rpointer obj, rpointer client_data)
 {
-    RObjDestruct destruct = r_cast (RObject*, obj)->type_info->ops.destruct;
     RState*      state    = r_cast (RState*, client_data);
+    RTypeInfo*   type     = r_type_info (state, r_cast (rsexp, obj));
+    RObjDestruct destruct = type->ops.destruct;
 
-    destruct (state, obj);
+    destruct (state, r_cast (RObject*, obj));
 }
 
 rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
@@ -69,8 +71,7 @@ RObject* r_object_alloc (RState* state, RTypeTag type_tag)
         return NULL;
     }
 
-    obj->type_info = type;
-    obj->type_tag  = type_tag;
+    obj->type_tag = type_tag;
 
     // TODO remove me when the GC mechanism is ready
     GC_REGISTER_FINALIZER ((rpointer) obj, finalize_object, state, NULL, NULL);

@@ -21,15 +21,20 @@ struct RError {
 
 static rsexp write_error (RState* state, rsexp port, rsexp obj)
 {
-    static rconstcstring inline_error_messages [] = {
-        "(error unknown)",
-        "(error out-of-memory)",
-        "(error parser-backtracking)"
-    };
+    static rconstcstring message;
+
+    switch (obj) {
+        case R_ERROR_OOM:
+            message = "(error out-of-memory)";
+            break;
+
+        default:
+            message = "(error unknown)";
+            break;
+    }
 
     if (r_inline_error_p (obj))
-        ensure (r_port_puts (state, port,
-                    inline_error_messages [obj >> R_TAG_BITS]));
+        ensure (r_port_puts (state, port, message));
     else
         ensure (r_port_format (state,
                                port,
@@ -42,15 +47,20 @@ static rsexp write_error (RState* state, rsexp port, rsexp obj)
 
 static rsexp display_error (RState* state, rsexp port, rsexp obj)
 {
-    static rconstcstring inline_error_messages [] = {
-        "unknown error",
-        "out of memory",
-        "parser backtracking"
-    };
+    static rconstcstring message;
+
+    switch (obj) {
+        case R_ERROR_OOM:
+            message = "out of memory";
+            break;
+
+        default:
+            message = "unknown error";
+            break;
+    }
 
     if (r_inline_error_p (obj))
-        ensure (r_port_puts (state, port,
-                    inline_error_messages [obj >> R_TAG_BITS]));
+        ensure (r_port_puts (state, port, message));
     else
         ensure (r_port_format (state,
                                port,
@@ -178,10 +188,8 @@ rsexp r_inherit_errno_x (RState* state, rint errnum)
     return error;
 }
 
-void r_raise (RState* state, rsexp obj)
+void r_raise (RState* state)
 {
-    state->last_error = obj;
-
     if (state->error_jmp)
         longjmp (state->error_jmp->buf, 1);
     else

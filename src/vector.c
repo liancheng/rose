@@ -194,7 +194,7 @@ rsexp r_list_to_vector (RState* state, rsexp list)
 
     res = r_length (state, list);
 
-    if (r_error_p (res))
+    if (r_failure_p (res))
         return res;
 
     res = r_vector_new (state,

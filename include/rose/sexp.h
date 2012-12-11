@@ -115,11 +115,7 @@ RTypeTag;
 #define R_EOF                   (__SPECIAL_CONST (3))
 #define R_UNSPECIFIED           (__SPECIAL_CONST (4))
 #define R_UNDEFINED             (__SPECIAL_CONST (5))
-
-#define __INLINE_ERROR(n)       (((n) << R_TAG_BITS) | R_INLINE_ERROR_TAG)
-#define R_ERROR_UNKNOWN         (__INLINE_ERROR (0))
-#define R_ERROR_OOM             (__INLINE_ERROR (1))
-#define R_ERROR_BACKTRACK       (__INLINE_ERROR (2))
+#define R_FAILURE               (__SPECIAL_CONST (6))
 
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
@@ -145,6 +141,8 @@ RTypeTag;
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
 #define r_char_to_sexp(c)       (((c) << R_TAG_BITS) | R_CHAR_TAG)
 #define r_char_from_sexp(obj)   ((obj) >> R_TAG_BITS)
+
+#define r_failure_p(obj)        ((obj) == R_FAILURE)
 
 /** \} */
 
