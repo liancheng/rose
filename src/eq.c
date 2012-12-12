@@ -14,7 +14,7 @@ rbool r_eqv_p (RState* state, rsexp lhs, rsexp rhs)
         return FALSE;
 
     type = r_type_info (state, lhs);
-    pred = type_info->ops.eqv_p;
+    pred = type->ops.eqv_p;
 
     return r_eq_p (state, lhs, rhs)
            ? TRUE
@@ -31,7 +31,7 @@ rbool r_equal_p (RState* state, rsexp lhs, rsexp rhs)
         return FALSE;
 
     type = r_type_info (state, lhs);
-    pred = type_info->ops.equal_p;
+    pred = type->ops.equal_p;
 
     return r_eqv_p (state, lhs, rhs)
            ? TRUE
