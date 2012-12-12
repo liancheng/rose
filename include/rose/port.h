@@ -8,8 +8,6 @@
 
 R_BEGIN_DECLS
 
-typedef struct RPort RPort;
-
 rsexp    r_open_input_file           (RState*       state,
                                       rconstcstring filename);
 rsexp    r_open_output_file          (RState*       state,

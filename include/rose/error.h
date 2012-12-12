@@ -18,8 +18,6 @@ R_BEGIN_DECLS
 #define R_ERROR_UNKNOWN         (__INLINE_ERROR (R_ERROR_API + 0))
 #define R_ERROR_OOM             (__INLINE_ERROR (R_ERROR_API + 1))
 
-typedef struct RError RError;
-
 rsexp r_error_new             (RState*       state,
                                rsexp         message,
                                rsexp         irritants);

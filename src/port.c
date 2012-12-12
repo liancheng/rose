@@ -10,6 +10,24 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct RPort RPort;
+
+struct RPort {
+    R_OBJECT_HEADER
+
+    RState*        state;
+    FILE*          stream;
+    rsexp          name;
+    RPortMode      mode;
+
+    rpointer       cookie;
+    RPortClearFunc clear;
+    RPortMarkFunc  mark;
+};
+
+#define port_from_sexp(obj)     (r_cast (RPort*, (obj)))
+#define port_to_sexp(port)      (r_cast (rsexp, (port)))
+
 #define mode_set_p(port, m)     ((port)->mode & (m))
 #define set_mode_x(port, m)     ((port)->mode |= (m))
 #define clear_mode_x(port, m)   ((port)->mode &= ~(m))
@@ -107,6 +125,11 @@ void init_port_type_info (RState* state)
     type->ops.destruct = destruct_port;
 
     state->builtin_types [R_PORT_TAG] = type;
+}
+
+FILE* port_to_stream (rsexp port)
+{
+    return port_from_sexp (port)->stream;
 }
 
 rsexp r_open_input_file (RState* state, rconstcstring filename)
@@ -277,7 +300,7 @@ void r_close_port (rsexp port)
 
 rbool r_eof_p (rsexp port)
 {
-    return 0 != feof (port_to_file (port));
+    return 0 != feof (port_to_stream (port));
 }
 
 rbool r_port_p (rsexp obj)
@@ -304,14 +327,14 @@ rsexp r_port_vprintf (RState*       state,
 {
     rsexp res = R_UNSPECIFIED;
 
-    if (vfprintf (port_to_file (port), format, args) < 0) {
+    if (vfprintf (port_to_stream (port), format, args) < 0) {
         res = R_FAILURE;
         r_error (state, "vfprintf (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
-        if (EOF == fflush (port_to_file (port))) {
+        if (EOF == fflush (port_to_stream (port))) {
             res = R_FAILURE;
             r_error (state, "fflush (3) failed");
             goto exit;
@@ -335,7 +358,7 @@ rsexp r_port_printf (RState* state, rsexp port, rconstcstring format, ...)
 
 rcstring r_port_gets (RState* state, rsexp port, rcstring dest, rint size)
 {
-    rcstring res = fgets (dest, size, port_to_file (port));
+    rcstring res = fgets (dest, size, port_to_stream (port));
 
     if (!res)
         r_inherit_errno_x (state, errno);
@@ -347,14 +370,14 @@ rsexp r_port_puts (RState* state, rsexp port, rconstcstring str)
 {
     rsexp res = R_UNSPECIFIED;
 
-    if (EOF == fputs (str, port_to_file (port))) {
+    if (EOF == fputs (str, port_to_stream (port))) {
         res = R_FAILURE;
         r_error (state, "fputs (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
-        if (EOF == fflush (port_to_file (port))) {
+        if (EOF == fflush (port_to_stream (port))) {
             res = R_FAILURE;
             r_error (state, "fflush (3) failed");
             goto exit;
@@ -366,7 +389,7 @@ exit:
 
 rsexp r_port_read_char (RState* state, rsexp port)
 {
-    rint ch = fgetc (port_to_file (port_from_sexp (port)));
+    rint ch = fgetc (port_to_stream (port));
     return (EOF == ch) ? R_EOF : r_char_to_sexp (r_cast (rchar, ch));
 }
 
@@ -379,14 +402,14 @@ rsexp r_port_write_char (RState* state, rsexp port, rchar ch)
 {
     rsexp res = R_UNSPECIFIED;
 
-    if (EOF == fputc (ch, port_to_file (port))) {
+    if (EOF == fputc (ch, port_to_stream (port))) {
         res = R_FAILURE;
         r_error (state, "fputc (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
-        if (EOF == fflush (port_to_file (port))) {
+        if (EOF == fflush (port_to_stream (port))) {
             res = R_FAILURE;
             r_error (state, "fflush (3) failed");
             goto exit;

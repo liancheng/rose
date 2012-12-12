@@ -5,8 +5,6 @@
 
 R_BEGIN_DECLS
 
-typedef struct RVector RVector;
-
 rsexp r_vector_new     (RState* state,
                         rsize   k,
                         rsexp   fill);

@@ -5,8 +5,6 @@
 
 R_BEGIN_DECLS
 
-typedef struct RBytevector RBytevector;
-
 rsexp r_bytevector_new      (RState* state,
                              rsize   k,
                              rbyte   fill);

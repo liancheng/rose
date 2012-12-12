@@ -22,23 +22,7 @@ RPortMode;
 typedef void (*RPortClearFunc) (RState*, rpointer);
 typedef void (*RPortMarkFunc)  (RState*, rpointer);
 
-struct RPort {
-    R_OBJECT_HEADER
-
-    RState*        state;
-    FILE*          stream;
-    rsexp          name;
-    RPortMode      mode;
-
-    rpointer       cookie;
-    RPortClearFunc clear;
-    RPortMarkFunc  mark;
-};
-
-#define port_from_sexp(obj) (r_cast (RPort*, (obj)))
-#define port_to_sexp(port)  (r_cast (rsexp, (port)))
-#define port_to_file(obj)   (port_from_sexp (obj)->stream)
-
-void init_port_type_info (RState* state);
+void  init_port_type_info (RState* state);
+FILE* port_to_stream      (rsexp   port);
 
 #endif  /* __ROSE_DETAIL_PORT_H__ */

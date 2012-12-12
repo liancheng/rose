@@ -12,6 +12,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
+typedef struct RVector RVector;
+
 struct RVector {
     R_OBJECT_HEADER
     rsize  length;

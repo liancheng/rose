@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
+typedef struct RPair RPair;
+
 struct RPair {
     rsexp car;
     rsexp cdr;

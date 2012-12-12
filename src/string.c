@@ -8,6 +8,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+typedef struct RString RString;
+
 struct RString {
     R_OBJECT_HEADER
     rsize    length;

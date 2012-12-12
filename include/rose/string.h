@@ -6,8 +6,6 @@
 
 R_BEGIN_DECLS
 
-typedef struct RString RString;
-
 rsexp         r_string_new        (RState*       state,
                                    rconstcstring str);
 rbool         r_string_p          (rsexp         obj);

@@ -7,8 +7,6 @@
 
 R_BEGIN_DECLS
 
-typedef struct RPair RPair;
-
 rsexp r_cons         (RState* state,
                       rsexp   car,
                       rsexp   cdr);

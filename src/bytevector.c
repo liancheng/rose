@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <string.h>
 
+typedef struct RBytevector RBytevector;
+
 struct RBytevector {
     R_OBJECT_HEADER
     rsize  length;

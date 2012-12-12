@@ -14,7 +14,7 @@
 static rsexp write_fixnum (RState* state, rsexp port, rsexp obj)
 {
     RFixnum* fixnum = fixnum_from_sexp (obj);
-    FILE*    stream = port_to_file (port);
+    FILE*    stream = port_to_stream (port);
 
     if (0 == mpq_out_str (stream, 10, fixnum->real))
         return R_ERROR_UNKNOWN;

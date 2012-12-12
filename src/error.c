@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+typedef struct RError RError;
+
 struct RError {
     R_OBJECT_HEADER
     rsexp message;
