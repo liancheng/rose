@@ -7,11 +7,14 @@ rbool r_eq_p (RState* state, rsexp lhs, rsexp rhs)
 
 rbool r_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 {
+    RTypeInfo* type;
+    REqvPred   pred;
+
     if (r_type_tag (lhs) != r_type_tag (rhs))
         return FALSE;
 
-    RTypeInfo* type_info = r_type_info (state, lhs);
-    REqvPred pred = type_info->ops.eqv_p;
+    type = r_type_info (state, lhs);
+    pred = type_info->ops.eqv_p;
 
     return r_eq_p (state, lhs, rhs)
            ? TRUE
@@ -21,11 +24,14 @@ rbool r_eqv_p (RState* state, rsexp lhs, rsexp rhs)
 
 rbool r_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
+    RTypeInfo* type;
+    REqualPred pred;
+
     if (r_type_tag (lhs) != r_type_tag (rhs))
         return FALSE;
 
-    RTypeInfo* type_info = r_type_info (state, lhs);
-    REqualPred pred = type_info->ops.equal_p;
+    type = r_type_info (state, lhs);
+    pred = type_info->ops.equal_p;
 
     return r_eqv_p (state, lhs, rhs)
            ? TRUE
