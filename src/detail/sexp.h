@@ -8,8 +8,8 @@ typedef struct RObject   RObject;
 typedef struct RTypeInfo RTypeInfo;
 
 #define R_OBJECT_HEADER\
-        RTypeTag type_tag : 8;\
-        ruint    gc_color : 3;\
+        RTypeTag type_tag : 5;\
+        ruint    gc_color : 2;\
         RObject* gc_next;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
