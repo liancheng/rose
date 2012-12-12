@@ -428,8 +428,7 @@ rsexp r_port_vformat (RState*       state,
                 break;
 
             case 's':
-                // ensure (r_port_write (state, port, va_arg (args, rsexp)));
-                r_port_write (state, port, va_arg (args, rsexp));
+                ensure (r_port_write (state, port, va_arg (args, rsexp)));
                 break;
         }
     }
