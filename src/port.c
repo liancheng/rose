@@ -1,6 +1,6 @@
-#include "detail/state.h"
+#include "detail/error.h"
 #include "detail/port.h"
-#include "rose/error.h"
+#include "detail/state.h"
 #include "rose/memory.h"
 #include "rose/string.h"
 
@@ -28,7 +28,8 @@ static rsexp make_port (RState*        state,
     port = r_object_new (state, RPort, R_PORT_TAG);
 
     if (!port) {
-        res = r_last_error (state);
+        res = R_FAILURE;
+        r_last_error (state);
         goto exit;
     }
 
@@ -116,7 +117,8 @@ rsexp r_open_input_file (RState* state, rconstcstring filename)
     stream= fopen (filename, "r");
 
     if (!stream) {
-        res = r_inherit_errno_x (state, errno);
+        res = R_FAILURE;
+        r_inherit_errno_x (state, errno);
         goto exit;
     }
 
@@ -137,7 +139,8 @@ rsexp r_open_output_file (RState* state, rconstcstring filename)
     stream = fopen (filename, "w");
 
     if (!stream) {
-        res = r_inherit_errno_x (state, errno);
+        res = R_FAILURE;
+        r_inherit_errno_x (state, errno);
         goto exit;
     }
 
@@ -162,7 +165,8 @@ rsexp r_open_input_string (RState* state, rsexp string)
     stream = fmemopen (input, size, "r");
 
     if (!stream) {
-        res = r_inherit_errno_x (state, errno);
+        res = R_FAILURE;
+        r_inherit_errno_x (state, errno);
         goto exit;
     }
 
@@ -187,7 +191,8 @@ rsexp r_open_output_string (RState* state)
     cookie = r_new0 (state, ROutStringCookie);
 
     if (!cookie) {
-        res = r_last_error (state);
+        res = R_FAILURE;
+        r_last_error (state);
         goto exit;
     }
 
@@ -196,7 +201,8 @@ rsexp r_open_output_string (RState* state)
     if (!stream) {
         errnum = errno;
         r_free (state, cookie);
-        res = r_inherit_errno_x (state, errno);
+        r_inherit_errno_x (state, errno);
+        res = R_FAILURE;
         goto exit;
     }
 
@@ -219,11 +225,8 @@ rsexp r_get_output_string (RState* state, rsexp port)
     rsexp             res;
 
     if (!output_string_port_p (port)) {
-        res = r_error_format (state,
-                              "wrong type argument, "
-                              "expecting: output-string-port, "
-                              "given: ~s", port);
-
+        res = R_FAILURE;
+        error_wrong_type_arg (state, "output-string-port", port);
         goto exit;
     }
 
@@ -302,13 +305,15 @@ rsexp r_port_vprintf (RState*       state,
     rsexp res = R_UNSPECIFIED;
 
     if (vfprintf (port_to_file (port), format, args) < 0) {
-        res = r_error (state, "vfprintf (3) failed");
+        res = R_FAILURE;
+        r_error (state, "vfprintf (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
         if (EOF == fflush (port_to_file (port))) {
-            res = r_error (state, "fflush (3) failed");
+            res = R_FAILURE;
+            r_error (state, "fflush (3) failed");
             goto exit;
         }
 
@@ -343,13 +348,15 @@ rsexp r_port_puts (RState* state, rsexp port, rconstcstring str)
     rsexp res = R_UNSPECIFIED;
 
     if (EOF == fputs (str, port_to_file (port))) {
-        res = r_error (state, "fputs (3) failed");
+        res = R_FAILURE;
+        r_error (state, "fputs (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
         if (EOF == fflush (port_to_file (port))) {
-            res = r_error (state, "fflush (3) failed");
+            res = R_FAILURE;
+            r_error (state, "fflush (3) failed");
             goto exit;
         }
 
@@ -373,13 +380,15 @@ rsexp r_port_write_char (RState* state, rsexp port, rchar ch)
     rsexp res = R_UNSPECIFIED;
 
     if (EOF == fputc (ch, port_to_file (port))) {
-        res = r_error (state, "fputc (3) failed");
+        res = R_FAILURE;
+        r_error (state, "fputc (3) failed");
         goto exit;
     }
 
     if (need_flush_p (port))
         if (EOF == fflush (port_to_file (port))) {
-            res = r_error (state, "fflush (3) failed");
+            res = R_FAILURE;
+            r_error (state, "fflush (3) failed");
             goto exit;
         }
 

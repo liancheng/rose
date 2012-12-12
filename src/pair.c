@@ -1,7 +1,7 @@
+#include "detail/error.h"
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/eq.h"
-#include "rose/error.h"
 #include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/pair.h"
@@ -113,10 +113,8 @@ rsexp r_reverse (RState* state, rsexp list)
 
     while (!r_null_p (node)) {
         if (!r_pair_p (node)) {
-            res = r_error_format (state,
-                                  "wrong type argument, "
-                                  "expecting: pair, given: ~s~%",
-                                  list);
+            res = R_FAILURE;
+            error_wrong_type_arg (state, "pair", list);
             goto exit;
         }
 
@@ -140,11 +138,7 @@ rsexp r_append_x (RState* state, rsexp list, rsexp obj)
         return obj;
 
     if (!r_pair_p (list)) {
-        r_error_format (state,
-                        "wrong type argument, "
-                        "expecting: pair, given: ~s~%",
-                        list);
-
+        error_wrong_type_arg (state, "pair", list);
         return R_FAILURE;
     }
 
@@ -206,11 +200,7 @@ rsexp r_length (RState* state, rsexp list)
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
         if (!r_pair_p (list)) {
-            r_error_format (state,
-                            "wrong type argument, "
-                            "expecting: list, given: ~a",
-                            list);
-
+            error_wrong_type_arg (state, "pair", list);
             return R_FAILURE;
         }
 

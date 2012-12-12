@@ -1,7 +1,7 @@
+#include "detail/error.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
-#include "rose/error.h"
 #include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/pair.h"
@@ -132,11 +132,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     /* If `list' is not a proper list... */
     if (r_failure_p (res)) {
-        r_error_format (state,
-                        "wrong type argument, "
-                        "expecting: list, given: ~s",
-                        list);
-
+        error_wrong_type_arg (state, "list", list);
         return R_FAILURE;
     }
 
@@ -148,10 +144,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     for (k = 0; k < length; ++k) {
         if (!r_byte_p (r_car (list))) {
-            r_error_format (state,
-                            "wrong type argument, "
-                            "expecting: byte, given: ~a",
-                            r_car (list));
+            error_wrong_type_arg (state, "type", list);
             return R_FAILURE;
         }
 

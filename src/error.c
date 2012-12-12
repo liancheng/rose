@@ -195,3 +195,12 @@ void r_raise (RState* state)
     else
         abort ();
 }
+
+rsexp error_wrong_type_arg (RState* state, rconstcstring expected, rsexp given)
+{
+    return r_error_format (state,
+                           "wrong type argument, "
+                           "expecting: ~w, given: ~s",
+                           r_string_new (state, expected),
+                           given);
+}
