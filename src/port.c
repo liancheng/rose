@@ -223,10 +223,9 @@ rsexp r_open_output_string (RState* state)
 
     if (!stream) {
         errnum = errno;
-        r_free (state, cookie);
         r_inherit_errno_x (state, errno);
         res = R_FAILURE;
-        goto exit;
+        goto clean;
     }
 
     res = make_port (state, stream, "(output-string-port)",
@@ -234,8 +233,15 @@ rsexp r_open_output_string (RState* state)
                      r_cast (rpointer, cookie),
                      output_string_port_clear, NULL);
 
-    if (r_failure_p (res))
+    if (r_failure_p (res)) {
         fclose (stream);
+        goto clean;
+    }
+
+    goto exit;
+
+clean:
+    r_free (state, cookie);
 
 exit:
     return res;
