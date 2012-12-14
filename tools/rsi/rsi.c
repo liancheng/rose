@@ -6,25 +6,18 @@
 #include <gc/gc.h>
 #include <stdio.h>
 
-int main (int argc, char* argv[])
+void repl_start (RState* state)
 {
-    RState* state;
+    RDatumReader* reader = r_reader_new (state, r_current_input_port (state));
 
-    GC_INIT ();
-
-    state = r_state_open ();
-
-    if (!state) {
-        fprintf (stderr, "ROSE interpreter initialization failed.\n");
-        return EXIT_FAILURE;
+    if (!reader) {
+        fprintf (stderr, "reader initialization failed.\n");
+        r_state_free (state);
+        abort ();
     }
 
-    if (argc > 1)
-        r_set_current_input_port_x
-            (state, r_open_input_file (state, argv [1]));
-
-    while (1) {
-        rsexp datum = r_read (state);
+    while (TRUE) {
+        rsexp datum = r_read (reader);
 
         if (r_failure_p (datum)) {
             r_format (state, "~a~%", r_last_error (state));
@@ -36,6 +29,29 @@ int main (int argc, char* argv[])
 
         r_format (state, "~s~%", datum);
     }
+
+    r_reader_free (reader);
+}
+
+int main (int argc, char* argv[])
+{
+    RState* state;
+
+    GC_INIT ();
+
+    state = r_state_open ();
+
+    if (!state) {
+        fprintf (stderr, "ROSE interpreter initialization failed.\n");
+        abort ();
+    }
+
+    if (argc > 1)
+        r_set_current_input_port_x
+            (state, r_open_input_file (state, argv [1]));
+
+    repl_start (state);
+    r_state_free (state);
 
     return EXIT_SUCCESS;
 }

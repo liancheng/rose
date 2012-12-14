@@ -74,12 +74,15 @@ static void init_std_ports (RState* state)
 
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 {
-    RState* state = alloc_fn (NULL, NULL, sizeof (RState));
+    RState  zero = { 0 };
+    RState* state;
 
-    if (state)
-        memset (state, 0, sizeof (RState));
-    else
-        return NULL;
+    state = alloc_fn (NULL, NULL, sizeof (RState));
+
+    if (!state)
+        goto exit;
+
+    *state = zero;
 
     state->gc_list    = NULL;
     state->last_error = R_UNDEFINED;
@@ -91,6 +94,7 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
     init_std_ports (state);
     init_keywords (state);
 
+exit:
     return state;
 }
 

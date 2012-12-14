@@ -8,28 +8,27 @@
 
 class test_reader : public fixture_base {
 protected:
-    virtual void SetUp ()
-    {
-        fixture_base::SetUp ();
-    }
-
     virtual void TearDown ()
     {
+        r_reader_free (reader);
         fixture_base::TearDown ();
     }
 
-    void set_input (rconstcstring input)
+    RDatumReader* set_input (rconstcstring input)
     {
-        rsexp port = r_open_input_string (state, r_string_new (state, input));
-        r_set_current_input_port_x (state, port);
+        rsexp port;
+
+        port   = r_open_input_string (state, r_string_new (state, input));
+        reader = r_reader_new (state, port);
+
+        return reader;
     }
+
+    RDatumReader* reader;
 };
 
 TEST_F (test_reader, boolean)
 {
-    set_input ("#t ");
-    EXPECT_TRUE (r_eq_p (state, R_TRUE, r_read (state)));
-
-    set_input ("#f ");
-    EXPECT_TRUE (r_eq_p (state, R_FALSE, r_read (state)));
+    EXPECT_TRUE (r_eq_p (state, R_TRUE, r_read (set_input ("#t "))));
+    EXPECT_TRUE (r_eq_p (state, R_FALSE, r_read (set_input ("#f "))));
 }

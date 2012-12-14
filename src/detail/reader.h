@@ -7,8 +7,6 @@
 
 #include <setjmp.h>
 
-typedef struct RDatumReader RDatumReader;
-
 struct RDatumReader {
     RState* state;
     jmp_buf jmp;
@@ -17,6 +15,8 @@ struct RDatumReader {
     RLexer  lexer;
     RToken* lookahead;
     RToken  token;
+    rsize   current_line;
+    rsize   current_column;
 };
 
 #endif  /* __ROSE_DETAIL_READER_H__ */
