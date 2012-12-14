@@ -143,7 +143,7 @@ rsexp r_vector_new (RState* state, rsize k, rsexp fill)
         return r_last_error (state);
 
     res->length = k;
-    res->data   = k ? r_alloc (state, k * sizeof (rsexp)) : NULL;
+    res->data   = k ? r_new_array (state, rsexp, k) : NULL;
 
     for (i = 0; i < k; ++i)
         res->data [i] = fill;

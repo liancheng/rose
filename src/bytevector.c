@@ -89,7 +89,7 @@ rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
         return r_last_error (state);
 
     res->length = k;
-    res->data = k ? r_alloc (state, sizeof (rbyte) * k) : NULL;
+    res->data = k ? r_new_array (state, rbyte, k) : NULL;
 
     while (k--)
         res->data [k] = fill;
