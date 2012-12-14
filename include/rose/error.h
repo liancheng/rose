@@ -50,16 +50,6 @@ struct RNestedJump {
     jmp_buf      buf;
 };
 
-#define r_try(jmp, state)\
-        (jmp).previous = (state)->error_jmp;\
-        (state)->error_jmp = &(jmp);\
-        if (0 == setjmp ((state)->error_jmp->buf))
-
-#define r_catch else
-
-#define r_end_try(state)\
-        (state)->error_jmp = jmp.previous;
-
 void r_raise (RState* state);
 
 #define ensure(stmt)\

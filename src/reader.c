@@ -351,22 +351,22 @@ void r_reader_free (RDatumReader* reader)
 
 rsexp r_read (RDatumReader* reader)
 {
+    RState*     state;
     RNestedJump jmp;
     rsexp       datum;
 
-    r_try (jmp, reader->state) {
-        if (lookahead (reader)->_id == TKN_TERMINATION)
-            return R_EOF;
+    state = reader->state;
+    jmp.previous = state->error_jmp;
+    state->error_jmp = &jmp;
 
-        datum = read_datum (reader);
-        goto clean;
-    }
-    r_catch {
+    if (0 == setjmp (state->error_jmp->buf))
+        datum = lookahead (reader)->_id == TKN_TERMINATION
+              ? R_EOF
+              : read_datum (reader);
+    else
         datum = r_last_error (reader->state);
-        goto clean;
-    }
-    r_end_try (reader->state);
 
-clean:
+    state->error_jmp = jmp.previous;
+
     return datum;
 }
