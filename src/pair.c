@@ -14,12 +14,13 @@
 typedef struct RPair RPair;
 
 struct RPair {
+    R_OBJECT_HEADER
     rsexp car;
     rsexp cdr;
 };
 
-#define pair_to_sexp(pair)  ((r_cast (rsexp, (pair))) | R_PAIR_TAG)
-#define pair_from_sexp(obj) (r_cast (RPair*, (obj) & (~R_PAIR_TAG)))
+#define pair_from_sexp(obj)     (r_cast (RPair*, (obj)))
+#define pair_to_sexp(pair)      (r_cast (rsexp, (pair)))
 
 typedef rsexp (*ROutputFunc) (RState* state, rsexp, rsexp);
 
@@ -72,11 +73,18 @@ static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
            r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
 }
 
+rbool r_pair_p (rsexp obj)
+{
+    return r_type_tag (obj) == R_PAIR_TAG;
+}
+
 rsexp r_cons (RState* state, rsexp car, rsexp cdr)
 {
-    RPair* pair;
+    RPair* pair = r_object_new (state, RPair, R_PAIR_TAG);
 
-    pair = r_new (state, RPair);
+    if (!pair)
+        return R_FAILURE;
+
     pair->car = car;
     pair->cdr = cdr;
 

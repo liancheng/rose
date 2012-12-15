@@ -19,39 +19,11 @@ typedef rword rsexp;
  * case, the lower three bits of the pointer are known to be zero, and we can
  * store type information within these bits.
  *
- * Non-immediate types (end with \c #b00):
+ * Boxed types:
  *
- * - \c #b100: pair
- * - \c #b000: all heap-allocated types other than pair
+ * - \c #b000: heap-allocated types, including:
  *
- * Immediate types:
- *
- * - \c #b001: inline error
- * - \c #b010: character (see below)
- * - \c #b011: even small integer (SMI)
- * - \c #b101: special constant (see below)
- * - \c #b110: symbol
- * - \c #b111: odd small integer (SMI)
- *
- * Here is a list of terms about Rose types:
- *
- * - Immediate type:
- *
- *   All types whose value can fit into one \c sexp (a single machine word).
- *   Their type tag are none-zero.  Immediate types include:
- *
- *   - inline error
- *   - character
- *   - small integer
- *   - special constant
- *   - symbol
- *
- * - Boxed type:
- *
- *   All types that are allocated on heap, except pair.  Their type tags are
- *   zero, which means the \c sexp is exactly the pointer to those heap
- *   allocated objects.  Boxed types include:
- *
+ *   - pair
  *   - string
  *   - vector
  *   - bytevector
@@ -63,22 +35,22 @@ typedef rword rsexp;
  *   - fixnum
  *   - flonum
  *
- * - Tagged type:
+ * Immediate types:
  *
- *   All types whose type tag is none-zero, i.e. immediate types and pair.
- *
- * - Non-immediate type:
- *
- *   All types that are not immediate type, i.e., all boxed types plus pair.
+ * - \c #b001: inline error
+ * - \c #b010: character (see below)
+ * - \c #b011: even small integer (SMI)
+ * - \c #b101: special constant (see below)
+ * - \c #b110: symbol
+ * - \c #b111: odd small integer (SMI)
  */
 
 typedef enum {
-    /* Tagged types */
+    /* Immediate types */
     R_INLINE_ERROR_TAG  = 0x01,     /* #b001 */
     R_CHAR_TAG          = 0x02,     /* #b010 */
-    R_PAIR_TAG          = 0x04,     /* #b100 */
-    R_SPECIAL_CONST_TAG = 0x05,     /* #b101 */
-    R_SYMBOL_TAG        = 0x06,     /* #b110 */
+    R_SPECIAL_CONST_TAG = 0x04,     /* #b101 */
+    R_SYMBOL_TAG        = 0x05,     /* #b110 */
 
     R_SMI_TAG           = 0x03,     /* #b011 */
     R_SMI_EVEN_TAG      = 0x03,     /* #b011 */
@@ -86,19 +58,20 @@ typedef enum {
 
     /* Boxed types */
     R_BOXED_TAG         = 0x00,     /* #b000 */
-    R_STRING_TAG        = 0x08,
-    R_VECTOR_TAG        = 0x09,
-    R_BYTEVECTOR_TAG    = 0x0a,
-    R_PROCEDURE_TAG     = 0x0b,
-    R_CONTINUATION_TAG  = 0x0c,
-    R_ENV_TAG           = 0x0d,
-    R_PORT_TAG          = 0x0e,
-    R_ERROR_TAG         = 0x0f,
-    R_FIXNUM_TAG        = 0x10,
-    R_FLONUM_TAG        = 0x11,
+    R_PAIR_TAG          = 0x08,
+    R_STRING_TAG        = 0x09,
+    R_VECTOR_TAG        = 0x0a,
+    R_BYTEVECTOR_TAG    = 0x0b,
+    R_PROCEDURE_TAG     = 0x0c,
+    R_CONTINUATION_TAG  = 0x0d,
+    R_ENV_TAG           = 0x0e,
+    R_PORT_TAG          = 0x0f,
+    R_ERROR_TAG         = 0x10,
+    R_FIXNUM_TAG        = 0x11,
+    R_FLONUM_TAG        = 0x12,
 
     /* End mark */
-    R_TAG_MAX           = 0x12
+    R_TAG_MAX           = 0x13
 }
 RTypeTag;
 
@@ -120,9 +93,7 @@ RTypeTag;
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
 #define r_boxed_p(obj)          (r_get_tag (obj) == R_BOXED_TAG)
-#define r_pair_p(obj)           (r_get_tag (obj) == R_PAIR_TAG)
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
-#define r_tagged_p(obj)         (!(r_boxed_p (obj)))
 
 #define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)

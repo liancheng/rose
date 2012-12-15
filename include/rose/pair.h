@@ -7,6 +7,7 @@
 
 R_BEGIN_DECLS
 
+rbool r_pair_p       (rsexp   obj);
 rsexp r_cons         (RState* state,
                       rsexp   car,
                       rsexp   cdr);
