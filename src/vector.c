@@ -20,8 +20,8 @@ struct RVector {
     rsexp* data;
 };
 
-#define vector_from_sexp(obj)   ((RVector*) (obj))
-#define vector_to_sexp(vector)  ((rsexp) (vector))
+#define vector_from_sexp(obj)   (r_cast (RVector*, (obj)))
+#define vector_to_sexp(vector)  (r_cast (rsexp, (vector)))
 
 typedef RWriteFunc ROutputFunc;
 
@@ -140,10 +140,15 @@ rsexp r_vector_new (RState* state, rsize k, rsexp fill)
     RVector* res = r_object_new (state, RVector, R_VECTOR_TAG);
 
     if (!res)
-        return r_last_error (state);
+        return R_FAILURE;
 
     res->length = k;
     res->data   = k ? r_new_array (state, rsexp, k) : NULL;
+
+    if (k && !res->data) {
+        r_free (state, res);
+        return R_FAILURE;
+    }
 
     for (i = 0; i < k; ++i)
         res->data [i] = fill;

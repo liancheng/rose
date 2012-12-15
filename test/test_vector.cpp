@@ -15,6 +15,14 @@ TEST_F (test_vector, r_vector_new)
     EXPECT_EQ (expected, actual);
 }
 
+TEST_F (test_vector, r_vector_new_empty)
+{
+    rsexp v = r_vector_new (state, 0, R_TRUE);
+
+    EXPECT_TRUE (r_vector_p (v));
+    EXPECT_EQ(r_int_to_sexp (0), r_vector_length (v));
+}
+
 TEST_F (test_vector, r_vector)
 {
     rsexp actual = r_vector (state, 2, r_int_to_sexp (1), r_int_to_sexp (2));
