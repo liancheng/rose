@@ -3,8 +3,8 @@
 #include "detail/number_reader.h"
 #include "detail/port.h"
 #include "detail/sexp.h"
+#include "rose/gc.h"
 #include "rose/gmp.h"
-#include "rose/memory.h"
 #include "rose/number.h"
 #include "rose/port.h"
 

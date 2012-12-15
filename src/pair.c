@@ -2,7 +2,7 @@
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/eq.h"
-#include "rose/memory.h"
+#include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"

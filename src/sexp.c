@@ -1,7 +1,7 @@
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/error.h"
-#include "rose/memory.h"
+#include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/port.h"
 

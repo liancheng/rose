@@ -1,7 +1,7 @@
 #include "detail/error.h"
 #include "detail/port.h"
 #include "detail/state.h"
-#include "rose/memory.h"
+#include "rose/gc.h"
 #include "rose/string.h"
 
 #include <assert.h>

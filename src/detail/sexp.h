@@ -47,9 +47,4 @@ RObject*   r_object_alloc (RState*  state,
 #define r_object_new(state, type, tag)\
         (r_cast (type*, r_object_alloc (state, tag)))
 
-void init_bool_type_info          (RState* state);
-void init_char_type_info          (RState* state);
-void init_special_const_type_info (RState* state);
-void init_smi_type_info           (RState* state);
-
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

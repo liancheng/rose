@@ -25,7 +25,4 @@ RFlonum;
 #define flonum_to_sexp(flonum)  ((rsexp) (flonum))
 #define flonum_from_sexp(obj)   ((RFlonum*) (obj))
 
-void init_fixnum_type_info (RState* state);
-void init_flonum_type_info (RState* state);
-
 #endif  /* __ROSE_DETAIL_NUMBER_H__ */

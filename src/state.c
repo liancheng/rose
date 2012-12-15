@@ -1,19 +1,24 @@
-#include "detail/bytevector.h"
-#include "detail/error.h"
-#include "detail/number.h"
-#include "detail/pair.h"
 #include "detail/port.h"
-#include "detail/sexp.h"
 #include "detail/state.h"
-#include "detail/string.h"
-#include "detail/symbol.h"
-#include "detail/vector.h"
-
-#include "rose/memory.h"
+#include "rose/gc.h"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+
+void init_bool_type_info          (RState* state);
+void init_bytevector_type_info    (RState* state);
+void init_char_type_info          (RState* state);
+void init_error_type_info         (RState* state);
+void init_fixnum_type_info        (RState* state);
+void init_flonum_type_info        (RState* state);
+void init_pair_type_info          (RState* state);
+void init_port_type_info          (RState* state);
+void init_smi_type_info           (RState* state);
+void init_special_const_type_info (RState* state);
+void init_string_type_info        (RState* state);
+void init_symbol_type_info        (RState* state);
+void init_vector_type_info        (RState* state);
 
 static void init_keyword (RState*       state,
                           ruint         index,

@@ -22,7 +22,6 @@ RPortMode;
 typedef void (*RPortClearFunc) (RState*, rpointer);
 typedef void (*RPortMarkFunc)  (RState*, rpointer);
 
-void  init_port_type_info (RState* state);
-FILE* port_to_stream      (rsexp   port);
+FILE* port_to_stream (rsexp   port);
 
 #endif  /* __ROSE_DETAIL_PORT_H__ */
