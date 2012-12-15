@@ -184,7 +184,7 @@ rsexp r_open_input_string (RState* state, rsexp string)
     FILE*    stream;
 
     input  = r_cast (rpointer, r_string_to_cstr (string));
-    size   = r_string_byte_count (string);
+    size   = r_string_length_by_byte (string);
     stream = fmemopen (input, size, "r");
 
     if (!stream) {

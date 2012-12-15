@@ -18,30 +18,26 @@ R_BEGIN_DECLS
 #define R_ERROR_UNKNOWN         (__INLINE_ERROR (R_ERROR_API + 0))
 #define R_ERROR_OOM             (__INLINE_ERROR (R_ERROR_API + 1))
 
-rsexp r_error_new             (RState*       state,
-                               rsexp         message,
-                               rsexp         irritants);
-rbool r_error_p               (rsexp         obj);
-rsexp r_error_get_message     (rsexp         error);
-rsexp r_error_get_irritants   (rsexp         error);
-void  r_error_set_message_x   (rsexp         error,
-                               rsexp         message);
-void  r_error_set_irritants_x (rsexp         error,
-                               rsexp         irritants);
-rsexp r_error_printf          (RState*       state,
-                               rconstcstring format,
-                               ...);
-rsexp r_error_format          (RState*       state,
-                               rconstcstring format,
-                               ...);
-rsexp r_error                 (RState*       state,
-                               rconstcstring message);
-rsexp r_last_error            (RState*       state);
-rsexp r_set_last_error_x      (RState*       state,
-                               rsexp         error);
-rsexp r_clear_last_error_x    (RState*       state);
-rsexp r_inherit_errno_x       (RState*       state,
-                               rint          errnum);
+rsexp r_error_new              (RState*       state,
+                                rsexp         message,
+                                rsexp         irritants);
+rbool r_error_p                (rsexp         obj);
+rsexp r_error_object_message   (rsexp         error);
+rsexp r_error_object_irritants (rsexp         error);
+rsexp r_error_printf           (RState*       state,
+                                rconstcstring format,
+                                ...);
+rsexp r_error_format           (RState*       state,
+                                rconstcstring format,
+                                ...);
+rsexp r_error                  (RState*       state,
+                                rconstcstring message);
+rsexp r_last_error             (RState*       state);
+rsexp r_set_last_error_x       (RState*       state,
+                                rsexp         error);
+rsexp r_clear_last_error_x     (RState*       state);
+rsexp r_inherit_errno_x        (RState*       state,
+                                rint          errnum);
 
 typedef struct RNestedJump RNestedJump;
 

@@ -123,17 +123,6 @@ rsexp keyword (RState* state, ruint index)
     return state->keywords [index];
 }
 
-rcstring cstring_dup (RState* state, rconstcstring str)
-{
-    rsize    size = strlen (str);
-    rcstring res  = r_cast (rcstring, r_new0_array (state, rchar, size + 1));
-
-    if (res)
-        memcpy (res, str, size + 1);
-
-    return res;
-}
-
 void r_state_free (RState* state)
 {
     free_builtin_types (state);

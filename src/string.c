@@ -47,6 +47,17 @@ static void destruct_string (RState* state, RObject* obj)
     r_free (state, str->data);
 }
 
+static rcstring cstring_dup (RState* state, rconstcstring str)
+{
+    rsize    size = strlen (str);
+    rcstring res  = r_cast (rcstring, r_new0_array (state, rchar, size + 1));
+
+    if (res)
+        memcpy (res, str, size + 1);
+
+    return res;
+}
+
 void init_string_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
@@ -103,13 +114,13 @@ rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
                         lhs_str->length * sizeof (char));
 }
 
-rint r_string_byte_count (rsexp obj)
+rsize r_string_length_by_byte (rsexp obj)
 {
     assert (r_string_p (obj));
     return string_from_sexp (obj)->length;
 }
 
-rint r_string_length (rsexp obj)
+rsize r_string_length (rsexp obj)
 {
     assert (r_string_p (obj));
     return string_from_sexp (obj)->length;

@@ -58,7 +58,5 @@ rpointer default_alloc_fn (rpointer      aux,
                            rsize         size);
 rsexp    keyword          (RState*       state,
                            ruint         index);
-rcstring cstring_dup      (RState*       state,
-                           rconstcstring str);
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */

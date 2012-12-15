@@ -41,8 +41,8 @@ static rsexp write_error (RState* state, rsexp port, rsexp obj)
         ensure (r_port_format (state,
                                port,
                                "(error (message ~s) (irritants ~s))",
-                               r_error_get_message (obj),
-                               r_error_get_irritants (obj)));
+                               r_error_object_message (obj),
+                               r_error_object_irritants (obj)));
 
     return R_UNSPECIFIED;
 }
@@ -67,8 +67,8 @@ static rsexp display_error (RState* state, rsexp port, rsexp obj)
         ensure (r_port_format (state,
                                port,
                                "message: ~a; irritants: ~a",
-                               r_error_get_message (obj),
-                               r_error_get_irritants (obj)));
+                               r_error_object_message (obj),
+                               r_error_object_irritants (obj)));
 
     return R_UNSPECIFIED;
 }
@@ -105,24 +105,14 @@ rbool r_error_p (rsexp obj)
         || r_type_tag (obj) == R_INLINE_ERROR_TAG;
 }
 
-rsexp r_error_get_message (rsexp error)
+rsexp r_error_object_message (rsexp error)
 {
     return error_from_sexp (error)->message;
 }
 
-rsexp r_error_get_irritants (rsexp error)
+rsexp r_error_object_irritants (rsexp error)
 {
     return error_from_sexp (error)->irritants;
-}
-
-void r_error_set_message_x (rsexp error, rsexp message)
-{
-    error_from_sexp (error)->message = message;
-}
-
-void r_error_set_irritants_x (rsexp error, rsexp irritants)
-{
-    error_from_sexp (error)->irritants = irritants;
 }
 
 rsexp r_error_printf (RState* state, rconstcstring format, ...)
