@@ -50,9 +50,8 @@ void r_raise (RState* state);
 
 #define ensure(stmt)\
         do {\
-            rsexp __res__ = stmt;\
-            if (r_failure_p (__res__))\
-                return __res__;\
+            if (r_failure_p (stmt))\
+                return R_FAILURE;\
         }\
         while (0)
 
