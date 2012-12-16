@@ -186,8 +186,12 @@ rsexp r_vlist (RState* state, rsize k, va_list args)
     rsize i;
     rsexp res = R_NULL;
 
-    for (i = 0; i < k; ++i)
+    for (i = 0; i < k; ++i) {
         res = r_cons (state, va_arg (args, rsexp), res);
+
+        if (r_failure_p (res))
+            return R_FAILURE;
+    }
 
     return r_reverse (state, res);
 }

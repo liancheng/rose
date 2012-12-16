@@ -177,15 +177,16 @@ rsexp r_vector_ref (RState* state, rsexp vector, rsize k)
 {
     return check_index_overflow (state, vector, k)
            ? vector_from_sexp (vector)->data [k]
-           : r_last_error (state);
+           : R_FAILURE;
 }
 
 rsexp r_vector_set_x (RState* state, rsexp vector, rsize k, rsexp obj)
 {
     if (!check_index_overflow (state, vector, k))
-        return r_last_error (state);
+        return R_FAILURE;
 
     vector_from_sexp (vector)->data [k] = obj;
+
     return R_TRUE;
 }
 
@@ -208,6 +209,9 @@ rsexp r_list_to_vector (RState* state, rsexp list)
                         r_uint_from_sexp (res),
                         R_UNDEFINED);
 
+    if (r_failure_p (res))
+        return R_FAILURE;
+
     for (i = 0; !r_null_p (list); ++i) {
         r_vector_set_x (state, res, i, r_car (list));
         list = r_cdr (list);
@@ -221,8 +225,12 @@ rsexp r_vector_to_list (RState* state, rsexp vector)
     rsize i;
     rsexp res = R_NULL;
 
-    for (i = r_uint_from_sexp (r_vector_length (vector)); i > 0; --i)
+    for (i = r_uint_from_sexp (r_vector_length (vector)); i > 0; --i) {
         res = r_cons (state, r_vector_ref (state, vector, i - 1), res);
+
+        if (r_failure_p (res))
+            return R_FAILURE;
+    }
 
     return res;
 }
