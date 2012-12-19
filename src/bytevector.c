@@ -46,7 +46,7 @@ static rsexp write_bytevector (RState* state, rsexp port, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-static void destruct_bytevector (RState* state, RObject* obj)
+static void bytevector_finalize (RState* state, RObject* obj)
 {
     r_free (state, r_cast (RBytevector*, obj)->data);
 }
@@ -76,7 +76,7 @@ void init_bytevector_type_info (RState* state)
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = r_bytevector_equal_p;
     type->ops.mark     = NULL;
-    type->ops.destruct = destruct_bytevector;
+    type->ops.finalize = bytevector_finalize;
 
     state->builtin_types [R_BYTEVECTOR_TAG] = type;
 }

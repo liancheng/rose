@@ -19,7 +19,7 @@ struct RString {
 #define string_from_sexp(obj)   (r_cast (RString*, (obj)))
 #define string_to_sexp(string)  (r_cast (rsexp, (string)))
 
-static rsexp write_string (RState* state, rsexp port, rsexp obj)
+static rsexp string_write (RState* state, rsexp port, rsexp obj)
 {
     rcstring p;
 
@@ -36,12 +36,12 @@ static rsexp write_string (RState* state, rsexp port, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-static rsexp display_string (RState* state, rsexp port, rsexp obj)
+static rsexp string_display (RState* state, rsexp port, rsexp obj)
 {
     return r_port_puts (state, port, string_from_sexp (obj)->data);
 }
 
-static void destruct_string (RState* state, RObject* obj)
+static void string_finalize (RState* state, RObject* obj)
 {
     RString* str = r_cast (RString*, obj);
     r_free (state, str->data);
@@ -64,12 +64,12 @@ void init_string_type_info (RState* state)
 
     type->size         = sizeof (RString);
     type->name         = "string";
-    type->ops.write    = write_string;
-    type->ops.display  = display_string;
+    type->ops.write    = string_write;
+    type->ops.display  = string_display;
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = r_string_equal_p;
     type->ops.mark     = NULL;
-    type->ops.destruct = destruct_string;
+    type->ops.finalize = string_finalize;
 
     state->builtin_types [R_STRING_TAG] = type;
 }

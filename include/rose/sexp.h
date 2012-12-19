@@ -93,7 +93,7 @@ RTypeTag;
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
 #define r_boxed_p(obj)          (r_get_tag (obj) == R_BOXED_TAG)
-#define r_immediate_p(obj)      (!(r_boxed_p (obj)) && !(r_pair_p (obj)))
+#define r_immediate_p(obj)      (!(r_boxed_p (obj)))
 
 #define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)

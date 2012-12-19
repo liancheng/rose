@@ -10,14 +10,15 @@ typedef struct RTypeInfo RTypeInfo;
 #define R_OBJECT_HEADER\
         RTypeTag type_tag : 5;\
         ruint    gc_color : 2;\
-        RObject* gc_next;
+        RObject* gray_next;\
+        RObject* chrono_next;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
 typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
 typedef rsexp (*RWriteFunc)   (RState*, rsexp, rsexp);
 typedef rsexp (*RDisplayFunc) (RState*, rsexp, rsexp);
 typedef void  (*RGcMarkFunc)  (RState*, rsexp);
-typedef void  (*RObjDestruct) (RState*, RObject*);
+typedef void  (*RFinalizer)   (RState*, RObject*);
 
 struct RObject {
     R_OBJECT_HEADER
@@ -33,18 +34,16 @@ struct RTypeInfo {
         REqvPred     eqv_p;
         REqualPred   equal_p;
         RGcMarkFunc  mark;
-        RObjDestruct destruct;
+        RFinalizer   finalize;
     }
     ops;
 };
 
-ruint      r_type_tag     (rsexp    obj);
-RTypeInfo* r_type_info    (RState*  state,
-                           rsexp    obj);
-RObject*   r_object_alloc (RState*  state,
-                           RTypeTag type_tag);
+ruint      r_type_tag  (rsexp    obj);
+RTypeInfo* r_type_info (RState*  state,
+                        rsexp    obj);
 
-#define r_object_new(state, type, tag)\
-        (r_cast (type*, r_object_alloc (state, tag)))
+#define object_from_sexp(obj)   (r_cast (RObject*, (obj)))
+#define object_to_sexp(obj)     (r_cast (rsexp, (obj)))
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

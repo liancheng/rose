@@ -77,10 +77,15 @@ static void init_std_ports (RState* state)
     state->current_error_port  = r_stderr_port (state);
 }
 
+static void init_gc (RState* state)
+{
+    gc_state_init (state, &state->gc);
+}
+
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 {
-    RState  zero = { 0 };
     RState* state;
+    RState  zero = { { 0 } };
 
     state = alloc_fn (NULL, NULL, sizeof (RState));
 
@@ -89,15 +94,16 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 
     *state = zero;
 
-    state->gc_list    = NULL;
     state->last_error = R_UNDEFINED;
     state->error_jmp  = NULL;
     state->alloc_fn   = alloc_fn;
     state->alloc_aux  = aux;
 
+    init_gc (state);
+
     init_builtin_types (state);
-    init_std_ports (state);
-    init_keywords (state);
+    init_std_ports     (state);
+    init_keywords      (state);
 
 exit:
     return state;
@@ -110,11 +116,18 @@ RState* r_state_open ()
 
 static void free_builtin_types (RState* state)
 {
-    rsize i;
-
-    for (i = 0; i < R_TAG_MAX; ++i)
-        if (state->builtin_types [i])
-            r_free (state, state->builtin_types [i]);
+    r_free (state, state->builtin_types [R_CHAR_TAG]);
+    r_free (state, state->builtin_types [R_SMI_TAG]);
+    r_free (state, state->builtin_types [R_SPECIAL_CONST_TAG]);
+    r_free (state, state->builtin_types [R_SYMBOL_TAG]);
+    r_free (state, state->builtin_types [R_PAIR_TAG]);
+    r_free (state, state->builtin_types [R_STRING_TAG]);
+    r_free (state, state->builtin_types [R_VECTOR_TAG]);
+    r_free (state, state->builtin_types [R_BYTEVECTOR_TAG]);
+    r_free (state, state->builtin_types [R_PORT_TAG]);
+    r_free (state, state->builtin_types [R_ERROR_TAG]);
+    r_free (state, state->builtin_types [R_FIXNUM_TAG]);
+    r_free (state, state->builtin_types [R_FLONUM_TAG]);
 }
 
 rsexp keyword (RState* state, ruint index)
@@ -125,6 +138,9 @@ rsexp keyword (RState* state, ruint index)
 
 void r_state_free (RState* state)
 {
+    gc_scope_reset (state);
+    r_full_gc (state);
+    gc_state_destruct (state, &state->gc);
     free_builtin_types (state);
     r_free (state, state);
 }

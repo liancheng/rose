@@ -92,7 +92,7 @@ static rbool flonum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
         && lhs_num->imag == rhs_num->imag;
 }
 
-static void destruct_fixnum (RState* state, RObject* obj)
+static void fixnum_finalize (RState* state, RObject* obj)
 {
     RFixnum* fixnum = r_cast (RFixnum*, obj);
     mpq_clears (fixnum->real, fixnum->imag, NULL);
@@ -116,7 +116,7 @@ void init_fixnum_type_info (RState* state)
     type->ops.eqv_p    = fixnum_eqv_p;
     type->ops.equal_p  = fixnum_eqv_p;
     type->ops.mark     = NULL;
-    type->ops.destruct = destruct_fixnum;
+    type->ops.finalize = fixnum_finalize;
 
     state->builtin_types [R_FIXNUM_TAG] = type;
 }
@@ -132,7 +132,7 @@ void init_flonum_type_info (RState* state)
     type->ops.eqv_p    = flonum_eqv_p;
     type->ops.equal_p  = flonum_eqv_p;
     type->ops.mark     = NULL;
-    type->ops.destruct = NULL;
+    type->ops.finalize = NULL;
 
     state->builtin_types [R_FLONUM_TAG] = type;
 }

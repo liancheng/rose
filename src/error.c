@@ -73,6 +73,12 @@ static rsexp display_error (RState* state, rsexp port, rsexp obj)
     return R_UNSPECIFIED;
 }
 
+static void error_mark (RState* state, rsexp obj)
+{
+    r_gc_mark (state, error_from_sexp (obj)->message);
+    r_gc_mark (state, error_from_sexp (obj)->irritants);
+}
+
 void init_error_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
@@ -83,9 +89,10 @@ void init_error_type_info (RState* state)
     type->ops.display  = display_error;
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = NULL;
-    type->ops.mark     = NULL;
-    type->ops.destruct = NULL;
+    type->ops.mark     = error_mark;
+    type->ops.finalize = NULL;
 
+    state->builtin_types [R_INLINE_ERROR_TAG] = type;
     state->builtin_types [R_ERROR_TAG] = type;
 }
 

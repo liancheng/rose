@@ -28,6 +28,15 @@ void     r_free    (RState*  state,
 #define r_new0_array(state, type, n)\
         ((type*) r_calloc (state, sizeof (type), (n)))
 
+void r_gc_scope_open    (RState* state);
+void r_gc_scope_close   (RState* state);
+void r_gc_scope_protect (RState* state,
+                         rsexp   obj);
+
+void r_full_gc          (RState* state);
+void r_gc_mark          (RState* state,
+                         rsexp   obj);
+
 R_END_DECLS
 
 #endif  //  __ROSE_MEMORY_H__

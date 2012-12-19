@@ -60,7 +60,7 @@ static rsexp display_vector (RState* state, rsexp port, rsexp obj)
     return output_vector (state, port, obj, r_port_display);
 }
 
-static void destruct_vector (RState* state, RObject* obj)
+static void vector_finalize (RState* state, RObject* obj)
 {
     RVector* v = r_cast (RVector*, obj);
     r_free (state, v->data);
@@ -118,6 +118,14 @@ static rbool check_index_overflow (RState* state, rsexp vec, rsize k)
     return FALSE;
 }
 
+static void vector_mark (RState* state, rsexp obj)
+{
+    rsize i;
+
+    for (i = r_vector_length (obj); i != 0; --i)
+        r_gc_mark (state, r_vector_ref (state, obj, i - 1));
+}
+
 void init_vector_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
@@ -128,8 +136,8 @@ void init_vector_type_info (RState* state)
     type->ops.display  = display_vector;
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = vector_equal_p;
-    type->ops.mark     = NULL;
-    type->ops.destruct = destruct_vector;
+    type->ops.mark     = vector_mark;
+    type->ops.finalize = vector_finalize;
 
     state->builtin_types [R_VECTOR_TAG] = type;
 }

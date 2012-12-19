@@ -21,8 +21,8 @@ struct RPort {
     RPortMode      mode;
 
     rpointer       cookie;
-    RPortClearFunc clear;
-    RPortMarkFunc  mark;
+    RPortClearFunc cookie_clear;
+    RPortMarkFunc  cookie_mark;
 };
 
 #define port_from_sexp(obj)     (r_cast (RPort*, (obj)))
@@ -51,6 +51,8 @@ static rsexp make_port (RState*        state,
         goto exit;
     }
 
+    r_gc_scope_open (state);
+
     port->name = r_string_new (state, name);
 
     if (r_failure_p (port->name)) {
@@ -58,16 +60,18 @@ static rsexp make_port (RState*        state,
         goto exit;
     }
 
-    port->state  = state;
-    port->stream = stream;
-    port->mode   = mode;
-    port->cookie = cookie;
-    port->clear  = clear;
-    port->mark   = mark;
+    port->state        = state;
+    port->stream       = stream;
+    port->mode         = mode;
+    port->cookie       = cookie;
+    port->cookie_clear = clear;
+    port->cookie_mark  = mark;
 
     res = port_to_sexp (port);
 
 exit:
+    r_gc_scope_close (state);
+
     return res;
 }
 
@@ -77,14 +81,14 @@ static rsexp write_port (RState* state, rsexp port, rsexp obj)
             "#<port ~a>", port_from_sexp (obj)->name);
 }
 
-static void destruct_port (RState* state, RObject* obj)
+static void port_finalize (RState* state, RObject* obj)
 {
     r_close_port (port_to_sexp (r_cast (RPort*, obj)));
 }
 
 static void input_string_port_mark (RState* state, rpointer cookie)
 {
-    // r_gc_mark (r_cast (rsexp, cookie));
+    r_gc_mark (state, r_cast (rsexp, cookie));
 }
 
 typedef struct {
@@ -111,6 +115,16 @@ static rbool need_flush_p (rsexp port)
     return mode_set_p (port_from_sexp (port), MODE_FLUSH);
 }
 
+static void port_mark (RState* state, rsexp obj)
+{
+    RPort* port = port_from_sexp (obj);
+
+    r_gc_mark (state, port->name);
+
+    if (port->cookie_mark)
+        port->cookie_mark (state, port->cookie);
+}
+
 void init_port_type_info (RState* state)
 {
     RTypeInfo* type = r_new0 (state, RTypeInfo);
@@ -121,8 +135,8 @@ void init_port_type_info (RState* state)
     type->ops.display  = write_port;
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = NULL;
-    type->ops.mark     = NULL;
-    type->ops.destruct = destruct_port;
+    type->ops.mark     = port_mark;
+    type->ops.finalize = port_finalize;
 
     state->builtin_types [R_PORT_TAG] = type;
 }
@@ -300,7 +314,14 @@ void r_close_port (rsexp port)
     if (mode_set_p (p, MODE_DONT_CLOSE))
         return;
 
+    if (mode_set_p (p, MODE_CLOSED))
+        return;
+
     fclose (p->stream);
+
+    if (p->cookie_clear)
+        p->cookie_clear (p->state, p->cookie);
+
     set_mode_x (port_from_sexp (port), MODE_CLOSED);
 }
 
@@ -364,12 +385,7 @@ rsexp r_port_printf (RState* state, rsexp port, rconstcstring format, ...)
 
 rcstring r_port_gets (RState* state, rsexp port, rcstring dest, rint size)
 {
-    rcstring res = fgets (dest, size, port_to_stream (port));
-
-    if (!res)
-        r_inherit_errno_x (state, errno);
-
-    return res;
+    return fgets (dest, size, port_to_stream (port));
 }
 
 rsexp r_port_puts (RState* state, rsexp port, rconstcstring str)
@@ -457,7 +473,8 @@ rsexp r_port_vformat (RState*       state,
                 break;
 
             case 's':
-                ensure (r_port_write (state, port, va_arg (args, rsexp)));
+                /* ensure (r_port_write (state, port, va_arg (args, rsexp))); */
+                r_port_write (state, port, va_arg (args, rsexp));
                 break;
         }
     }

@@ -65,6 +65,12 @@ static rsexp display_pair (RState* state, rsexp port, rsexp obj)
     return output_pair (state, port, obj, r_port_display);
 }
 
+static void pair_mark (RState* state, rsexp obj)
+{
+    r_gc_mark (state, pair_from_sexp (obj)->car);
+    r_gc_mark (state, pair_from_sexp (obj)->cdr);
+}
+
 static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
 {
     return r_pair_p (lhs) &&
@@ -239,8 +245,8 @@ void init_pair_type_info (RState* state)
     type->ops.display  = display_pair;
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = pair_equal_p;
-    type->ops.mark     = NULL;
-    type->ops.destruct = NULL;
+    type->ops.mark     = pair_mark;
+    type->ops.finalize = NULL;
 
     state->builtin_types [R_PAIR_TAG] = type;
 }

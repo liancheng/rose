@@ -3,7 +3,6 @@
 #include "rose/port.h"
 #include "rose/reader.h"
 
-#include <gc/gc.h>
 #include <stdio.h>
 
 void repl_start (RState* state)
@@ -36,8 +35,6 @@ void repl_start (RState* state)
 int main (int argc, char* argv[])
 {
     RState* state;
-
-    GC_INIT ();
 
     state = r_state_open ();
 

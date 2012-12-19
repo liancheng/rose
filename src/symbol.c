@@ -39,7 +39,7 @@ void init_symbol_type_info (RState* state)
     type->ops.eqv_p    = NULL;
     type->ops.equal_p  = NULL;
     type->ops.mark     = NULL;
-    type->ops.destruct = NULL;
+    type->ops.finalize = NULL;
 
     state->builtin_types [R_SYMBOL_TAG] = type;
 }

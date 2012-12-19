@@ -1,6 +1,7 @@
 #ifndef __ROSE_DETAIL_STATE_H__
 #define __ROSE_DETAIL_STATE_H__
 
+#include "detail/gc.h"
 #include "detail/sexp.h"
 #include "rose/error.h"
 #include "rose/state.h"
@@ -32,8 +33,8 @@ typedef enum {
 RKeyword;
 
 struct RState {
-    /* Memory management */
-    RObject*     gc_list;
+    /* GC */
+    RGcState     gc;
 
     /* Error handling */
     rsexp        last_error;
