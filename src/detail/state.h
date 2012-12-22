@@ -7,6 +7,8 @@
 #include "rose/state.h"
 #include "rose/symbol.h"
 
+#include <glib.h>
+
 typedef enum {
     R_QUOTE,
     R_LAMBDA,
@@ -51,13 +53,14 @@ struct RState {
     rsexp        keywords [R_KEYWORD_COUNT];
 
     /* Type information */
-    RTypeInfo*    builtin_types [R_TAG_MAX];
+    RTypeInfo    builtin_types [R_TAG_MAX];
+    GHashTable*  user_type_ht;
 };
 
-rpointer default_alloc_fn (rpointer      aux,
-                           rpointer      ptr,
-                           rsize         size);
-rsexp    keyword          (RState*       state,
-                           ruint         index);
+void  init_builtin_type (RState*    state,
+                         RTypeTag   tag,
+                         RTypeInfo* type);
+rsexp keyword           (RState*    state,
+                         ruint      index);
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */

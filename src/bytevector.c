@@ -22,7 +22,7 @@ struct RBytevector {
 #define bytevector_from_sexp(obj)   (r_cast (RBytevector*, (obj)))
 #define bytevector_to_sexp(bytevec) (r_cast (rsexp, (bytevec)))
 
-static rsexp write_bytevector (RState* state, rsexp port, rsexp obj)
+static rsexp bytevector_write (RState* state, rsexp port, rsexp obj)
 {
     rsize length;
     rsize i;
@@ -67,23 +67,23 @@ static rbool check_index_overflow (RState* state, rsexp bv, rsize k)
 
 void init_bytevector_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RBytevector);
-    type->name         = "bytevector";
-    type->ops.write    = write_bytevector;
-    type->ops.display  = write_bytevector;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = r_bytevector_equal_p;
-    type->ops.mark     = NULL;
-    type->ops.finalize = bytevector_finalize;
+    type.size         = sizeof (RBytevector);
+    type.name         = "bytevector";
+    type.ops.write    = bytevector_write;
+    type.ops.display  = bytevector_write;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = r_bytevector_equal_p;
+    type.ops.mark     = NULL;
+    type.ops.finalize = bytevector_finalize;
 
-    state->builtin_types [R_BYTEVECTOR_TAG] = type;
+    init_builtin_type (state, R_TAG_BYTEVECTOR, &type);
 }
 
 rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 {
-    RBytevector* res = r_object_new (state, RBytevector, R_BYTEVECTOR_TAG);
+    RBytevector* res = r_object_new (state, RBytevector, R_TAG_BYTEVECTOR);
 
     if (!res)
         return r_last_error (state);
@@ -99,7 +99,7 @@ rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
 
 rbool r_bytevector_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_BYTEVECTOR_TAG;
+    return r_type_tag (obj) == R_TAG_BYTEVECTOR;
 }
 
 rsexp r_bytevector_length (rsexp obj)

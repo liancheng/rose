@@ -128,24 +128,24 @@ static void vector_mark (RState* state, rsexp obj)
 
 void init_vector_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RVector);
-    type->name         = "vector";
-    type->ops.write    = write_vector;
-    type->ops.display  = display_vector;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = vector_equal_p;
-    type->ops.mark     = vector_mark;
-    type->ops.finalize = vector_finalize;
+    type.size         = sizeof (RVector);
+    type.name         = "vector";
+    type.ops.write    = write_vector;
+    type.ops.display  = display_vector;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = vector_equal_p;
+    type.ops.mark     = vector_mark;
+    type.ops.finalize = vector_finalize;
 
-    state->builtin_types [R_VECTOR_TAG] = type;
+    init_builtin_type (state, R_TAG_VECTOR, &type);
 }
 
 rsexp r_vector_new (RState* state, rsize k, rsexp fill)
 {
     rsize i;
-    RVector* res = r_object_new (state, RVector, R_VECTOR_TAG);
+    RVector* res = r_object_new (state, RVector, R_TAG_VECTOR);
 
     if (!res)
         return R_FAILURE;
@@ -178,7 +178,7 @@ rsexp r_vector (RState* state, rsize k, ...)
 
 rbool r_vector_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_VECTOR_TAG;
+    return r_type_tag (obj) == R_TAG_VECTOR;
 }
 
 rsexp r_vector_ref (RState* state, rsexp vector, rsize k)

@@ -4,25 +4,14 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
-typedef struct RObject   RObject;
 typedef struct RTypeInfo RTypeInfo;
-
-#define R_OBJECT_HEADER\
-        RTypeTag type_tag : 5;\
-        ruint    gc_color : 2;\
-        RObject* gray_next;\
-        RObject* chrono_next;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
 typedef rbool (*REqualPred)   (RState*, rsexp, rsexp);
 typedef rsexp (*RWriteFunc)   (RState*, rsexp, rsexp);
 typedef rsexp (*RDisplayFunc) (RState*, rsexp, rsexp);
-typedef void  (*RGcMarkFunc)  (RState*, rsexp);
-typedef void  (*RFinalizer)   (RState*, RObject*);
-
-struct RObject {
-    R_OBJECT_HEADER
-};
+typedef void  (*RGcMark)      (RState*, rsexp);
+typedef void  (*RGcFinalize)  (RState*, RObject*);
 
 struct RTypeInfo {
     rsize size;
@@ -33,8 +22,8 @@ struct RTypeInfo {
         RDisplayFunc display;
         REqvPred     eqv_p;
         REqualPred   equal_p;
-        RGcMarkFunc  mark;
-        RFinalizer   finalize;
+        RGcMark      mark;
+        RGcFinalize  finalize;
     }
     ops;
 };

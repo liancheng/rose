@@ -15,14 +15,14 @@ typedef struct RPort RPort;
 struct RPort {
     R_OBJECT_HEADER
 
-    RState*        state;
-    FILE*          stream;
-    rsexp          name;
-    RPortMode      mode;
+    RState*          state;
+    FILE*            stream;
+    rsexp            name;
+    RPortMode        mode;
 
-    rpointer       cookie;
-    RPortClearFunc cookie_clear;
-    RPortMarkFunc  cookie_mark;
+    rpointer         cookie;
+    RPortClearCookie cookie_clear;
+    RPortMarkCookie  cookie_mark;
 };
 
 #define port_from_sexp(obj)     (r_cast (RPort*, (obj)))
@@ -32,18 +32,18 @@ struct RPort {
 #define set_mode_x(port, m)     ((port)->mode |= (m))
 #define clear_mode_x(port, m)   ((port)->mode &= ~(m))
 
-static rsexp make_port (RState*        state,
-                        FILE*          stream,
-                        rconstcstring  name,
-                        RPortMode      mode,
-                        rpointer       cookie,
-                        RPortClearFunc clear,
-                        RPortMarkFunc  mark)
+static rsexp make_port (RState*          state,
+                        FILE*            stream,
+                        rconstcstring    name,
+                        RPortMode        mode,
+                        rpointer         cookie,
+                        RPortClearCookie clear_fn,
+                        RPortMarkCookie  mark_fn)
 {
     rsexp  res;
     RPort* port;
 
-    port = r_object_new (state, RPort, R_PORT_TAG);
+    port = r_object_new (state, RPort, R_TAG_PORT);
 
     if (!port) {
         res = R_FAILURE;
@@ -64,8 +64,8 @@ static rsexp make_port (RState*        state,
     port->stream       = stream;
     port->mode         = mode;
     port->cookie       = cookie;
-    port->cookie_clear = clear;
-    port->cookie_mark  = mark;
+    port->cookie_clear = clear_fn;
+    port->cookie_mark  = mark_fn;
 
     res = port_to_sexp (port);
 
@@ -110,11 +110,6 @@ static rbool output_string_port_p (rsexp port)
     return mode_set_p (port_from_sexp (port), MODE_STRING_IO | MODE_OUTPUT);
 }
 
-static rbool need_flush_p (rsexp port)
-{
-    return mode_set_p (port_from_sexp (port), MODE_FLUSH);
-}
-
 static void port_mark (RState* state, rsexp obj)
 {
     RPort* port = port_from_sexp (obj);
@@ -127,18 +122,18 @@ static void port_mark (RState* state, rsexp obj)
 
 void init_port_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RPort);
-    type->name         = "port";
-    type->ops.write    = write_port;
-    type->ops.display  = write_port;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.mark     = port_mark;
-    type->ops.finalize = port_finalize;
+    type.size         = sizeof (RPort);
+    type.name         = "port";
+    type.ops.write    = write_port;
+    type.ops.display  = write_port;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = NULL;
+    type.ops.mark     = port_mark;
+    type.ops.finalize = port_finalize;
 
-    state->builtin_types [R_PORT_TAG] = type;
+    init_builtin_type (state, R_TAG_PORT, &type);
 }
 
 FILE* port_to_stream (rsexp port)
@@ -237,14 +232,13 @@ rsexp r_open_output_string (RState* state)
 
     if (!stream) {
         errnum = errno;
-        r_inherit_errno_x (state, errno);
+        r_inherit_errno_x (state, errnum);
         res = R_FAILURE;
         goto clean;
     }
 
     res = make_port (state, stream, "(output-string-port)",
-                     MODE_OUTPUT | MODE_STRING_IO | MODE_FLUSH,
-                     r_cast (rpointer, cookie),
+                     MODE_OUTPUT | MODE_STRING_IO, r_cast (rpointer, cookie),
                      output_string_port_clear, NULL);
 
     if (r_failure_p (res)) {
@@ -270,6 +264,12 @@ rsexp r_get_output_string (RState* state, rsexp port)
     if (!output_string_port_p (port)) {
         res = R_FAILURE;
         error_wrong_type_arg (state, "output-string-port", port);
+        goto exit;
+    }
+
+    if (EOF == fflush (port_to_stream (port))) {
+        res = R_FAILURE;
+        r_error (state, "fflush (3) failed");
         goto exit;
     }
 
@@ -332,7 +332,7 @@ rbool r_eof_p (rsexp port)
 
 rbool r_port_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_PORT_TAG;
+    return r_type_tag (obj) == R_TAG_PORT;
 }
 
 rbool r_input_port_p (rsexp obj)
@@ -360,13 +360,6 @@ rsexp r_port_vprintf (RState*       state,
         goto exit;
     }
 
-    if (need_flush_p (port))
-        if (EOF == fflush (port_to_stream (port))) {
-            res = R_FAILURE;
-            r_error (state, "fflush (3) failed");
-            goto exit;
-        }
-
 exit:
     return res;
 }
@@ -378,6 +371,18 @@ rsexp r_port_printf (RState* state, rsexp port, rconstcstring format, ...)
 
     va_start (args, format);
     res = r_port_vprintf (state, port, format, args);
+    va_end (args);
+
+    return res;
+}
+
+rsexp r_printf (RState* state, rconstcstring format, ...)
+{
+    va_list args;
+    rsexp   res;
+
+    va_start (args, format);
+    res = r_port_vprintf (state, r_current_input_port (state), format, args);
     va_end (args);
 
     return res;
@@ -397,13 +402,6 @@ rsexp r_port_puts (RState* state, rsexp port, rconstcstring str)
         r_error (state, "fputs (3) failed");
         goto exit;
     }
-
-    if (need_flush_p (port))
-        if (EOF == fflush (port_to_stream (port))) {
-            res = R_FAILURE;
-            r_error (state, "fflush (3) failed");
-            goto exit;
-        }
 
 exit:
     return res;
@@ -429,13 +427,6 @@ rsexp r_port_write_char (RState* state, rsexp port, rchar ch)
         r_error (state, "fputc (3) failed");
         goto exit;
     }
-
-    if (need_flush_p (port))
-        if (EOF == fflush (port_to_stream (port))) {
-            res = R_FAILURE;
-            r_error (state, "fflush (3) failed");
-            goto exit;
-        }
 
 exit:
     return res;

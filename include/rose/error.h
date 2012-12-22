@@ -9,14 +9,14 @@
 
 R_BEGIN_DECLS
 
-#define r_inline_error_p(obj)   (r_get_tag (obj) == R_INLINE_ERROR_TAG)
+#define r_inline_error_p(obj)   (r_get_tag (obj) == R_TAG_INLINE_ERROR)
 
-#define __INLINE_ERROR(n)       (((n) << R_TAG_BITS) | R_INLINE_ERROR_TAG)
+#define MAKE_INLINE_ERROR(n)    (((n) << R_TAG_BITS) | R_TAG_INLINE_ERROR)
 #define R_ERROR_INTERNAL        0
 #define R_ERROR_API             1024
 #define R_ERROR_USER            4096
-#define R_ERROR_UNKNOWN         (__INLINE_ERROR (R_ERROR_API + 0))
-#define R_ERROR_OOM             (__INLINE_ERROR (R_ERROR_API + 1))
+#define R_ERROR_UNKNOWN         (MAKE_INLINE_ERROR (R_ERROR_API + 0))
+#define R_ERROR_OOM             (MAKE_INLINE_ERROR (R_ERROR_API + 1))
 
 rsexp r_error_new              (RState*       state,
                                 rsexp         message,

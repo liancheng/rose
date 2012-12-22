@@ -34,6 +34,9 @@ rsexp    r_port_printf               (RState*       state,
                                       rsexp         port,
                                       rconstcstring format,
                                       ...);
+rsexp    r_printf                    (RState*       state,
+                                      rconstcstring format,
+                                      ...);
 rcstring r_port_gets                 (RState*       state,
                                       rsexp         port,
                                       rcstring      dest,

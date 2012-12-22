@@ -60,23 +60,23 @@ static rcstring cstring_dup (RState* state, rconstcstring str)
 
 void init_string_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RString);
-    type->name         = "string";
-    type->ops.write    = string_write;
-    type->ops.display  = string_display;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = r_string_equal_p;
-    type->ops.mark     = NULL;
-    type->ops.finalize = string_finalize;
+    type.size         = sizeof (RString);
+    type.name         = "string";
+    type.ops.write    = string_write;
+    type.ops.display  = string_display;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = r_string_equal_p;
+    type.ops.mark     = NULL;
+    type.ops.finalize = string_finalize;
 
-    state->builtin_types [R_STRING_TAG] = type;
+    init_builtin_type (state, R_TAG_STRING, &type);
 }
 
 rsexp r_string_new (RState* state, rconstcstring str)
 {
-    RString* res = r_object_new (state, RString, R_STRING_TAG);
+    RString* res = r_object_new (state, RString, R_TAG_STRING);
 
     if (!res)
         return r_last_error (state);
@@ -89,7 +89,7 @@ rsexp r_string_new (RState* state, rconstcstring str)
 
 rbool r_string_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_STRING_TAG;
+    return r_type_tag (obj) == R_TAG_STRING;
 }
 
 rconstcstring r_string_to_cstr (rsexp obj)

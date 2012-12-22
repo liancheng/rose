@@ -81,24 +81,24 @@ static void error_mark (RState* state, rsexp obj)
 
 void init_error_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RError);
-    type->name         = "error";
-    type->ops.write    = write_error;
-    type->ops.display  = display_error;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.mark     = error_mark;
-    type->ops.finalize = NULL;
+    type.size         = sizeof (RError);
+    type.name         = "error";
+    type.ops.write    = write_error;
+    type.ops.display  = display_error;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = NULL;
+    type.ops.mark     = error_mark;
+    type.ops.finalize = NULL;
 
-    state->builtin_types [R_INLINE_ERROR_TAG] = type;
-    state->builtin_types [R_ERROR_TAG] = type;
+    init_builtin_type (state, R_TAG_INLINE_ERROR, &type);
+    init_builtin_type (state, R_TAG_ERROR,        &type);
 }
 
 rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 {
-    RError* res = r_object_new (state, RError, R_ERROR_TAG);
+    RError* res = r_object_new (state, RError, R_TAG_ERROR);
 
     res->message = message;
     res->irritants = irritants;
@@ -108,8 +108,8 @@ rsexp r_error_new (RState* state, rsexp message, rsexp irritants)
 
 rbool r_error_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_ERROR_TAG
-        || r_type_tag (obj) == R_INLINE_ERROR_TAG;
+    return r_type_tag (obj) == R_TAG_ERROR
+        || r_type_tag (obj) == R_TAG_INLINE_ERROR;
 }
 
 rsexp r_error_object_message (rsexp error)
@@ -175,6 +175,14 @@ rsexp r_clear_last_error_x (RState* state)
     return old;
 }
 
+void r_raise (RState* state)
+{
+    if (state->error_jmp)
+        longjmp (state->error_jmp->buf, 1);
+    else
+        abort ();
+}
+
 rsexp r_inherit_errno_x (RState* state, rint errnum)
 {
     rchar buffer [BUFSIZ];
@@ -185,14 +193,6 @@ rsexp r_inherit_errno_x (RState* state, rint errnum)
     r_set_last_error_x (state, error);
 
     return error;
-}
-
-void r_raise (RState* state)
-{
-    if (state->error_jmp)
-        longjmp (state->error_jmp->buf, 1);
-    else
-        abort ();
 }
 
 rsexp error_wrong_type_arg (RState* state, rconstcstring expected, rsexp given)

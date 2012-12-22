@@ -28,12 +28,13 @@ RGcColor;
 
 void gc_state_dump (RState* state)
 {
-    RObject* obj = state->gc.chrono_list;
+    RGcState* gc  = &state->gc;
+    RObject*  obj = gc->chrono_list;
 
     r_format (state, "*** GC state dump ***~%");
 
     while (obj) {
-        r_port_printf (state, r_current_output_port (state), "%p ", obj);
+        r_printf (state, "%p ", obj);
         r_format (state, "~s~%", object_to_sexp (obj));
         obj = obj->chrono_next;
     }
@@ -55,14 +56,18 @@ static void gc_scope_protect (RState* state, RObject* obj)
 
 static void gc_prepend_to_gray_list (RState* state, RObject* obj)
 {
-    obj->gray_next = state->gc.gray_list;
-    state->gc.gray_list = obj;
+    RGcState* gc = &state->gc;
+
+    obj->gray_next = gc->gray_list;
+    gc->gray_list  = obj;
 }
 
 static void gc_prepend_to_chrono_list (RState* state, RObject* obj)
 {
-    obj->chrono_next = state->gc.chrono_list;
-    state->gc.chrono_list = obj;
+    RGcState* gc = &state->gc;
+
+    obj->chrono_next = gc->chrono_list;
+    gc->chrono_list  = obj;
 }
 
 static void gc_mark (RState* state, RObject* obj)
@@ -90,8 +95,8 @@ static void gc_scan_phase (RState* state)
 
 static void gc_mark_children (RState* state, RObject* obj)
 {
-    RTypeInfo*  type;
-    RGcMarkFunc mark;
+    RTypeInfo* type;
+    RGcMark    mark;
 
     type = r_type_info (state, object_to_sexp (obj));
     mark = type->ops.mark;
@@ -104,10 +109,8 @@ static void gc_mark_children (RState* state, RObject* obj)
 
 static void gc_mark_phase (RState* state)
 {
-    RGcState* gc;
     RObject*  obj;
-
-    gc = &state->gc;
+    RGcState* gc = &state->gc;
 
     while (gc->gray_list) {
         obj = gc->gray_list;
@@ -188,7 +191,7 @@ void r_free (RState* state, rpointer ptr)
 
 RObject* r_object_alloc (RState* state, RTypeTag type_tag)
 {
-    RTypeInfo* type = state->builtin_types [type_tag];
+    RTypeInfo* type = &state->builtin_types [type_tag];
     RObject*   obj  = r_alloc (state, type->size);
 
     if (obj == NULL) {
@@ -205,8 +208,10 @@ RObject* r_object_alloc (RState* state, RTypeTag type_tag)
     return obj;
 }
 
-void gc_state_init (RState* state, RGcState* gc)
+void gc_state_init (RState* state)
 {
+    RGcState* gc = &state->gc;
+
     gc->arena_size       = ARENA_CHUNK_SIZE;
     gc->arena_index      = 0u;
     gc->arena_last_index = 0u;
@@ -218,9 +223,12 @@ void gc_state_init (RState* state, RGcState* gc)
     assert (gc->arena);
 }
 
-void gc_state_destruct (RState* state, RGcState* gc)
+void gc_state_destruct (RState* state)
 {
-    r_free (state, gc->arena);
+    gc_scope_reset (state);
+
+    r_full_gc (state);
+    r_free (state, state->gc.arena);
 }
 
 void r_gc_scope_open (RState* state)
@@ -235,7 +243,7 @@ void r_gc_scope_close (RState* state)
 
 void gc_scope_reset (RState* state)
 {
-    state->gc.arena_index      = 0u;
+    state->gc.arena_index = 0u;
     state->gc.arena_last_index = 0u;
 }
 
@@ -247,8 +255,8 @@ void r_gc_scope_protect (RState* state, rsexp obj)
 
 void r_object_free (RState* state, RObject* obj)
 {
-    RTypeInfo* type;
-    RFinalizer finalize;
+    RTypeInfo*  type;
+    RGcFinalize finalize;
 
     type = r_type_info (state, object_to_sexp (obj));
     finalize = type->ops.finalize;
@@ -268,8 +276,6 @@ void r_full_gc (RState* state)
 
 void r_gc_mark (RState* state, rsexp obj)
 {
-    if (r_immediate_p (obj))
-        return;
-
-    gc_mark (state, object_from_sexp (obj));
+    if (r_boxed_p (obj))
+        gc_mark (state, object_from_sexp (obj));
 }

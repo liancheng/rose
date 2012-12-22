@@ -14,13 +14,12 @@ typedef enum RPortMode {
     MODE_DONT_CLOSE = 0x08,
     MODE_CLOSED     = 0x10,
     MODE_FOLD_CASE  = 0x20,
-    MODE_STRING_IO  = 0x40,
-    MODE_FLUSH      = 0x80
+    MODE_STRING_IO  = 0x40
 }
 RPortMode;
 
-typedef void (*RPortClearFunc) (RState*, rpointer);
-typedef void (*RPortMarkFunc)  (RState*, rpointer);
+typedef void (*RPortClearCookie) (RState*, rpointer);
+typedef void (*RPortMarkCookie)  (RState*, rpointer);
 
 FILE* port_to_stream (rsexp   port);
 

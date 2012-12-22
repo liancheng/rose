@@ -4,6 +4,7 @@
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
+#include "rose/opaque.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/reader.h"
@@ -316,17 +317,27 @@ static rsexp read_datum (RDatumReader* reader)
     return r_failure_p (datum) ? read_compound_datum (reader) : datum;
 }
 
-RDatumReader* r_reader_new (RState* state, rsexp port)
+static void reader_finalize (RState* state, rpointer obj)
+{
+    RDatumReader* reader = r_cast (RDatumReader*, obj);
+
+    assert (state == reader->state);
+
+    QUEX_NAME (destruct) (&reader->lexer);
+    QUEX_NAME_TOKEN (destruct) (&reader->token);
+
+    r_free (state, reader);
+}
+
+rsexp r_reader_new (RState* state, rsexp port)
 {
     RDatumReader* reader;
-    RDatumReader  zero = { 0 };
+    rsexp         res = R_FAILURE;
 
-    reader = r_new (state, RDatumReader);
+    reader = r_new0 (state, RDatumReader);
 
     if (!reader)
         goto exit;
-
-    *reader = zero;
 
     reader->state          = state;
     reader->input_port     = port;
@@ -338,33 +349,33 @@ RDatumReader* r_reader_new (RState* state, rsexp port)
     QUEX_NAME_TOKEN (construct) (&reader->token);
     QUEX_NAME (token_p_set) (&reader->lexer, &reader->token);
 
+    res = r_opaque_new (state, reader, NULL, reader_finalize);
+
+    if (r_failure_p (res))
+        r_free (state, reader);
+
 exit:
-    return reader;
+    return res;
 }
 
-void r_reader_free (RDatumReader* reader)
+rsexp r_read (rsexp reader)
 {
-    QUEX_NAME (destruct) (&reader->lexer);
-    QUEX_NAME_TOKEN (destruct) (&reader->token);
-    r_free (reader->state, reader);
-}
+    RDatumReader* r;
+    RState*       state;
+    RNestedJump   jmp;
+    rsexp         datum;
 
-rsexp r_read (RDatumReader* reader)
-{
-    RState*     state;
-    RNestedJump jmp;
-    rsexp       datum;
-
-    state = reader->state;
+    r = r_cast (RDatumReader*, r_opaque_get (reader));
+    state = r->state;
     jmp.previous = state->error_jmp;
     state->error_jmp = &jmp;
 
     if (0 == setjmp (state->error_jmp->buf))
-        datum = lookahead (reader)->_id == TKN_TERMINATION
+        datum = lookahead (r)->_id == TKN_TERMINATION
               ? R_EOF
-              : read_datum (reader);
+              : read_datum (r);
     else
-        datum = r_last_error (reader->state);
+        datum = r_last_error (r->state);
 
     state->error_jmp = jmp.previous;
 

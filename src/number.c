@@ -1,9 +1,9 @@
-#include "detail/state.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
 #include "detail/port.h"
 #include "detail/sexp.h"
-#include "rose/gc.h"
+#include "detail/state.h"
+#include "rose/error.h"
 #include "rose/gmp.h"
 #include "rose/number.h"
 #include "rose/port.h"
@@ -100,51 +100,51 @@ static void fixnum_finalize (RState* state, RObject* obj)
 
 static RFixnum* fixnum_new (RState* state)
 {
-    RFixnum* fixnum = r_object_new (state, RFixnum, R_FIXNUM_TAG);
+    RFixnum* fixnum = r_object_new (state, RFixnum, R_TAG_FIXNUM);
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     return fixnum;
 }
 
 void init_fixnum_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RFixnum);
-    type->name         = "fixnum";
-    type->ops.write    = write_fixnum;
-    type->ops.display  = write_fixnum;
-    type->ops.eqv_p    = fixnum_eqv_p;
-    type->ops.equal_p  = fixnum_eqv_p;
-    type->ops.mark     = NULL;
-    type->ops.finalize = fixnum_finalize;
+    type.size         = sizeof (RFixnum);
+    type.name         = "fixnum";
+    type.ops.write    = write_fixnum;
+    type.ops.display  = write_fixnum;
+    type.ops.eqv_p    = fixnum_eqv_p;
+    type.ops.equal_p  = fixnum_eqv_p;
+    type.ops.mark     = NULL;
+    type.ops.finalize = fixnum_finalize;
 
-    state->builtin_types [R_FIXNUM_TAG] = type;
+    init_builtin_type (state, R_TAG_FIXNUM, &type);
 }
 
 void init_flonum_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RFlonum);
-    type->name         = "flonum";
-    type->ops.write    = write_flonum;
-    type->ops.display  = write_flonum;
-    type->ops.eqv_p    = flonum_eqv_p;
-    type->ops.equal_p  = flonum_eqv_p;
-    type->ops.mark     = NULL;
-    type->ops.finalize = NULL;
+    type.size         = sizeof (RFlonum);
+    type.name         = "flonum";
+    type.ops.write    = write_flonum;
+    type.ops.display  = write_flonum;
+    type.ops.eqv_p    = flonum_eqv_p;
+    type.ops.equal_p  = flonum_eqv_p;
+    type.ops.mark     = NULL;
+    type.ops.finalize = NULL;
 
-    state->builtin_types [R_FLONUM_TAG] = type;
+    init_builtin_type (state, R_TAG_FLONUM, &type);
 }
 
 rbool r_fixnum_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_FIXNUM_TAG;
+    return r_type_tag (obj) == R_TAG_FIXNUM;
 }
 
 rbool r_flonum_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_FLONUM_TAG;
+    return r_type_tag (obj) == R_TAG_FLONUM;
 }
 
 rsexp r_string_to_number (RState* state, rconstcstring text)
@@ -195,7 +195,7 @@ rsexp r_fixnum_normalize (rsexp obj)
 
 rsexp r_flonum_new (RState* state, double real, double imag)
 {
-    RFlonum* flonum = r_object_new (state, RFlonum, R_FLONUM_TAG);
+    RFlonum* flonum = r_object_new (state, RFlonum, R_TAG_FLONUM);
 
     if (!flonum)
         return r_last_error (state);
@@ -229,7 +229,7 @@ void r_flonum_set_imag_x (rsexp obj, double imag)
 rsexp r_int_to_sexp (rint n)
 {
     assert (n >= R_SMI_MIN && n <= R_SMI_MAX);
-    return (n << R_SMI_BITS) | R_SMI_TAG;
+    return (n << R_SMI_BITS) | R_TAG_SMI;
 }
 
 rint r_int_from_sexp (rsexp obj)

@@ -81,12 +81,12 @@ static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
 
 rbool r_pair_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_PAIR_TAG;
+    return r_type_tag (obj) == R_TAG_PAIR;
 }
 
 rsexp r_cons (RState* state, rsexp car, rsexp cdr)
 {
-    RPair* pair = r_object_new (state, RPair, R_PAIR_TAG);
+    RPair* pair = r_object_new (state, RPair, R_TAG_PAIR);
 
     if (!pair)
         return R_FAILURE;
@@ -237,16 +237,16 @@ rsexp r_list_ref (rsexp list, rsize k)
 
 void init_pair_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = sizeof (RPair);
-    type->name         = "pair";
-    type->ops.write    = write_pair;
-    type->ops.display  = display_pair;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = pair_equal_p;
-    type->ops.mark     = pair_mark;
-    type->ops.finalize = NULL;
+    type.size         = sizeof (RPair);
+    type.name         = "pair";
+    type.ops.write    = write_pair;
+    type.ops.display  = display_pair;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = pair_equal_p;
+    type.ops.mark     = pair_mark;
+    type.ops.finalize = NULL;
 
-    state->builtin_types [R_PAIR_TAG] = type;
+    init_builtin_type (state, R_TAG_PAIR, &type);
 }

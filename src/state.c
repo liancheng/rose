@@ -1,3 +1,4 @@
+#include "detail/gc.h"
 #include "detail/port.h"
 #include "detail/state.h"
 #include "rose/gc.h"
@@ -6,12 +7,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-void init_bool_type_info          (RState* state);
 void init_bytevector_type_info    (RState* state);
 void init_char_type_info          (RState* state);
 void init_error_type_info         (RState* state);
 void init_fixnum_type_info        (RState* state);
 void init_flonum_type_info        (RState* state);
+void init_opaque_type_info        (RState* state);
 void init_pair_type_info          (RState* state);
 void init_port_type_info          (RState* state);
 void init_smi_type_info           (RState* state);
@@ -59,7 +60,7 @@ static void init_builtin_types (RState* state)
     init_special_const_type_info (state);
     init_symbol_type_info        (state);
 
-    /* Non-immediate types */
+    /* Boxed types */
     init_pair_type_info          (state);
     init_bytevector_type_info    (state);
     init_error_type_info         (state);
@@ -68,6 +69,7 @@ static void init_builtin_types (RState* state)
     init_port_type_info          (state);
     init_string_type_info        (state);
     init_vector_type_info        (state);
+    init_opaque_type_info        (state);
 }
 
 static void init_std_ports (RState* state)
@@ -79,7 +81,19 @@ static void init_std_ports (RState* state)
 
 static void init_gc (RState* state)
 {
-    gc_state_init (state, &state->gc);
+    gc_state_init (state);
+}
+
+void init_builtin_type (RState* state, RTypeTag tag, RTypeInfo* type)
+{
+    assert (R_TAG_RESERVED < tag && tag < R_TAG_MAX);
+    state->builtin_types [tag] = *type;
+}
+
+rsexp keyword (RState* state, ruint index)
+{
+    assert (index < R_KEYWORD_COUNT);
+    return state->keywords [index];
 }
 
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
@@ -114,33 +128,8 @@ RState* r_state_open ()
     return r_state_new (default_alloc_fn, NULL);
 }
 
-static void free_builtin_types (RState* state)
-{
-    r_free (state, state->builtin_types [R_CHAR_TAG]);
-    r_free (state, state->builtin_types [R_SMI_TAG]);
-    r_free (state, state->builtin_types [R_SPECIAL_CONST_TAG]);
-    r_free (state, state->builtin_types [R_SYMBOL_TAG]);
-    r_free (state, state->builtin_types [R_PAIR_TAG]);
-    r_free (state, state->builtin_types [R_STRING_TAG]);
-    r_free (state, state->builtin_types [R_VECTOR_TAG]);
-    r_free (state, state->builtin_types [R_BYTEVECTOR_TAG]);
-    r_free (state, state->builtin_types [R_PORT_TAG]);
-    r_free (state, state->builtin_types [R_ERROR_TAG]);
-    r_free (state, state->builtin_types [R_FIXNUM_TAG]);
-    r_free (state, state->builtin_types [R_FLONUM_TAG]);
-}
-
-rsexp keyword (RState* state, ruint index)
-{
-    assert (index < R_KEYWORD_COUNT);
-    return state->keywords [index];
-}
-
 void r_state_free (RState* state)
 {
-    gc_scope_reset (state);
-    r_full_gc (state);
-    gc_state_destruct (state, &state->gc);
-    free_builtin_types (state);
+    gc_state_destruct (state);
     r_free (state, state);
 }

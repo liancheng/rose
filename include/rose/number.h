@@ -42,7 +42,7 @@ rbool r_exact_p             (rsexp         obj);
 #define R_SMI_MIN               (-R_SMI_MAX - 1)
 
 #define r_inexact_p(obj)        (r_flonum_p (obj))
-#define r_small_int_p(obj)      (((obj) & R_SMI_MASK) == R_SMI_TAG)
+#define r_small_int_p(obj)      (((obj) & R_SMI_MASK) == R_TAG_SMI)
 
 #define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rint, (obj))))
 #define r_uint_from_sexp(obj)   (r_cast (ruint, r_int_from_sexp ((obj))))

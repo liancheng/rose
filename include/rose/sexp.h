@@ -47,33 +47,46 @@ typedef rword rsexp;
 
 typedef enum {
     /* Immediate types */
-    R_INLINE_ERROR_TAG  = 0x01,     /* #b001 */
-    R_CHAR_TAG          = 0x02,     /* #b010 */
-    R_SPECIAL_CONST_TAG = 0x04,     /* #b101 */
-    R_SYMBOL_TAG        = 0x05,     /* #b110 */
-
-    R_SMI_TAG           = 0x03,     /* #b011 */
-    R_SMI_EVEN_TAG      = 0x03,     /* #b011 */
-    R_SMI_ODD_TAG       = 0x07,     /* #b111 */
+    R_TAG_RESERVED      = 0x01,     /* #b001 */
+    R_TAG_CHAR          = 0x02,     /* #b010 */
+    R_TAG_SMI           = 0x03,     /* #b011 */
+    R_TAG_SMI_EVEN      = 0x03,     /* #b011 */
+    R_TAG_SPECIAL_CONST = 0x04,     /* #b101 */
+    R_TAG_SYMBOL        = 0x05,     /* #b110 */
+    R_TAG_INLINE_ERROR  = 0x06,     /* #b110 */
+    R_TAG_SMI_ODD       = 0x07,     /* #b111 */
 
     /* Boxed types */
-    R_BOXED_TAG         = 0x00,     /* #b000 */
-    R_PAIR_TAG          = 0x08,
-    R_STRING_TAG        = 0x09,
-    R_VECTOR_TAG        = 0x0a,
-    R_BYTEVECTOR_TAG    = 0x0b,
-    R_PROCEDURE_TAG     = 0x0c,
-    R_CONTINUATION_TAG  = 0x0d,
-    R_ENV_TAG           = 0x0e,
-    R_PORT_TAG          = 0x0f,
-    R_ERROR_TAG         = 0x10,
-    R_FIXNUM_TAG        = 0x11,
-    R_FLONUM_TAG        = 0x12,
+    R_TAG_BOXED         = 0x00,     /* #b000 */
+    R_TAG_PAIR          = 0x08,
+    R_TAG_STRING        = 0x09,
+    R_TAG_VECTOR        = 0x0a,
+    R_TAG_BYTEVECTOR    = 0x0b,
+    R_TAG_PROCEDURE     = 0x0c,
+    R_TAG_CONTINUATION  = 0x0d,
+    R_TAG_ENV           = 0x0e,
+    R_TAG_PORT          = 0x0f,
+    R_TAG_ERROR         = 0x10,
+    R_TAG_FIXNUM        = 0x11,
+    R_TAG_FLONUM        = 0x12,
+    R_TAG_OPAQUE        = 0x13,
 
     /* End mark */
-    R_TAG_MAX           = 0x13
+    R_TAG_MAX           = 0x14
 }
 RTypeTag;
+
+typedef struct RObject RObject;
+
+#define R_OBJECT_HEADER\
+        RTypeTag type_tag : 5;\
+        ruint    gc_color : 2;\
+        RObject* gray_next;\
+        RObject* chrono_next;
+
+struct RObject {
+    R_OBJECT_HEADER
+};
 
 #define R_TAG_BITS              3
 #define R_TAG_MASK              0x07    /* #b111 */
@@ -81,26 +94,26 @@ RTypeTag;
 #define R_SMI_BITS              2
 #define R_SMI_MASK              0x03    /* #b011 */
 
-#define __SPECIAL_CONST(n)      (((n) << R_TAG_BITS) | R_SPECIAL_CONST_TAG)
-#define R_FALSE                 (__SPECIAL_CONST (0))
-#define R_TRUE                  (__SPECIAL_CONST (1))
-#define R_NULL                  (__SPECIAL_CONST (2))
-#define R_EOF                   (__SPECIAL_CONST (3))
-#define R_UNSPECIFIED           (__SPECIAL_CONST (4))
-#define R_UNDEFINED             (__SPECIAL_CONST (5))
-#define R_FAILURE               (__SPECIAL_CONST (6))
+#define MAKE_SPECIAL_CONST(n)   (((n) << R_TAG_BITS) | R_TAG_SPECIAL_CONST)
+#define R_FALSE                 (MAKE_SPECIAL_CONST (0))
+#define R_TRUE                  (MAKE_SPECIAL_CONST (1))
+#define R_NULL                  (MAKE_SPECIAL_CONST (2))
+#define R_EOF                   (MAKE_SPECIAL_CONST (3))
+#define R_UNSPECIFIED           (MAKE_SPECIAL_CONST (4))
+#define R_UNDEFINED             (MAKE_SPECIAL_CONST (5))
+#define R_FAILURE               (MAKE_SPECIAL_CONST (6))
 
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
 
-#define r_boxed_p(obj)          (r_get_tag (obj) == R_BOXED_TAG)
+#define r_boxed_p(obj)          (r_get_tag (obj) == R_TAG_BOXED)
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)))
 
 #define r_bool_p(obj)           ((obj) == R_FALSE || (obj) == R_TRUE)
 #define r_false_p(obj)          ((obj) == R_FALSE)
 #define r_true_p(obj)           (!r_false_p (obj))
 
-#define r_char_p(obj)           (r_get_tag (obj) == R_CHAR_TAG)
-#define r_special_const_p(obj)  (r_get_tag (obj) == R_SPECIAL_CONST_TAG)
+#define r_char_p(obj)           (r_get_tag (obj) == R_TAG_CHAR)
+#define r_special_const_p(obj)  (r_get_tag (obj) == R_TAG_SPECIAL_CONST)
 #define r_null_p(obj)           ((obj) == R_NULL)
 #define r_eof_object_p(obj)     ((obj) == R_EOF)
 #define r_unspecified_p(obj)    ((obj) == R_UNSPECIFIED)
@@ -108,7 +121,7 @@ RTypeTag;
 
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
-#define r_char_to_sexp(c)       (((c) << R_TAG_BITS) | R_CHAR_TAG)
+#define r_char_to_sexp(c)       (((c) << R_TAG_BITS) | R_TAG_CHAR)
 #define r_char_from_sexp(obj)   ((obj) >> R_TAG_BITS)
 
 #define r_failure_p(obj)        ((obj) == R_FAILURE)

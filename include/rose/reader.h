@@ -6,12 +6,9 @@
 
 R_BEGIN_DECLS
 
-typedef struct RDatumReader RDatumReader;
-
-RDatumReader* r_reader_new  (RState*       state,
-                             rsexp         port);
-void          r_reader_free (RDatumReader* reader);
-rsexp         r_read        (RDatumReader* reader);
+rsexp r_reader_new (RState* state,
+                    rsexp   port);
+rsexp r_read       (rsexp   reader);
 
 R_END_DECLS
 

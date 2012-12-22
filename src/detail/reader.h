@@ -7,6 +7,8 @@
 
 #include <setjmp.h>
 
+typedef struct RDatumReader RDatumReader;
+
 struct RDatumReader {
     RState* state;
     jmp_buf jmp;

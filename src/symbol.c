@@ -5,7 +5,7 @@
 
 #include <glib.h>
 
-#define quark_to_sexp(q)    (((q) << R_TAG_BITS) | R_SYMBOL_TAG)
+#define quark_to_sexp(q)    (((q) << R_TAG_BITS) | R_TAG_SYMBOL)
 #define quark_from_sexp(q)  (r_cast (GQuark, ((q) >> R_TAG_BITS)))
 
 static rsexp write_symbol (RState* state, rsexp port, rsexp obj)
@@ -30,16 +30,16 @@ rconstcstring r_symbol_name (RState* state, rsexp obj)
 
 void init_symbol_type_info (RState* state)
 {
-    RTypeInfo* type = r_new0 (state, RTypeInfo);
+    RTypeInfo type = { 0 };
 
-    type->size         = 0;
-    type->name         = "symbol";
-    type->ops.write    = write_symbol;
-    type->ops.display  = write_symbol;
-    type->ops.eqv_p    = NULL;
-    type->ops.equal_p  = NULL;
-    type->ops.mark     = NULL;
-    type->ops.finalize = NULL;
+    type.size         = 0;
+    type.name         = "symbol";
+    type.ops.write    = write_symbol;
+    type.ops.display  = write_symbol;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = NULL;
+    type.ops.mark     = NULL;
+    type.ops.finalize = NULL;
 
-    state->builtin_types [R_SYMBOL_TAG] = type;
+    init_builtin_type (state, R_TAG_SYMBOL, &type);
 }
