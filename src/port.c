@@ -47,7 +47,6 @@ static rsexp make_port (RState*          state,
 
     if (!port) {
         res = R_FAILURE;
-        r_last_error (state);
         goto exit;
     }
 
@@ -56,8 +55,9 @@ static rsexp make_port (RState*          state,
     port->name = r_string_new (state, name);
 
     if (r_failure_p (port->name)) {
+        port->name = R_UNDEFINED;
         res = R_FAILURE;
-        goto exit;
+        goto clean;
     }
 
     port->state        = state;
@@ -69,13 +69,14 @@ static rsexp make_port (RState*          state,
 
     res = port_to_sexp (port);
 
-exit:
-    r_gc_scope_close (state);
+clean:
+    r_gc_scope_close_and_protect (state, res);
 
+exit:
     return res;
 }
 
-static rsexp write_port (RState* state, rsexp port, rsexp obj)
+static rsexp port_write (RState* state, rsexp port, rsexp obj)
 {
     return r_port_format (state, port,
             "#<port ~a>", port_from_sexp (obj)->name);
@@ -83,26 +84,33 @@ static rsexp write_port (RState* state, rsexp port, rsexp obj)
 
 static void port_finalize (RState* state, RObject* obj)
 {
-    r_close_port (port_to_sexp (r_cast (RPort*, obj)));
+    RPort* port = r_cast (RPort*, obj);
+
+    if (port->stream)
+        r_close_port (port_to_sexp (port));
 }
 
 static void input_string_port_mark (RState* state, rpointer cookie)
 {
-    r_gc_mark (state, r_cast (rsexp, cookie));
+    if (cookie)
+        r_gc_mark (state, r_cast (rsexp, cookie));
 }
 
 typedef struct {
     rcstring buffer;
     rsize    size;
 }
-ROutStringCookie;
+ROStrCookie;
 
 static void output_string_port_clear (RState* state, rpointer cookie)
 {
-    ROutStringCookie* c = r_cast (ROutStringCookie*, cookie);
+    ROStrCookie* c;
 
-    free (c->buffer);
-    r_free (state, c);
+    if (cookie) {
+        c = r_cast (ROStrCookie*, cookie);
+        free (c->buffer);
+        r_free (state, c);
+    }
 }
 
 static rbool output_string_port_p (rsexp port)
@@ -126,8 +134,8 @@ void init_port_type_info (RState* state)
 
     type.size         = sizeof (RPort);
     type.name         = "port";
-    type.ops.write    = write_port;
-    type.ops.display  = write_port;
+    type.ops.write    = port_write;
+    type.ops.display  = port_write;
     type.ops.eqv_p    = NULL;
     type.ops.equal_p  = NULL;
     type.ops.mark     = port_mark;
@@ -215,12 +223,12 @@ exit:
 
 rsexp r_open_output_string (RState* state)
 {
-    ROutStringCookie* cookie;
-    FILE*             stream;
-    rint              errnum;
-    rsexp             res;
+    ROStrCookie* cookie;
+    FILE*        stream;
+    rint         errnum;
+    rsexp        res;
 
-    cookie = r_new0 (state, ROutStringCookie);
+    cookie = r_new0 (state, ROStrCookie);
 
     if (!cookie) {
         res = R_FAILURE;
@@ -257,9 +265,9 @@ exit:
 
 rsexp r_get_output_string (RState* state, rsexp port)
 {
-    ROutStringCookie* cookie;
-    RPort*            port_ptr;
-    rsexp             res;
+    ROStrCookie* cookie;
+    RPort*       port_ptr;
+    rsexp        res;
 
     if (!output_string_port_p (port)) {
         res = R_FAILURE;
@@ -274,7 +282,7 @@ rsexp r_get_output_string (RState* state, rsexp port)
     }
 
     port_ptr = port_from_sexp (port);
-    cookie   = r_cast (ROutStringCookie*, port_ptr->cookie);
+    cookie   = r_cast (ROStrCookie*, port_ptr->cookie);
 
     res = cookie->buffer
           ? r_string_new (state, cookie->buffer)

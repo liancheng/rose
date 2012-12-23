@@ -243,6 +243,8 @@ RObject* r_object_alloc (RState* state, RTypeTag type_tag)
         return NULL;
     }
 
+    memset (r_cast (rpointer, obj), 0, type->size);
+
     obj->type_tag = type_tag;
 
     gc_paint_white (obj);
