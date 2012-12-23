@@ -94,15 +94,23 @@ static rsexp lexeme_to_char (char const* text)
     return r_char_to_sexp (res);
 }
 
-static void syntax_error (RDatumReader* reader,
-                          char const*   message)
+static void raise_syntax_error (RDatumReader* reader,
+                                char const*   message)
 {
-    r_error_format (reader->state,
-                    "~a:~a:~a: ~a~%",
-                    r_port_get_name (reader->input_port),
-                    r_int_to_sexp (reader->current_line),
-                    r_int_to_sexp (reader->current_column),
-                    r_string_new (reader->state, message));
+    rsexp message;
+    rsexp error;
+
+    r_gc_scope_open (state);
+
+    message = r_string_new (reader->state, message);
+    error   = r_error_format (reader->state,
+                              "~a:~a:~a: ~a~%",
+                              r_port_get_name (reader->input_port),
+                              r_int_to_sexp (reader->current_line),
+                              r_int_to_sexp (reader->current_column),
+                              message);
+
+    r_gc_scope_close_and_protect (state, error);
 
     r_raise (reader->state);
 }
@@ -119,10 +127,10 @@ static rsexp read_vector (RDatumReader* reader)
         datum = read_datum (reader);
 
         if (r_eof_object_p (datum))
-            syntax_error (reader, "the vector is not closed");
+            raise_syntax_error (reader, "the vector is not closed");
 
         if (r_failure_p (datum))
-            syntax_error (reader, "expecting a vector element");
+            raise_syntax_error (reader, "expecting a vector element");
 
         list = r_cons (reader->state, datum, list);
     }
@@ -145,7 +153,7 @@ static rsexp read_full_list (RDatumReader* reader)
 
     datum = read_datum (reader);
     if (r_failure_p (datum))
-        syntax_error (reader, "bad syntax");
+        raise_syntax_error (reader, "bad syntax");
 
     list = r_cons (reader->state, datum, R_NULL);
 
@@ -157,7 +165,7 @@ static rsexp read_full_list (RDatumReader* reader)
 
         datum = read_datum (reader);
         if (r_failure_p (datum))
-            syntax_error (reader, "bad syntax");
+            raise_syntax_error (reader, "bad syntax");
 
         list = r_cons (reader->state, datum, list);
     }
@@ -167,13 +175,13 @@ static rsexp read_full_list (RDatumReader* reader)
     if (match (reader, TKN_DOT)) {
         datum = read_datum (reader);
         if (r_failure_p (datum))
-            syntax_error (reader, "datum expected");
+            raise_syntax_error (reader, "datum expected");
 
         list = r_append_x (reader->state, list, datum);
     }
 
     if (!match (reader, TKN_RP))
-        syntax_error (reader, "missing close parenthesis");
+        raise_syntax_error (reader, "missing close parenthesis");
 
     return list;
 }
@@ -208,7 +216,7 @@ static rsexp read_abbreviation (RDatumReader* reader)
 
     datum = read_datum (reader);
     if (r_failure_p (datum))
-        syntax_error (reader, "bad syntax");
+        raise_syntax_error (reader, "bad syntax");
 
     return r_list (reader->state, 2, prefix, datum);
 }
@@ -241,7 +249,7 @@ static rsexp read_bytevector (RDatumReader* reader)
         datum = read_datum (reader);
 
         if (!r_byte_p (datum))
-            syntax_error (reader, "value out of range");
+            raise_syntax_error (reader, "value out of range");
 
         bytes = r_cons (reader->state, datum, bytes);
     }

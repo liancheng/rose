@@ -79,7 +79,7 @@ rsexp r_string_new (RState* state, rconstcstring str)
     RString* res = r_object_new (state, RString, R_TAG_STRING);
 
     if (!res)
-        return r_last_error (state);
+        return R_FAILURE;
 
     res->length = strlen (str);
     res->data = cstring_dup (state, str);
@@ -131,9 +131,13 @@ rsexp r_string_vformat (RState* state, rconstcstring format, va_list args)
     rsexp port;
     rsexp res;
 
+    r_gc_scope_open (state);
+
     port = r_open_output_string (state);
     r_port_vformat (state, port, format, args);
     res = r_get_output_string (state, port);
+
+    r_gc_scope_close_and_protect (state, res);
 
     return res;
 }
@@ -155,21 +159,25 @@ rsexp r_string_vprintf (RState* state, rconstcstring format, va_list args)
     rsexp port;
     rsexp res;
 
-    ensure (port = r_open_output_string (state));
+    port = r_open_output_string (state);
+
+    if (r_failure_p (port))
+        goto exit;
 
     if (r_failure_p (r_port_vprintf (state, port, format, args))) {
         res = R_FAILURE;
-        goto exit;
+        goto clean;
     }
 
     res = r_get_output_string (state, port);
 
     if (r_failure_p (res))
-        goto exit;
+        goto clean;
 
-exit:
+clean:
     r_close_port (port);
 
+exit:
     return res;
 }
 

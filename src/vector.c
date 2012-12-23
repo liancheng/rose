@@ -25,7 +25,7 @@ struct RVector {
 
 typedef RWriteFunc ROutputFunc;
 
-static rsexp output_vector (RState*     state,
+static rsexp vector_output (RState*     state,
                             rsexp       port,
                             rsexp       obj,
                             ROutputFunc output_fn)
@@ -50,14 +50,14 @@ static rsexp output_vector (RState*     state,
     return R_UNSPECIFIED;
 }
 
-static rsexp write_vector (RState* state, rsexp port, rsexp obj)
+static rsexp vector_write (RState* state, rsexp port, rsexp obj)
 {
-    return output_vector (state, port, obj, r_port_write);
+    return vector_output (state, port, obj, r_port_write);
 }
 
-static rsexp display_vector (RState* state, rsexp port, rsexp obj)
+static rsexp vector_display (RState* state, rsexp port, rsexp obj)
 {
-    return output_vector (state, port, obj, r_port_display);
+    return vector_output (state, port, obj, r_port_display);
 }
 
 static void vector_finalize (RState* state, RObject* obj)
@@ -132,8 +132,8 @@ void init_vector_type_info (RState* state)
 
     type.size         = sizeof (RVector);
     type.name         = "vector";
-    type.ops.write    = write_vector;
-    type.ops.display  = display_vector;
+    type.ops.write    = vector_write;
+    type.ops.display  = vector_display;
     type.ops.eqv_p    = NULL;
     type.ops.equal_p  = vector_equal_p;
     type.ops.mark     = vector_mark;
@@ -211,20 +211,21 @@ rsexp r_list_to_vector (RState* state, rsexp list)
     res = r_length (state, list);
 
     if (r_failure_p (res))
-        return res;
+        goto exit;
 
     res = r_vector_new (state,
                         r_uint_from_sexp (res),
                         R_UNDEFINED);
 
     if (r_failure_p (res))
-        return R_FAILURE;
+        goto exit;
 
     for (i = 0; !r_null_p (list); ++i) {
         r_vector_set_x (state, res, i, r_car (list));
         list = r_cdr (list);
     }
 
+exit:
     return res;
 }
 
@@ -233,12 +234,17 @@ rsexp r_vector_to_list (RState* state, rsexp vector)
     rsize i;
     rsexp res = R_NULL;
 
+    r_gc_scope_open (state);
+
     for (i = r_uint_from_sexp (r_vector_length (vector)); i > 0; --i) {
         res = r_cons (state, r_vector_ref (state, vector, i - 1), res);
 
         if (r_failure_p (res))
-            return R_FAILURE;
+            goto exit;
     }
 
+    r_gc_scope_close_and_protect (state, res);
+
+exit:
     return res;
 }

@@ -8,6 +8,7 @@ R_BEGIN_DECLS
 rsexp r_bytevector_new      (RState* state,
                              rsize   k,
                              rbyte   fill);
+rbool r_bytevector_p        (rsexp   obj);
 rsexp r_bytevector_length   (rsexp   obj);
 rsexp r_bytevector_u8_ref   (RState* state,
                              rsexp   obj,
@@ -18,9 +19,6 @@ rsexp r_bytevector_u8_set_x (RState* state,
                              rbyte   byte);
 rsexp r_list_to_bytevector  (RState* state,
                              rsexp   list);
-rbool r_bytevector_equal_p  (RState* state,
-                             rsexp   lhs,
-                             rsexp   rhs);
 
 R_END_DECLS
 

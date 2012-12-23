@@ -9,13 +9,13 @@ int main (int argc, char* argv[])
 {
     RState* state;
     rsexp   reader;
+    rint    exit_code = EXIT_FAILURE;
 
     state = r_state_open ();
 
     if (!state) {
         fprintf (stderr, "ROSE interpreter initialization failed.\n");
-
-        return EXIT_FAILURE;
+        goto exit;
     }
 
     if (argc > 1)
@@ -26,9 +26,7 @@ int main (int argc, char* argv[])
 
     if (r_failure_p (reader)) {
         fprintf (stderr, "reader initialization failed.\n");
-        r_state_free (state);
-
-        return EXIT_FAILURE;
+        goto clean;
     }
 
     while (TRUE) {
@@ -45,7 +43,11 @@ int main (int argc, char* argv[])
         r_format (state, "~s~%", datum);
     }
 
+    exit_code = EXIT_SUCCESS;
+
+clean:
     r_state_free (state);
 
-    return EXIT_SUCCESS;
+exit:
+    return exit_code;
 }

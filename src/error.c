@@ -21,7 +21,7 @@ struct RError {
 #define error_from_sexp(obj) (r_cast (RError*, (obj)))
 #define error_to_sexp(error) (r_cast (rsexp, (error)))
 
-static rsexp write_error (RState* state, rsexp port, rsexp obj)
+static rsexp error_write (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring message;
 
@@ -47,7 +47,7 @@ static rsexp write_error (RState* state, rsexp port, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-static rsexp display_error (RState* state, rsexp port, rsexp obj)
+static rsexp error_display (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring message;
 
@@ -75,8 +75,10 @@ static rsexp display_error (RState* state, rsexp port, rsexp obj)
 
 static void error_mark (RState* state, rsexp obj)
 {
-    r_gc_mark (state, error_from_sexp (obj)->message);
-    r_gc_mark (state, error_from_sexp (obj)->irritants);
+    if (!r_inline_error_p (obj)) {
+        r_gc_mark (state, error_from_sexp (obj)->message);
+        r_gc_mark (state, error_from_sexp (obj)->irritants);
+    }
 }
 
 void init_error_type_info (RState* state)
@@ -85,8 +87,8 @@ void init_error_type_info (RState* state)
 
     type.size         = sizeof (RError);
     type.name         = "error";
-    type.ops.write    = write_error;
-    type.ops.display  = display_error;
+    type.ops.write    = error_write;
+    type.ops.display  = error_display;
     type.ops.eqv_p    = NULL;
     type.ops.equal_p  = NULL;
     type.ops.mark     = error_mark;
@@ -128,10 +130,14 @@ rsexp r_error_printf (RState* state, rconstcstring format, ...)
     rsexp   message;
     rsexp   res;
 
+    r_gc_scope_open (state);
+
     va_start (args, format);
     message = r_string_vprintf (state, format, args);
     res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
     va_end (args);
+
+    r_gc_scope_close_and_protect (state, res);
 
     return res;
 }
@@ -142,10 +148,14 @@ rsexp r_error_format (RState* state, rconstcstring format, ...)
     rsexp   message;
     rsexp   res;
 
+    r_gc_scope_open (state);
+
     va_start (args, format);
     message = r_string_vformat (state, format, args);
     res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
     va_end (args);
+
+    r_gc_scope_close_and_protect (state, res);
 
     return res;
 }
@@ -188,9 +198,13 @@ rsexp r_inherit_errno_x (RState* state, rint errnum)
     rchar buffer [BUFSIZ];
     rsexp error;
 
+    r_gc_scope_open (state);
+
     strerror_r (errnum, buffer, BUFSIZ);
     error = r_error_new (state, r_string_new (state, buffer), R_NULL);
     r_set_last_error_x (state, error);
+
+    r_gc_scope_close_and_protect (state, error);
 
     return error;
 }

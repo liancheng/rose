@@ -37,6 +37,13 @@ void r_full_gc          (RState* state);
 void r_gc_mark          (RState* state,
                          rsexp   obj);
 
+#define r_gc_scope_close_and_protect(state, obj)\
+        do {\
+            r_gc_scope_close (state);\
+            r_gc_scope_protect (state, obj);\
+        }\
+        while (0)
+
 R_END_DECLS
 
 #endif  //  __ROSE_MEMORY_H__

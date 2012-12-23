@@ -26,20 +26,6 @@ RGcColor;
 #define gc_paint_gray(obj)  ((obj)->gc_color = R_GC_COLOR_GRAY)
 #define gc_paint_black(obj) ((obj)->gc_color = R_GC_COLOR_BLACK)
 
-void gc_state_dump (RState* state)
-{
-    RGcState* gc  = &state->gc;
-    RObject*  obj = gc->chrono_list;
-
-    r_format (state, "*** GC state dump ***~%");
-
-    while (obj) {
-        r_printf (state, "%p ", obj);
-        r_format (state, "~s~%", object_to_sexp (obj));
-        obj = obj->chrono_next;
-    }
-}
-
 static void gc_scope_protect (RState* state, RObject* obj)
 {
     RGcState* gc = &state->gc;
@@ -144,6 +130,64 @@ static void gc_sweep_phase (RState* state)
     }
 }
 
+void gc_state_init (RState* state)
+{
+    RGcState* gc = &state->gc;
+
+    gc->arena_size       = ARENA_CHUNK_SIZE;
+    gc->arena_index      = 0u;
+    gc->arena_last_index = 0u;
+    gc->arena            = r_new_array (state, RObject*, gc->arena_size);
+
+    gc->gray_list        = NULL;
+    gc->chrono_list      = NULL;
+
+    assert (gc->arena);
+}
+
+void gc_state_destruct (RState* state)
+{
+    gc_scope_reset (state);
+
+    r_full_gc (state);
+    r_free (state, state->gc.arena);
+}
+
+void gc_scope_reset (RState* state)
+{
+    state->gc.arena_index = 0u;
+    state->gc.arena_last_index = 0u;
+}
+
+void r_gc_scope_open (RState* state)
+{
+    state->gc.arena_last_index = state->gc.arena_index;
+}
+
+void r_gc_scope_close (RState* state)
+{
+    state->gc.arena_index = state->gc.arena_last_index;
+}
+
+void r_gc_scope_protect (RState* state, rsexp obj)
+{
+    if (r_boxed_p (obj))
+        gc_scope_protect (state, object_from_sexp (obj));
+}
+
+void r_gc_mark (RState* state, rsexp obj)
+{
+    if (r_boxed_p (obj))
+        gc_mark (state, object_from_sexp (obj));
+}
+
+void r_full_gc (RState* state)
+{
+    gc_scan_phase (state);
+    gc_mark_phase (state);
+    gc_sweep_phase (state);
+}
+
 rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
 {
     if (0 == size) {
@@ -208,51 +252,6 @@ RObject* r_object_alloc (RState* state, RTypeTag type_tag)
     return obj;
 }
 
-void gc_state_init (RState* state)
-{
-    RGcState* gc = &state->gc;
-
-    gc->arena_size       = ARENA_CHUNK_SIZE;
-    gc->arena_index      = 0u;
-    gc->arena_last_index = 0u;
-    gc->arena            = r_new_array (state, RObject*, gc->arena_size);
-
-    gc->gray_list        = NULL;
-    gc->chrono_list      = NULL;
-
-    assert (gc->arena);
-}
-
-void gc_state_destruct (RState* state)
-{
-    gc_scope_reset (state);
-
-    r_full_gc (state);
-    r_free (state, state->gc.arena);
-}
-
-void r_gc_scope_open (RState* state)
-{
-    state->gc.arena_last_index = state->gc.arena_index;
-}
-
-void r_gc_scope_close (RState* state)
-{
-    state->gc.arena_index = state->gc.arena_last_index;
-}
-
-void gc_scope_reset (RState* state)
-{
-    state->gc.arena_index = 0u;
-    state->gc.arena_last_index = 0u;
-}
-
-void r_gc_scope_protect (RState* state, rsexp obj)
-{
-    if (r_boxed_p (obj))
-        gc_scope_protect (state, object_from_sexp (obj));
-}
-
 void r_object_free (RState* state, RObject* obj)
 {
     RTypeInfo*  type;
@@ -265,17 +264,4 @@ void r_object_free (RState* state, RObject* obj)
         finalize (state, obj);
 
     r_free (state, obj);
-}
-
-void r_full_gc (RState* state)
-{
-    gc_scan_phase (state);
-    gc_mark_phase (state);
-    gc_sweep_phase (state);
-}
-
-void r_gc_mark (RState* state, rsexp obj)
-{
-    if (r_boxed_p (obj))
-        gc_mark (state, object_from_sexp (obj));
 }
