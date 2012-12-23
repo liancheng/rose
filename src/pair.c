@@ -42,7 +42,7 @@ static rsexp output_cdr (RState*     state,
     return R_UNSPECIFIED;
 }
 
-static rsexp output_pair (RState*     state,
+static rsexp pair_output (RState*     state,
                           rsexp       port,
                           rsexp       obj,
                           ROutputFunc output_fn)
@@ -55,14 +55,14 @@ static rsexp output_pair (RState*     state,
     return R_UNSPECIFIED;
 }
 
-static rsexp write_pair (RState* state, rsexp port, rsexp obj)
+static rsexp pair_write (RState* state, rsexp port, rsexp obj)
 {
-    return output_pair (state, port, obj, r_port_write);
+    return pair_output (state, port, obj, r_port_write);
 }
 
-static rsexp display_pair (RState* state, rsexp port, rsexp obj)
+static rsexp pair_display (RState* state, rsexp port, rsexp obj)
 {
-    return output_pair (state, port, obj, r_port_display);
+    return pair_output (state, port, obj, r_port_display);
 }
 
 static void pair_mark (RState* state, rsexp obj)
@@ -192,14 +192,23 @@ rsexp r_vlist (RState* state, rsize k, va_list args)
     rsize i;
     rsexp res = R_NULL;
 
+    r_gc_scope_open (state);
+
     for (i = 0; i < k; ++i) {
         res = r_cons (state, va_arg (args, rsexp), res);
 
-        if (r_failure_p (res))
-            return R_FAILURE;
+        if (r_failure_p (res)) {
+            res = R_FAILURE;
+            goto exit;
+        }
     }
 
-    return r_reverse (state, res);
+    res = r_reverse (state, res);
+
+exit:
+    r_gc_scope_close_and_protect (state, res);
+
+    return res;
 }
 
 rsexp r_list (RState* state, rsize k, ...)
@@ -241,8 +250,8 @@ void init_pair_type_info (RState* state)
 
     type.size         = sizeof (RPair);
     type.name         = "pair";
-    type.ops.write    = write_pair;
-    type.ops.display  = display_pair;
+    type.ops.write    = pair_write;
+    type.ops.display  = pair_display;
     type.ops.eqv_p    = NULL;
     type.ops.equal_p  = pair_equal_p;
     type.ops.mark     = pair_mark;

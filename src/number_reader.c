@@ -743,10 +743,12 @@ static rsexp read_number (RNumberReader* reader)
         goto clear;
     }
 
-    number = r_bool_to_sexp (reset (reader, pos));
+    reset (reader, pos);
+    number = R_FAILURE;
 
 clear:
     mpq_clears (real, imag, NULL);
+
     return number;
 }
 
@@ -769,11 +771,15 @@ rsexp r_number_read (RNumberReader* reader, rconstcstring text)
     pos = mark (reader);
     number = read_number (reader);
 
-    if (r_false_p (number))
-        return r_bool_to_sexp (reset (reader, pos));
+    if (r_false_p (number)) {
+        reset (reader, pos);
+        return R_FAILURE;
+    }
 
-    if (!eoi_p (reader))
-        return r_bool_to_sexp (reset (reader, pos));
+    if (!eoi_p (reader)) {
+        reset (reader, pos);
+        return R_FAILURE;
+    }
 
     return number;
 }

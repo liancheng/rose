@@ -16,8 +16,10 @@ static rsexp write_fixnum (RState* state, rsexp port, rsexp obj)
     RFixnum* fixnum = fixnum_from_sexp (obj);
     FILE*    stream = port_to_stream (port);
 
-    if (0 == mpq_out_str (stream, 10, fixnum->real))
-        return R_ERROR_UNKNOWN;
+    if (0 == mpq_out_str (stream, 10, fixnum->real)) {
+        r_set_last_error_x (state, R_ERROR_UNKNOWN);
+        return R_FAILURE;
+    }
 
     if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u)) {
         if (0 < mpq_cmp_ui (fixnum->imag, 0u, 1u))
@@ -198,7 +200,7 @@ rsexp r_flonum_new (RState* state, double real, double imag)
     RFlonum* flonum = r_object_new (state, RFlonum, R_TAG_FLONUM);
 
     if (!flonum)
-        return r_last_error (state);
+        return R_FAILURE;
 
     flonum->real = real;
     flonum->imag = imag;
