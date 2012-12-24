@@ -5,7 +5,7 @@
 
 R_BEGIN_DECLS
 
-#define r_symbol_p(obj)     (r_get_tag (obj) == R_SYMBOL_TAG)
+#define r_symbol_p(obj)     (r_get_tag (obj) == R_TAG_SYMBOL)
 
 rsexp         r_symbol_new        (RState*       state,
                                    rconstcstring symbol);
