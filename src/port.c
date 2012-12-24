@@ -40,8 +40,18 @@ static rsexp make_port (RState*          state,
                         RPortClearCookie clear_fn,
                         RPortMarkCookie  mark_fn)
 {
+    rsexp  name_str;
     rsexp  res;
     RPort* port;
+
+    r_gc_scope_open (state);
+
+    name_str = r_string_new (state, name);
+
+    if (r_failure_p (name_str)) {
+        res = R_FAILURE;
+        goto exit;
+    }
 
     port = r_object_new (state, RPort, R_TAG_PORT);
 
@@ -50,16 +60,7 @@ static rsexp make_port (RState*          state,
         goto exit;
     }
 
-    r_gc_scope_open (state);
-
-    port->name = r_string_new (state, name);
-
-    if (r_failure_p (port->name)) {
-        port->name = R_UNDEFINED;
-        res = R_FAILURE;
-        goto clean;
-    }
-
+    port->name         = name_str;
     port->state        = state;
     port->stream       = stream;
     port->mode         = mode;
@@ -69,10 +70,9 @@ static rsexp make_port (RState*          state,
 
     res = port_to_sexp (port);
 
-clean:
+exit:
     r_gc_scope_close_and_protect (state, res);
 
-exit:
     return res;
 }
 
