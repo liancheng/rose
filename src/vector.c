@@ -233,19 +233,22 @@ exit:
 rsexp r_vector_to_list (RState* state, rsexp vector)
 {
     rsize i;
-    rsexp res = R_NULL;
+    rsexp res;
+    rsize length = r_uint_from_sexp (r_vector_length (vector));
 
     r_gc_scope_open (state);
 
-    for (i = r_uint_from_sexp (r_vector_length (vector)); i > 0; --i) {
+    for (i = length, res = R_NULL; i > 0; --i) {
         res = r_cons (state, r_vector_ref (state, vector, i - 1), res);
 
-        if (r_failure_p (res))
+        if (r_failure_p (res)) {
+            res = R_FAILURE;
             goto exit;
+        }
     }
 
+exit:
     r_gc_scope_close_and_protect (state, res);
 
-exit:
     return res;
 }
