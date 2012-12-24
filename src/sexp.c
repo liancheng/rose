@@ -10,7 +10,7 @@
 static rsexp write_special_const (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
-        "#f", "#t", "()", "#<eof>", "#<undefined>", "#<unspecified>",
+        "#f", "#t", "()", "#<eof>", "#<unspecified>", "#<undefined>",
     };
 
     return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
