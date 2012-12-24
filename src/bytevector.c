@@ -37,8 +37,8 @@ static rsexp bytevector_write (RState* state, rsexp port, rsexp obj)
 
         for (i = 1; i < length; ++i) {
             value = r_bytevector_u8_ref (state, obj, i);
+            ensure (r_port_write_char (state, port, ' '));
             ensure (r_port_write (state, port, value));
-            ensure (r_port_write_char (state, port, '\n'));
         }
     }
 
