@@ -121,9 +121,10 @@ static rbool check_index_overflow (RState* state, rsexp vec, rsize k)
 static void vector_mark (RState* state, rsexp obj)
 {
     rsize i;
+    rsize length = r_uint_from_sexp (r_vector_length (obj));
 
-    for (i = r_vector_length (obj); i != 0; --i)
-        r_gc_mark (state, r_vector_ref (state, obj, i - 1));
+    for (i = 0; i < length; ++i)
+        r_gc_mark (state, r_vector_ref (state, obj, i));
 }
 
 void init_vector_type_info (RState* state)
