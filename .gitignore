@@ -1,8 +1,9 @@
-.exrc
 bin/*
 build/*
+.clang_complete
 doc/html/
+.exrc
 lib/*
-tags
 *.pyc
 *.sconsign.dblite
+tags
