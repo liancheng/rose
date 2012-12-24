@@ -9,7 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ARENA_CHUNK_SIZE 16
+#define GC_ARENA_CHUNK_SIZE     16
+#define GC_DEFAULT_THRESHOLD    128
 
 typedef enum {
     R_GC_COLOR_WHITE,
@@ -31,7 +32,7 @@ static void gc_scope_protect (RState* state, RObject* obj)
     RGcState* gc = &state->gc;
 
     if (gc->arena_index >= gc->arena_size) {
-        gc->arena_size += ARENA_CHUNK_SIZE;
+        gc->arena_size += GC_ARENA_CHUNK_SIZE;
         gc->arena = r_realloc (state,
                                gc->arena,
                                gc->arena_size * sizeof (RObject*));
@@ -113,6 +114,7 @@ static void gc_sweep_phase (RState* state)
     RObject*  prev  = &dummy;
 
     prev->chrono_next = obj;
+    gc->n_live_after_mark = 0u;
 
     while (obj) {
         assert (!gc_gray_p (obj));
@@ -121,6 +123,7 @@ static void gc_sweep_phase (RState* state)
             gc_paint_white (obj);
             prev = obj;
             obj = obj->chrono_next;
+            gc->n_live_after_mark++;
         }
         else {
             prev->chrono_next = obj->chrono_next;
@@ -128,19 +131,25 @@ static void gc_sweep_phase (RState* state)
             obj = prev->chrono_next;
         }
     }
+
+    gc->n_live = gc->n_live_after_mark;
 }
 
 void gc_state_init (RState* state)
 {
     RGcState* gc = &state->gc;
 
-    gc->arena_size       = ARENA_CHUNK_SIZE;
-    gc->arena_index      = 0u;
-    gc->arena_last_index = 0u;
-    gc->arena            = r_new_array (state, RObject*, gc->arena_size);
+    gc->arena_size        = GC_ARENA_CHUNK_SIZE;
+    gc->arena_index       = 0u;
+    gc->arena_last_index  = 0u;
+    gc->arena             = r_new_array (state, RObject*, gc->arena_size);
 
-    gc->gray_list        = NULL;
-    gc->chrono_list      = NULL;
+    gc->n_live            = 0u;
+    gc->n_live_after_mark = 0u;
+    gc->threshold         = GC_DEFAULT_THRESHOLD;
+
+    gc->gray_list         = NULL;
+    gc->chrono_list       = NULL;
 
     assert (gc->arena);
 }
@@ -235,8 +244,17 @@ void r_free (RState* state, rpointer ptr)
 
 RObject* r_object_alloc (RState* state, RTypeTag type_tag)
 {
-    RTypeInfo* type = &state->builtin_types [type_tag];
-    RObject*   obj  = r_alloc (state, type->size);
+    RGcState*  gc;
+    RTypeInfo* type;
+    RObject*   obj;
+
+    gc = &state->gc;
+
+    if (gc->n_live - gc->n_live_after_mark > gc->threshold)
+        r_full_gc (state);
+
+    type = &state->builtin_types [type_tag];
+    obj  = r_alloc (state, type->size);
 
     if (obj == NULL) {
         r_set_last_error_x (state, R_ERROR_OOM);
@@ -250,6 +268,8 @@ RObject* r_object_alloc (RState* state, RTypeTag type_tag)
     gc_paint_white (obj);
     gc_prepend_to_chrono_list (state, obj);
     gc_scope_protect (state, obj);
+
+    gc->n_live++;
 
     return obj;
 }

@@ -11,6 +11,11 @@ struct RGcState {
     rsize     arena_size;
     rsize     arena_index;
     rsize     arena_last_index;
+
+    rsize     n_live;
+    rsize     n_live_after_mark;
+    rsize     threshold;
+
     RObject*  gray_list;
     RObject*  chrono_list;
 };
