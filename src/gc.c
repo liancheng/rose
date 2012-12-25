@@ -1,6 +1,7 @@
 #include "detail/gc.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "detail/vm.h"
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/port.h"
@@ -75,9 +76,21 @@ static void gc_mark_arena (RState* state)
         gc_mark (state, gc->arena [i]);
 }
 
+static void gc_mark_vm (RState* state)
+{
+    RVm* vm = &state->vm;
+
+    r_gc_mark (state, vm->args);
+    r_gc_mark (state, vm->env);
+    r_gc_mark (state, vm->next);
+    r_gc_mark (state, vm->stack);
+    r_gc_mark (state, vm->value);
+}
+
 static void gc_scan_phase (RState* state)
 {
     gc_mark_arena (state);
+    gc_mark_vm (state);
 }
 
 static void gc_mark_children (RState* state, RObject* obj)
