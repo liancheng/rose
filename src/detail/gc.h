@@ -32,7 +32,7 @@ rpointer default_alloc_fn  (rpointer  aux,
                             rpointer  ptr,
                             rsize     size);
 void     gc_scope_reset    (RState*   state);
-void     gc_state_init     (RState*   state);
-void     gc_state_destruct (RState*   state);
+void     gc_init           (RState*   state);
+void     gc_finish         (RState*   state);
 
 #endif  //  __ROSE_DETAIL_GC_H__

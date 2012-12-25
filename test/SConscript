@@ -13,7 +13,7 @@ test = env.Program(target='test',
                    source=[env.Glob('*.cpp'),
                            environ['GTEST_DIR'] + '/src/gtest-all.cc'])
 
-env.Command(target='run-test',
+env.Command(target='unit-test',
             source=test[0],
             action=test[0].abspath)
 

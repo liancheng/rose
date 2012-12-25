@@ -10,7 +10,8 @@
 static rsexp write_special_const (RState* state, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
-        "#f", "#t", "()", "#<eof>", "#<unspecified>", "#<undefined>",
+        "#f", "#t", "()", "#<eof>", "#<unspecified>",
+        "#<undefined>", "#<failure>"
     };
 
     return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
@@ -20,7 +21,7 @@ static rsexp display_special_const (RState* state, rsexp port, rsexp obj)
 {
 
     static rconstcstring str[] = {
-        "#f", "#t", "()", "", "", "",
+        "#f", "#t", "()", "", "", "", ""
     };
 
     return r_port_puts (state, port, str [obj >> R_TAG_BITS]);

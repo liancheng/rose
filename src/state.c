@@ -9,6 +9,7 @@
 
 void init_bytevector_type_info    (RState* state);
 void init_char_type_info          (RState* state);
+void init_closure_type_info       (RState* state);
 void init_error_type_info         (RState* state);
 void init_fixnum_type_info        (RState* state);
 void init_flonum_type_info        (RState* state);
@@ -21,35 +22,47 @@ void init_string_type_info        (RState* state);
 void init_symbol_type_info        (RState* state);
 void init_vector_type_info        (RState* state);
 
-static void init_keyword (RState*       state,
-                          ruint         index,
-                          rconstcstring symbol)
+static void reserve (RState*       state,
+                     ruint         index,
+                     rconstcstring symbol)
 {
-    state->keywords [index] = r_symbol_new_static (state, symbol);
+    state->reserved [index] = r_symbol_new_static (state, symbol);
 }
 
-static void init_keywords (RState* state)
+static void init_reserved_words (RState* state)
 {
-    init_keyword (state, R_QUOTE,            "quote");
-    init_keyword (state, R_LAMBDA,           "lambda");
-    init_keyword (state, R_IF,               "if");
-    init_keyword (state, R_SET_X,            "set!");
-    init_keyword (state, R_BEGIN,            "begin");
-    init_keyword (state, R_COND,             "cond");
-    init_keyword (state, R_AND,              "and");
-    init_keyword (state, R_OR,               "or");
-    init_keyword (state, R_CASE,             "case");
-    init_keyword (state, R_LET,              "let");
-    init_keyword (state, R_LET_S,            "let*");
-    init_keyword (state, R_LETREC,           "letrec");
-    init_keyword (state, R_DO,               "do");
-    init_keyword (state, R_DELAY,            "delay");
-    init_keyword (state, R_QUASIQUOTE,       "quasiquote");
-    init_keyword (state, R_ELSE,             "else");
-    init_keyword (state, R_ARROW,            "=>");
-    init_keyword (state, R_DEFINE,           "define");
-    init_keyword (state, R_UNQUOTE,          "unquote");
-    init_keyword (state, R_UNQUOTE_SPLICING, "unquote-splicing");
+    reserve (state, KW_QUOTE,            "quote");
+    reserve (state, KW_LAMBDA,           "lambda");
+    reserve (state, KW_IF,               "if");
+    reserve (state, KW_SET_X,            "set!");
+    reserve (state, KW_BEGIN,            "begin");
+    reserve (state, KW_COND,             "cond");
+    reserve (state, KW_AND,              "and");
+    reserve (state, KW_OR,               "or");
+    reserve (state, KW_CASE,             "case");
+    reserve (state, KW_LET,              "let");
+    reserve (state, KW_LET_S,            "let*");
+    reserve (state, KW_LETREC,           "letrec");
+    reserve (state, KW_DO,               "do");
+    reserve (state, KW_DELAY,            "delay");
+    reserve (state, KW_QUASIQUOTE,       "quasiquote");
+    reserve (state, KW_ELSE,             "else");
+    reserve (state, KW_ARROW,            "=>");
+    reserve (state, KW_DEFINE,           "define");
+    reserve (state, KW_UNQUOTE,          "unquote");
+    reserve (state, KW_UNQUOTE_SPLICING, "unquote-splicing");
+
+    reserve (state, INS_APPLY,           "apply");
+    reserve (state, INS_ARG,             "arg");
+    reserve (state, INS_ASSIGN,          "assign");
+    reserve (state, INS_BRANCH,          "branch");
+    reserve (state, INS_CLOSE,           "close");
+    reserve (state, INS_CONST,           "const");
+    reserve (state, INS_BIND,            "bind");
+    reserve (state, INS_FRAME,           "frame");
+    reserve (state, INS_HALT,            "halt");
+    reserve (state, INS_REFER,           "refer");
+    reserve (state, INS_RETURN,          "return");
 }
 
 static void init_builtin_types (RState* state)
@@ -70,6 +83,7 @@ static void init_builtin_types (RState* state)
     init_string_type_info        (state);
     init_vector_type_info        (state);
     init_opaque_type_info        (state);
+    init_closure_type_info       (state);
 }
 
 static void init_std_ports (RState* state)
@@ -79,21 +93,16 @@ static void init_std_ports (RState* state)
     state->current_error_port  = r_stderr_port (state);
 }
 
-static void init_gc (RState* state)
-{
-    gc_state_init (state);
-}
-
 void init_builtin_type (RState* state, RTypeTag tag, RTypeInfo* type)
 {
     assert (R_TAG_RESERVED < tag && tag < R_TAG_MAX);
     state->builtin_types [tag] = *type;
 }
 
-rsexp keyword (RState* state, ruint index)
+rsexp reserved (RState* state, RReservedWord index)
 {
-    assert (index < R_KEYWORD_COUNT);
-    return state->keywords [index];
+    assert (index < RESERVED_WORD_COUNT);
+    return state->reserved [index];
 }
 
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
@@ -113,11 +122,13 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
     state->alloc_fn   = alloc_fn;
     state->alloc_aux  = aux;
 
-    init_gc (state);
+    gc_init (state);
 
-    init_builtin_types (state);
-    init_std_ports     (state);
-    init_keywords      (state);
+    init_builtin_types  (state);
+    init_std_ports      (state);
+    init_reserved_words (state);
+
+    vm_init (state);
 
 exit:
     return state;
@@ -130,6 +141,7 @@ RState* r_state_open ()
 
 void r_state_free (RState* state)
 {
-    gc_state_destruct (state);
+    vm_finish (state);
+    gc_finish (state);
     r_free (state, state);
 }

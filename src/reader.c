@@ -229,19 +229,19 @@ static rsexp read_abbreviation (RDatumReader* reader)
 
     switch (lookahead (reader)->_id) {
         case TKN_QUOTE:
-            prefix = keyword (reader->state, R_QUOTE);
+            prefix = reserved (reader->state, KW_QUOTE);
             break;
 
         case TKN_BACKTICK:
-            prefix = keyword (reader->state, R_QUASIQUOTE);
+            prefix = reserved (reader->state, KW_QUASIQUOTE);
             break;
 
         case TKN_COMMA:
-            prefix = keyword (reader->state, R_UNQUOTE);
+            prefix = reserved (reader->state, KW_UNQUOTE);
             break;
 
         case TKN_COMMA_AT:
-            prefix = keyword (reader->state, R_UNQUOTE_SPLICING);
+            prefix = reserved (reader->state, KW_UNQUOTE_SPLICING);
             break;
 
         default:
@@ -419,4 +419,13 @@ rsexp r_read (rsexp reader)
 {
     RDatumReader* r = r_cast (RDatumReader*, r_opaque_get (reader));
     return lookahead (r)->_id == TKN_TERMINATION ? R_EOF : read_datum (r);
+}
+
+rsexp r_read_from_string (RState* state, rconstcstring input)
+{
+    rsexp str    = r_string_new (state, input);
+    rsexp port   = r_open_input_string (state, str);
+    rsexp reader = r_reader_new (state, port);
+
+    return r_read (reader);
 }

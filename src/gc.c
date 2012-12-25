@@ -135,7 +135,7 @@ static void gc_sweep_phase (RState* state)
     gc->n_live = gc->n_live_after_mark;
 }
 
-void gc_state_init (RState* state)
+void gc_init (RState* state)
 {
     RGcState* gc = &state->gc;
 
@@ -154,7 +154,7 @@ void gc_state_init (RState* state)
     assert (gc->arena);
 }
 
-void gc_state_destruct (RState* state)
+void gc_finish (RState* state)
 {
     gc_scope_reset (state);
 

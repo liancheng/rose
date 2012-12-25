@@ -472,8 +472,7 @@ rsexp r_port_vformat (RState*       state,
                 break;
 
             case 's':
-                /* ensure (r_port_write (state, port, va_arg (args, rsexp))); */
-                r_port_write (state, port, va_arg (args, rsexp));
+                ensure (r_port_write (state, port, va_arg (args, rsexp)));
                 break;
         }
     }
@@ -537,20 +536,22 @@ void r_set_current_error_port_x (RState* state, rsexp port)
 
 rsexp r_port_write (RState* state, rsexp port, rsexp obj)
 {
-    RTypeInfo* type_info = r_type_info (state, obj);
+    RTypeInfo* type = r_type_info (state, obj);
 
-    return type_info
-           ? type_info->ops.write (state, port, obj)
-           : R_UNSPECIFIED;
+    if (type->ops.write)
+        return type->ops.write (state, port, obj);
+    else
+        return r_port_printf (state, port, "#<%s>", type->name);
 }
 
 rsexp r_port_display (RState* state, rsexp port, rsexp obj)
 {
-    RTypeInfo* type_info = r_type_info (state, obj);
+    RTypeInfo* type = r_type_info (state, obj);
 
-    return type_info
-           ? type_info->ops.display (state, port, obj)
-           : R_UNSPECIFIED;
+    if (type->ops.display)
+        return type->ops.display (state, port, obj);
+    else
+        return r_port_printf (state, port, "#<%s>", type->name);
 }
 
 rsexp r_write (RState* state, rsexp obj)

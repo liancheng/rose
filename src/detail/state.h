@@ -3,6 +3,7 @@
 
 #include "detail/gc.h"
 #include "detail/sexp.h"
+#include "detail/vm.h"
 #include "rose/error.h"
 #include "rose/state.h"
 #include "rose/symbol.h"
@@ -10,33 +11,49 @@
 #include <glib.h>
 
 typedef enum {
-    R_QUOTE,
-    R_LAMBDA,
-    R_IF,
-    R_SET_X,
-    R_BEGIN,
-    R_COND,
-    R_AND,
-    R_OR,
-    R_CASE,
-    R_LET,
-    R_LET_S,
-    R_LETREC,
-    R_DO,
-    R_DELAY,
-    R_QUASIQUOTE,
-    R_ELSE,
-    R_ARROW,
-    R_DEFINE,
-    R_UNQUOTE,
-    R_UNQUOTE_SPLICING,
-    R_KEYWORD_COUNT
+    KW_QUOTE,
+    KW_LAMBDA,
+    KW_IF,
+    KW_SET_X,
+    KW_BEGIN,
+    KW_COND,
+    KW_AND,
+    KW_OR,
+    KW_CASE,
+    KW_LET,
+    KW_LET_S,
+    KW_LETREC,
+    KW_DO,
+    KW_DELAY,
+    KW_QUASIQUOTE,
+    KW_ELSE,
+    KW_ARROW,
+    KW_DEFINE,
+    KW_UNQUOTE,
+    KW_UNQUOTE_SPLICING,
+
+    INS_APPLY,
+    INS_ARG,
+    INS_ASSIGN,
+    INS_BRANCH,
+    INS_CLOSE,
+    INS_CONST,
+    INS_BIND,
+    INS_FRAME,
+    INS_HALT,
+    INS_REFER,
+    INS_RETURN,
+
+    RESERVED_WORD_COUNT
 }
-RKeyword;
+RReservedWord;
 
 struct RState {
-    /* GC */
+    /* Garbage collector */
     RGcState     gc;
+
+    /* Virtual machine */
+    RVm          vm;
 
     /* Error handling */
     rsexp        last_error;
@@ -50,17 +67,17 @@ struct RState {
     rsexp        current_input_port;
     rsexp        current_output_port;
     rsexp        current_error_port;
-    rsexp        keywords [R_KEYWORD_COUNT];
+    rsexp        reserved [RESERVED_WORD_COUNT];
 
     /* Type information */
     RTypeInfo    builtin_types [R_TAG_MAX];
     GHashTable*  user_type_ht;
 };
 
-void  init_builtin_type (RState*    state,
-                         RTypeTag   tag,
-                         RTypeInfo* type);
-rsexp keyword           (RState*    state,
-                         ruint      index);
+void  init_builtin_type (RState*       state,
+                         RTypeTag      tag,
+                         RTypeInfo*    type);
+rsexp reserved          (RState*       state,
+                         RReservedWord index);
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */
