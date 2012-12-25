@@ -51,17 +51,20 @@ static void init_reserved_words (RState* state)
     reserve (state, KW_DEFINE,           "define");
     reserve (state, KW_UNQUOTE,          "unquote");
     reserve (state, KW_UNQUOTE_SPLICING, "unquote-splicing");
+    reserve (state, KW_CALL_CC,          "call/cc");
 
     reserve (state, INS_APPLY,           "apply");
     reserve (state, INS_ARG,             "arg");
     reserve (state, INS_ASSIGN,          "assign");
     reserve (state, INS_BRANCH,          "branch");
+    reserve (state, INS_CAPTURE_CC,      "capture-cc");
     reserve (state, INS_CLOSE,           "close");
     reserve (state, INS_CONST,           "const");
     reserve (state, INS_BIND,            "bind");
     reserve (state, INS_FRAME,           "frame");
     reserve (state, INS_HALT,            "halt");
     reserve (state, INS_REFER,           "refer");
+    reserve (state, INS_RESTORE_CC,      "restore-cc");
     reserve (state, INS_RETURN,          "return");
 }
 

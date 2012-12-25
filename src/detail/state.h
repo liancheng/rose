@@ -31,17 +31,20 @@ typedef enum {
     KW_DEFINE,
     KW_UNQUOTE,
     KW_UNQUOTE_SPLICING,
+    KW_CALL_CC,
 
     INS_APPLY,
     INS_ARG,
     INS_ASSIGN,
     INS_BRANCH,
+    INS_CAPTURE_CC,
     INS_CLOSE,
     INS_CONST,
     INS_BIND,
     INS_FRAME,
     INS_HALT,
     INS_REFER,
+    INS_RESTORE_CC,
     INS_RETURN,
 
     RESERVED_WORD_COUNT

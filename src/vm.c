@@ -1,4 +1,5 @@
 #include "detail/closure.h"
+#include "detail/compile.h"
 #include "detail/env.h"
 #include "detail/vm.h"
 #include "detail/state.h"
@@ -6,8 +7,23 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/sexp.h"
+#include "rose/symbol.h"
 
 typedef void (*RInstructionExecutor) (RState*, RVm*);
+
+static rsexp pop (RVm* vm)
+{
+    rsexp res = r_car (vm->stack);
+    vm->stack = r_cdr (vm->stack);
+    return res;
+}
+
+static rsexp continuation (RState* state, rsexp stack)
+{
+    rsexp var = r_symbol_new_static (state, "v");
+    rsexp code = emit_restore_cc (state, stack, var);
+    return r_closure_new (state, code, R_NULL, r_list (state, 1, var));
+}
 
 static void exec_apply (RState* state, RVm* vm)
 {
@@ -45,6 +61,12 @@ static void exec_branch (RState* state, RVm* vm)
              : r_caddr (vm->next);
 }
 
+static void exec_capture_cc (RState* state, RVm* vm)
+{
+    vm->value = continuation (state, vm->stack);
+    vm->next = r_cadr (vm->next);
+}
+
 static void exec_const (RState* state, RVm* vm)
 {
     vm->value = r_cadr (vm->next);
@@ -59,12 +81,22 @@ static void exec_close (RState* state, RVm* vm)
     vm->next = r_cadddr (vm->next);
 }
 
+static rsexp call_frame (RState* state,
+                         rsexp   ret,
+                         rsexp   env,
+                         rsexp   args,
+                         rsexp   stack)
+{
+    return r_list (state, 4, ret, env, args, stack);
+}
+
 static void exec_frame (RState* state, RVm* vm)
 {
     rsexp ret = r_cadr (vm->next);
-    vm->stack = r_list (state, 4, ret, vm->env, vm->args, vm->stack);
-    vm->args = R_NULL;
-    vm->next = r_caddr (vm->next);
+
+    vm->stack = call_frame (state, ret, vm->env, vm->args, vm->stack);
+    vm->args  = R_NULL;
+    vm->next  = r_caddr (vm->next);
 }
 
 static void exec_halt (RState* state, RVm* vm)
@@ -79,11 +111,14 @@ static void exec_refer (RState* state, RVm* vm)
     vm->next = r_caddr (vm->next);
 }
 
-static rsexp pop (RVm* vm)
+static void exec_restore_cc (RState* state, RVm* vm)
 {
-    rsexp res = r_car (vm->stack);
-    vm->stack = r_cdr (vm->stack);
-    return res;
+    rsexp stack = r_cadr (vm->next);
+    rsexp var = r_caddr (vm->next);
+
+    vm->value = r_car (lookup (state, vm->env, var));
+    vm->next  = emit_return (state);
+    vm->stack = stack;
 }
 
 static void exec_return (RState* state, RVm* vm)
@@ -118,7 +153,7 @@ static void install_instruction_executor (RState*              state,
                          r_cast (rpointer, exec));
 }
 
-static void vm_dump (RState* state)
+void vm_dump (RState* state)
 {
     RVm* vm = &state->vm;
 
@@ -143,17 +178,19 @@ void vm_init (RState* state)
 
     vm->executors = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-    install_instruction_executor (state, vm, INS_APPLY,  exec_apply);
-    install_instruction_executor (state, vm, INS_ARG,    exec_arg);
-    install_instruction_executor (state, vm, INS_ASSIGN, exec_assign);
-    install_instruction_executor (state, vm, INS_CONST,  exec_const);
-    install_instruction_executor (state, vm, INS_CLOSE,  exec_close);
-    install_instruction_executor (state, vm, INS_BIND,   exec_bind);
-    install_instruction_executor (state, vm, INS_BRANCH, exec_branch);
-    install_instruction_executor (state, vm, INS_FRAME,  exec_frame);
-    install_instruction_executor (state, vm, INS_HALT,   exec_halt);
-    install_instruction_executor (state, vm, INS_REFER,  exec_refer);
-    install_instruction_executor (state, vm, INS_RETURN, exec_return);
+    install_instruction_executor (state, vm, INS_APPLY,      exec_apply);
+    install_instruction_executor (state, vm, INS_ARG,        exec_arg);
+    install_instruction_executor (state, vm, INS_ASSIGN,     exec_assign);
+    install_instruction_executor (state, vm, INS_CAPTURE_CC, exec_capture_cc);
+    install_instruction_executor (state, vm, INS_CONST,      exec_const);
+    install_instruction_executor (state, vm, INS_CLOSE,      exec_close);
+    install_instruction_executor (state, vm, INS_BIND,       exec_bind);
+    install_instruction_executor (state, vm, INS_BRANCH,     exec_branch);
+    install_instruction_executor (state, vm, INS_FRAME,      exec_frame);
+    install_instruction_executor (state, vm, INS_HALT,       exec_halt);
+    install_instruction_executor (state, vm, INS_REFER,      exec_refer);
+    install_instruction_executor (state, vm, INS_RESTORE_CC, exec_restore_cc);
+    install_instruction_executor (state, vm, INS_RETURN,     exec_return);
 }
 
 void vm_finish (RState* state)
@@ -168,10 +205,8 @@ rsexp r_run (RState* state, rsexp code)
     vm->next = code;
     vm->halt_p = FALSE;
 
-    while (!vm->halt_p) {
-        vm_dump (state);
+    while (!vm->halt_p)
         single_step (state);
-    }
 
     return vm->value;
 }

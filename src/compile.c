@@ -1,58 +1,13 @@
-#include "detail/state.h"
+#include "detail/compile.h"
 #include "rose/bytevector.h"
 #include "rose/compile.h"
 #include "rose/eq.h"
 #include "rose/number.h"
-#include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/reader.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
-
-#define ins_apply(state)\
-        r_list ((state), 1,\
-                reserved ((state), INS_APPLY))
-
-#define ins_arg(state, next)\
-        r_list ((state), 2,\
-                reserved ((state), INS_ARG), (next))
-
-#define ins_assign(state, var, next)\
-        r_list ((state), 3,\
-                reserved ((state), INS_ASSIGN), (var), (next))
-
-#define ins_bind(state, var, next)\
-        r_list ((state), 3,\
-                reserved ((state), INS_BIND), (var), (next))
-
-#define ins_branch(state, then_c, else_c)\
-        r_list ((state), 3,\
-                reserved ((state), INS_BRANCH), (then_c), (else_c))
-
-#define ins_close(state, vars, body, next)\
-        r_list ((state), 4,\
-                reserved ((state), INS_CLOSE), (vars), (body), (next))
-
-#define ins_const(state, datum, next)\
-        r_list ((state), 3,\
-                reserved ((state), INS_CONST), (datum), (next))
-
-#define ins_frame(state, next, ret)\
-        r_list ((state), 3,\
-                reserved ((state), INS_FRAME), (next), (ret))
-
-#define ins_halt(state)\
-        r_list ((state), 1,\
-                reserved ((state), INS_HALT))
-
-#define ins_refer(state, var, next)\
-        r_list ((state), 3,\
-                reserved ((state), INS_REFER), (var), (next))
-
-#define ins_return(state)\
-        r_list ((state), 1,\
-                reserved ((state), INS_RETURN))
 
 static rsexp compile          (RState* state, rsexp expr, rsexp next);
 static rsexp compile_sequence (RState* state, rsexp seq, rsexp next);
@@ -60,6 +15,11 @@ static rsexp compile_sequence (RState* state, rsexp seq, rsexp next);
 static rbool form_eq_p (RState* state, RReservedWord name, rsexp expr)
 {
     return r_eq_p (state, reserved (state, name), r_car (expr));
+}
+
+static rbool tail_p (RState* state, rsexp next)
+{
+    return r_eq_p (state, reserved (state, INS_RETURN), r_car (next));
 }
 
 static void missing_or_extra_expression (RState* state, rsexp expr)
@@ -129,7 +89,7 @@ static rsexp compile_quote (RState* state, rsexp expr, rsexp next)
 {
     return r_failure_p (check_expr_length_eq (state, expr, 2))
            ? R_FAILURE
-           : ins_const (state, r_cadr (expr), next);
+           : emit_const (state, r_cadr (expr), next);
 }
 
 static rsexp compile_assign_or_define (RState* state, rsexp expr, rsexp next)
@@ -169,14 +129,14 @@ exit:
 static rsexp compile_assign (RState* state, rsexp expr, rsexp next)
 {
     rsexp var = r_cadr (expr);
-    next = ins_assign (state, var, next);
+    next = emit_assign (state, var, next);
     return compile_assign_or_define (state, expr, next);
 }
 
 static rsexp compile_define (RState* state, rsexp expr, rsexp next)
 {
     rsexp var = r_cadr (expr);
-    next = ins_bind (state, var, next);
+    next = emit_bind (state, var, next);
     return compile_assign_or_define (state, expr, next);
 }
 
@@ -202,7 +162,7 @@ static rsexp compile_conditional (RState* state, rsexp expr, rsexp next)
     }
 
     if (r_uint_from_sexp (length) == 3u)
-        else_code = ins_const (state, R_UNSPECIFIED, next);
+        else_code = emit_const (state, R_UNSPECIFIED, next);
     else
         else_code = compile (state, r_cadddr (expr), next);
 
@@ -211,7 +171,7 @@ static rsexp compile_conditional (RState* state, rsexp expr, rsexp next)
         goto exit;
     }
 
-    code = ins_branch (state, then_code, else_code);
+    code = emit_branch (state, then_code, else_code);
     code = compile (state, r_cadr (expr), code);
 
 exit:
@@ -220,47 +180,40 @@ exit:
 
 static rsexp compile_lambda (RState* state, rsexp expr, rsexp next)
 {
-    rsexp vars      = r_cadr (expr);
-    rsexp body      = r_reverse (state, r_cddr (expr));
-    rsexp ret       = ins_return (state);
-    rsexp body_code = compile_sequence (state, body, ret);
+    rsexp vars = r_cadr (expr);
+    rsexp body = r_reverse (state, r_cddr (expr));
+    rsexp body_code = compile_sequence (state, body, emit_return (state));
 
-    return ins_close (state, vars, body_code, next);
-}
-
-static rbool tail_p (RState* state, rsexp next)
-{
-    return r_eq_p (state, reserved (state, INS_RETURN), r_car (next));
+    return emit_close (state, vars, body_code, next);
 }
 
 static rsexp compile_application (RState* state, rsexp expr, rsexp next)
 {
     rsexp proc = r_car (expr);
     rsexp args = r_cdr (expr);
-    rsexp code = ins_apply (state);
+    rsexp code = emit_apply (state);
 
     code = compile (state, proc, code);
 
     while (!r_null_p (args)) {
-        code = ins_arg (state, code);
+        code = emit_arg (state, code);
         code = compile (state, r_car (args), code);
         args = r_cdr (args);
     }
 
-    return tail_p (state, next) ? code : ins_frame (state, next, code);
+    return tail_p (state, next) ? code : emit_frame (state, next, code);
 }
 
-static rsexp compile_sequence (RState* state, rsexp seq, rsexp next)
+static rsexp compile_call_cc (RState* state, rsexp expr, rsexp next)
 {
-    rsexp expr;
+    rsexp code;
 
-    while (!r_null_p (seq) && !r_failure_p (next)) {
-        expr = r_car (seq);
-        seq = r_cdr (seq);
-        next = compile (state, expr, next);
-    }
+    code = emit_apply (state);
+    code = compile (state, r_cadr (expr), code);
+    code = emit_arg (state, code);
+    code = emit_capture_cc (state, code);
 
-    return next;
+    return tail_p (state, next) ? code : emit_frame (state, next, code);
 }
 
 static rsexp compile (RState* state, rsexp expr, rsexp next)
@@ -270,12 +223,12 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
     r_gc_scope_open (state);
 
     if (r_symbol_p (expr)) {
-        code = ins_refer (state, expr, next);
+        code = emit_refer (state, expr, next);
         goto exit;
     }
 
     if (!r_pair_p (expr)) {
-        code = ins_const (state, expr, next);
+        code = emit_const (state, expr, next);
         goto exit;
     }
 
@@ -304,6 +257,11 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
         goto exit;
     }
 
+    if (form_eq_p (state, KW_CALL_CC, expr)) {
+        code = compile_call_cc (state, expr, next);
+        goto exit;
+    }
+
     code = compile_application (state, expr, next);
     goto exit;
 
@@ -313,12 +271,23 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
 exit:
     r_gc_scope_close_and_protect (state, code);
 
-    r_format (state, "expression: ~s~%code to: ~s~%", expr, code);
-
     return code;
+}
+
+static rsexp compile_sequence (RState* state, rsexp seq, rsexp next)
+{
+    rsexp expr;
+
+    while (!r_null_p (seq) && !r_failure_p (next)) {
+        expr = r_car (seq);
+        seq = r_cdr (seq);
+        next = compile (state, expr, next);
+    }
+
+    return next;
 }
 
 rsexp r_compile (RState* state, rsexp program)
 {
-    return compile_sequence (state, program, ins_halt (state));
+    return compile_sequence (state, program, emit_halt (state));
 }
