@@ -21,15 +21,11 @@ rsi_bin = env.SConscript(dirs='tools/rsi/',
                          exports=['env', 'rose_lib'],
                          variant_dir='build/tools/rsi/')
 
-reader_bin = env.SConscript(dirs='tools/reader/',
-                            exports=['env', 'rose_lib'],
-                            variant_dir='build/tools/reader/')
-
 test = env.SConscript(dirs='test',
                       exports=['env', 'rose_lib'],
                       variant_dir='build/test/')
 
 env.Install(target='lib/', source=rose_lib)
-env.Install(target='bin/', source=[rsi_bin, reader_bin])
+env.Install(target='bin/', source=rsi_bin)
 
 # vim:ft=python
