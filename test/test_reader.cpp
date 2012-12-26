@@ -69,7 +69,7 @@ TEST_F (test_reader, complex_number)
 TEST_F (test_reader, string)
 {
     EXPECT_STREQ ("\"\"", rw ("\"\" "));
-    EXPECT_STREQ ("\"hello \\\"world\\\"\"", rw ("\"hello \\\"world\\\"\""));
+    EXPECT_STREQ ("\"\\\"\"", rw ("\"\\\"\" "));
 }
 
 TEST_F (test_reader, abbreviated_list)
