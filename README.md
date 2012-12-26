@@ -61,7 +61,7 @@ Now test `quex` from terminal:
 
     $ quex --version
     Quex - Fast Universal Lexical Analyzer Generator
-    Version 0.63.2
+    Version 0.63.1
     (C) 2005-2012 Frank-Rene Schaefer
     ABSOLUTELY NO WARRANTY
 
