@@ -55,7 +55,6 @@ int main (int argc, char* argv[])
         program = r_cons (state, datum, program);
     }
 
-    r_format (state, "program: ~s~%", program);
     code = r_compile (state, program);
 
     if (r_failure_p (code)) {
