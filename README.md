@@ -71,4 +71,5 @@ For the Deb and RPM packages, set `QUEX_HOME` to `/opt/quex/quex-<version>`.  Fo
 [quex-dl]:  http://sourceforge.net/projects/quex/files/DOWNLOAD/
 [quex-doc]: http://quex.sourceforge.net/doc/html/intro/installation.html
 [scons]:    http://www.scons.org
-[python]:   http://python.org
+[glib]:     http://developer.gnome.org/glib/
+[gmp]:      http://gmplib.org/
