@@ -200,9 +200,13 @@ rsexp r_open_input_string (RState* state, rsexp string)
     rsize    size;
     FILE*    stream;
 
-    input  = r_cast (rpointer, r_string_to_cstr (string));
-    size   = r_string_length_by_byte (string);
-    stream = fmemopen (input, size, "r");
+    input = r_cast (rpointer, r_string_to_cstr (string));
+    size  = r_string_length_by_byte (string);
+
+    if (size == 0)
+        stream = fopen ("/dev/null", "r");
+    else
+        stream = fmemopen (input, size, "r");
 
     if (!stream) {
         res = R_FAILURE;
