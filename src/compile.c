@@ -208,12 +208,17 @@ static rsexp compile_call_cc (RState* state, rsexp expr, rsexp next)
 {
     rsexp code;
 
+    r_gc_scope_open (state);
+
     code = emit_apply (state);
     code = compile (state, r_cadr (expr), code);
     code = emit_arg (state, code);
     code = emit_capture_cc (state, code);
+    code = tail_p (state, next) ? code : emit_frame (state, next, code);
 
-    return tail_p (state, next) ? code : emit_frame (state, next, code);
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
 }
 
 static rsexp compile (RState* state, rsexp expr, rsexp next)
@@ -278,11 +283,15 @@ static rsexp compile_sequence (RState* state, rsexp seq, rsexp next)
 {
     rsexp expr;
 
+    r_gc_scope_open (state);
+
     while (!r_null_p (seq) && !r_failure_p (next)) {
         expr = r_car (seq);
         seq = r_cdr (seq);
         next = compile (state, expr, next);
     }
+
+    r_gc_scope_close_and_protect (state, next);
 
     return next;
 }
