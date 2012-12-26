@@ -2,6 +2,7 @@
 #define __ROSE_DETAIL_COMPILE_H__
 
 #include "detail/state.h"
+#include "rose/compile.h"
 #include "rose/pair.h"
 
 #define emit_apply(state)\

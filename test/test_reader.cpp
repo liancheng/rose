@@ -68,8 +68,8 @@ TEST_F (test_reader, complex_number)
 
 TEST_F (test_reader, string)
 {
-    EXPECT_STREQ ("\"\"", rw ("\"\" "));
-    EXPECT_STREQ ("\"\\\"\"", rw ("\"\\\"\" "));
+    EXPECT_STREQ ("\"\"", rw ("\"\""));
+    EXPECT_STREQ ("\"\\\"\"", rw ("\"\\\"\""));
 }
 
 TEST_F (test_reader, abbreviated_list)
@@ -82,19 +82,19 @@ TEST_F (test_reader, abbreviated_list)
 
 TEST_F (test_reader, full_list)
 {
-    EXPECT_STREQ ("()", rw ("() "));
-    EXPECT_STREQ ("(a)", rw ("(a) "));
-    EXPECT_STREQ ("(a . b)", rw ("(a . b) "));
-    EXPECT_STREQ ("(a b . c)", rw ("(a b . c) "));
-    EXPECT_STREQ ("(a b)", rw ("(a b) "));
-    EXPECT_STREQ ("(a b)", rw ("(a b . ()) "));
+    EXPECT_STREQ ("()", rw ("()"));
+    EXPECT_STREQ ("(a)", rw ("(a)"));
+    EXPECT_STREQ ("(a . b)", rw ("(a . b)"));
+    EXPECT_STREQ ("(a b . c)", rw ("(a b . c)"));
+    EXPECT_STREQ ("(a b)", rw ("(a b)"));
+    EXPECT_STREQ ("(a b)", rw ("(a b . ())"));
 }
 
 TEST_F (test_reader, vector)
 {
-    EXPECT_STREQ ("#()", rw ("#() "));
-    EXPECT_STREQ ("#(a)", rw ("#(a) "));
-    EXPECT_STREQ ("#(a b)", rw ("#(a b) "));
+    EXPECT_STREQ ("#()", rw ("#()"));
+    EXPECT_STREQ ("#(a)", rw ("#(a)"));
+    EXPECT_STREQ ("#(a b)", rw ("#(a b)"));
 }
 
 TEST_F (test_reader, character)
