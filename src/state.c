@@ -9,7 +9,7 @@
 
 void init_bytevector_type_info    (RState* state);
 void init_char_type_info          (RState* state);
-void init_closure_type_info       (RState* state);
+void init_procedure_type_info     (RState* state);
 void init_error_type_info         (RState* state);
 void init_fixnum_type_info        (RState* state);
 void init_flonum_type_info        (RState* state);
@@ -86,7 +86,7 @@ static void init_builtin_types (RState* state)
     init_string_type_info        (state);
     init_vector_type_info        (state);
     init_opaque_type_info        (state);
-    init_closure_type_info       (state);
+    init_procedure_type_info     (state);
 }
 
 static void init_std_ports (RState* state)

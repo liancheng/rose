@@ -1,4 +1,4 @@
-#include "detail/closure.h"
+#include "detail/procedure.h"
 #include "detail/compile.h"
 #include "detail/env.h"
 #include "detail/vm.h"
@@ -22,16 +22,16 @@ static rsexp continuation (RState* state, rsexp stack)
 {
     rsexp var = r_symbol_new_static (state, "v");
     rsexp code = emit_restore_cc (state, stack, var);
-    return r_closure_new (state, code, R_NULL, r_list (state, 1, var));
+    return r_procedure_new (state, code, R_NULL, r_list (state, 1, var));
 }
 
 static void exec_apply (RState* state, RVm* vm)
 {
     rsexp proc      = vm->value;
-    rsexp proc_env  = r_closure_env (proc);
-    rsexp proc_vars = r_closure_vars (proc);
+    rsexp proc_env  = r_procedure_env (proc);
+    rsexp proc_vars = r_procedure_vars (proc);
 
-    vm->next = r_closure_body (proc);
+    vm->next = r_procedure_body (proc);
     vm->env  = extend (state, proc_env, proc_vars, vm->args);
     vm->args = R_NULL;
 }
@@ -77,7 +77,7 @@ static void exec_close (RState* state, RVm* vm)
 {
     rsexp vars = r_cadr (vm->next);
     rsexp body = r_caddr (vm->next);
-    vm->value = r_closure_new (state, body, vm->env, vars);
+    vm->value = r_procedure_new (state, body, vm->env, vars);
     vm->next = r_cadddr (vm->next);
 }
 

@@ -63,17 +63,16 @@ typedef enum {
     R_TAG_VECTOR        = 0x0a,
     R_TAG_BYTEVECTOR    = 0x0b,
     R_TAG_PROCEDURE     = 0x0c,
-    R_TAG_CONTINUATION  = 0x0d,
+    R_TAG_NATIVE_PROC   = 0x0d,
     R_TAG_ENV           = 0x0e,
     R_TAG_PORT          = 0x0f,
     R_TAG_ERROR         = 0x10,
     R_TAG_FIXNUM        = 0x11,
     R_TAG_FLONUM        = 0x12,
     R_TAG_OPAQUE        = 0x13,
-    R_TAG_CLOSURE       = 0x14,
 
     /* End mark */
-    R_TAG_MAX           = 0x15
+    R_TAG_MAX           = 0x14
 }
 RTypeTag;
 

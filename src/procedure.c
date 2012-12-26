@@ -36,12 +36,12 @@ void init_procedure_type_info (RState* state)
     type.ops.finalize = NULL;
     type.ops.mark     = procedure_mark;
 
-    init_builtin_type (state, R_TAG_CLOSURE, &type);
+    init_builtin_type (state, R_TAG_PROCEDURE, &type);
 }
 
 rbool r_procedure_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TAG_CLOSURE;
+    return r_type_tag (obj) == R_TAG_PROCEDURE;
 }
 
 rsexp r_procedure_new (RState* state, rsexp body, rsexp env, rsexp vars)
