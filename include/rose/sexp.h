@@ -51,8 +51,8 @@ typedef enum {
     R_TAG_CHAR          = 0x02,     /* #b010 */
     R_TAG_SMI           = 0x03,     /* #b011 */
     R_TAG_SMI_EVEN      = 0x03,     /* #b011 */
-    R_TAG_SPECIAL_CONST = 0x04,     /* #b101 */
-    R_TAG_SYMBOL        = 0x05,     /* #b110 */
+    R_TAG_SPECIAL_CONST = 0x04,     /* #b100 */
+    R_TAG_SYMBOL        = 0x05,     /* #b101 */
     R_TAG_INLINE_ERROR  = 0x06,     /* #b110 */
     R_TAG_SMI_ODD       = 0x07,     /* #b111 */
 
