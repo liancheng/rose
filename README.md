@@ -26,6 +26,7 @@ To install Quex, please refer to the appendix.
 Check out the code and run `scons` to build ROSE:
 
     $ git clone git://github.com/liancheng/rose.git
+    $ cd rose
     $ scons
 
 After the building process, you may find the ROSE interpreter executable `rsi` under `bin`:
