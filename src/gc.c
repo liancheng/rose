@@ -60,7 +60,7 @@ static void gc_prepend_to_chrono_list (RState* state, RObject* obj)
 
 static void gc_mark (RState* state, RObject* obj)
 {
-    if (!gc_white_p (obj))
+    if (!gc_white_p (obj) || gc_gray_p (obj))
         return;
 
     gc_paint_gray (obj);
