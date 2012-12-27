@@ -1,12 +1,16 @@
 #include "detail/error.h"
 #include "detail/state.h"
 #include "detail/sexp.h"
+#include "rose/bytevector.h"
 #include "rose/eq.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/procedure.h"
 #include "rose/string.h"
+#include "rose/symbol.h"
+#include "rose/vector.h"
 
 #include <assert.h>
 #include <stdarg.h>
@@ -79,6 +83,23 @@ static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
            r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
 }
 
+void init_pair_type_info (RState* state)
+{
+    RTypeInfo type = { 0 };
+
+    type.size         = sizeof (RPair);
+    type.name         = "pair";
+    type.ops.write    = pair_write;
+    type.ops.display  = pair_display;
+    type.ops.eqv_p    = NULL;
+    type.ops.equal_p  = pair_equal_p;
+    type.ops.mark     = pair_mark;
+    type.ops.finalize = NULL;
+
+    init_builtin_type (state, R_TAG_PAIR, &type);
+}
+
+
 rbool r_pair_p (rsexp obj)
 {
     return r_type_tag (obj) == R_TAG_PAIR;
@@ -105,6 +126,26 @@ rsexp r_car (rsexp obj)
 rsexp r_cdr (rsexp obj)
 {
     return pair_from_sexp (obj)->cdr;
+}
+
+rsexp r_checked_car (RState* state, rsexp obj)
+{
+    if (!r_pair_p (obj)) {
+        error_wrong_type_arg (state, "pair", obj);
+        return R_FAILURE;
+    }
+
+    return r_car (obj);
+}
+
+rsexp r_checked_cdr (RState* state, rsexp obj)
+{
+    if (!r_pair_p (obj)) {
+        error_wrong_type_arg (state, "pair", obj);
+        return R_FAILURE;
+    }
+
+    return r_cdr (obj);
 }
 
 void r_set_car_x (rsexp pair, rsexp obj)
@@ -242,20 +283,4 @@ rsexp r_list_ref (rsexp list, rsize k)
         list = r_cdr (list);
 
     return r_car (list);
-}
-
-void init_pair_type_info (RState* state)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RPair);
-    type.name         = "pair";
-    type.ops.write    = pair_write;
-    type.ops.display  = pair_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = pair_equal_p;
-    type.ops.mark     = pair_mark;
-    type.ops.finalize = NULL;
-
-    init_builtin_type (state, R_TAG_PAIR, &type);
 }
