@@ -15,6 +15,7 @@ test = env.Program(target='test',
 
 env.Command(target='unit-test',
             source=test[0],
-            action=test[0].abspath)
+            action=test[0].abspath,
+            chdir=env.Dir('#test/'))
 
 # vim:ft=python

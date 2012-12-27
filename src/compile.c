@@ -27,9 +27,9 @@ static void missing_or_extra_expression (RState* state, rsexp expr)
     r_error_format (state, "missing or extra expression(s) in ~s", expr);
 }
 
-static void bad_expression (RState* state, rsexp expr)
+static void bad_syntax (RState* state, rsexp expr)
 {
-    r_error_format (state, "bad expression ~s", expr);
+    r_error_format (state, "bad syntax ~s", expr);
 }
 
 static void bad_variable (RState* state, rsexp var, rsexp expr)
@@ -46,7 +46,7 @@ static rsexp check_expr_length_eq (RState* state,
     length = r_length (state, expr);
 
     if (r_failure_p (length)) {
-        bad_expression (state, expr);
+        bad_syntax (state, expr);
         goto exit;
     }
 
@@ -59,37 +59,18 @@ exit:
     return length;
 }
 
-static rsexp check_expr_length_within (RState* state,
-                                       rsexp   expr,
-                                       ruint   lower,
-                                       ruint   upper)
-{
-    rsexp length;
-    ruint unboxed;
-
-    length = r_length (state, expr);
-
-    if (r_failure_p (length)) {
-        bad_expression (state, expr);
-        goto exit;
-    }
-
-    unboxed = r_uint_from_sexp (length);
-
-    if (lower < unboxed || unboxed > upper) {
-        missing_or_extra_expression (state, expr);
-        goto exit;
-    }
-
-exit:
-    return length;
-}
-
 static rsexp compile_quote (RState* state, rsexp expr, rsexp next)
 {
-    return r_failure_p (check_expr_length_eq (state, expr, 2))
-           ? R_FAILURE
-           : emit_const (state, r_cadr (expr), next);
+    rsexp length;
+
+    ensure (length = r_length (state, expr));
+
+    if (r_uint_from_sexp (length) != 2u) {
+        bad_syntax (state, expr);
+        return R_FAILURE;
+    }
+
+    return emit_const (state, r_cadr (expr), next);
 }
 
 static rsexp compile_assign_or_define (RState* state, rsexp expr, rsexp next)
@@ -143,38 +124,34 @@ static rsexp compile_define (RState* state, rsexp expr, rsexp next)
 static rsexp compile_conditional (RState* state, rsexp expr, rsexp next)
 {
     rsexp length;
-    rsexp then_code;
-    rsexp else_code;
-    rsexp code;
+    ruint u_length;
+    rsexp then_expr, then_code;
+    rsexp else_expr, else_code;
+    rsexp test_expr, code;
 
-    length = check_expr_length_within (state, expr, 3, 4);
+    expr = r_cdr (expr);
+    ensure_or_error (length = r_length (state, expr),
+                     bad_syntax (state, expr));
 
-    if (r_failure_p (length)) {
-        code = R_FAILURE;
-        goto exit;
+    u_length = r_uint_from_sexp (length);
+
+    if (u_length < 2 || u_length > 3) {
+        bad_syntax (state, expr);
+        return R_FAILURE;
     }
 
-    then_code = compile (state, r_caddr (expr), next);
+    test_expr = r_car (expr);
+    then_expr = r_cadr (expr);
+    else_expr = u_length == 2 ? R_UNSPECIFIED : r_caddr (expr);
 
-    if (r_failure_p (then_code)) {
-        code = R_FAILURE;
-        goto exit;
-    }
+    ensure (then_code = compile (state, then_expr, next));
+    ensure (else_code = r_unspecified_p (else_expr)
+                      ? emit_const (state, R_UNSPECIFIED, next)
+                      : compile (state, else_expr, next));
 
-    if (r_uint_from_sexp (length) == 3u)
-        else_code = emit_const (state, R_UNSPECIFIED, next);
-    else
-        else_code = compile (state, r_cadddr (expr), next);
+    ensure (code = emit_branch (state, then_code, else_code));
+    ensure (code = compile (state, test_expr, code));
 
-    if (r_failure_p (else_code)) {
-        code = R_FAILURE;
-        goto exit;
-    }
-
-    code = emit_branch (state, then_code, else_code);
-    code = compile (state, r_cadr (expr), code);
-
-exit:
     return code;
 }
 
@@ -270,7 +247,7 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
     code = compile_application (state, expr, next);
     goto exit;
 
-    bad_expression (state, expr);
+    bad_syntax (state, expr);
     code = R_FAILURE;
 
 exit:
@@ -298,5 +275,9 @@ static rsexp compile_sequence (RState* state, rsexp seq, rsexp next)
 
 rsexp r_compile (RState* state, rsexp program)
 {
-    return compile_sequence (state, program, emit_halt (state));
+    rsexp halt = emit_halt (state);
+
+    return r_failure_p (halt)
+           ? R_FAILURE
+           : compile_sequence (state, program, halt);
 }

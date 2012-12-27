@@ -55,6 +55,15 @@ void r_raise (RState* state);
         }\
         while (0)
 
+#define ensure_or_error(stmt, error)\
+        do {\
+            if (r_failure_p (stmt)) {\
+                (error);\
+                return R_FAILURE;\
+            }\
+        }\
+        while (0)
+
 R_END_DECLS
 
 #endif  /* __ROSE_ERROR_H__ */

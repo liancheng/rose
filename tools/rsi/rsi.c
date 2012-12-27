@@ -57,6 +57,8 @@ int main (int argc, char* argv[])
 
     code = r_compile (state, program);
 
+    r_format (state, "compiled code: ~s~%", code);
+
     if (r_failure_p (code)) {
         r_format (state,
                   "compilation error: ~a~%",

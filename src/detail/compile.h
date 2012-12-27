@@ -5,6 +5,8 @@
 #include "rose/compile.h"
 #include "rose/pair.h"
 
+R_BEGIN_DECLS
+
 #define emit_apply(state)\
         r_list ((state), 1,\
                 reserved ((state), INS_APPLY))
@@ -56,5 +58,7 @@
 #define emit_return(state)\
         r_list ((state), 1,\
                 reserved ((state), INS_RETURN))
+
+R_END_DECLS
 
 #endif  //  __ROSE_DETAIL_COMPILE_H__

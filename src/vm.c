@@ -1,4 +1,3 @@
-#include "detail/procedure.h"
 #include "detail/compile.h"
 #include "detail/env.h"
 #include "detail/vm.h"
@@ -6,6 +5,7 @@
 #include "rose/eq.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/procedure.h"
 #include "rose/sexp.h"
 #include "rose/symbol.h"
 

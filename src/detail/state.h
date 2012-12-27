@@ -10,6 +10,8 @@
 
 #include <glib.h>
 
+R_BEGIN_DECLS
+
 typedef enum {
     KW_QUOTE,
     KW_LAMBDA,
@@ -82,5 +84,7 @@ void  init_builtin_type (RState*       state,
                          RTypeInfo*    type);
 rsexp reserved          (RState*       state,
                          RReservedWord index);
+
+R_END_DECLS
 
 #endif  /* __ROSE_DETAIL_STATE_H__ */

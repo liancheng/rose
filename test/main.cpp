@@ -1,6 +1,13 @@
 #include <gtest/gtest.h>
 #include <mcheck.h>
 
+#include <libgen.h>
+#include <unistd.h>
+
+#include <iostream>
+
+using namespace std;
+
 int main (int argc, char* argv[])
 {
     mtrace ();
