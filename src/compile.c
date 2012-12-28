@@ -399,8 +399,8 @@ static rsexp compile_call_cc (RState* state, rsexp expr, rsexp next)
     ensure_or_goto (code = emit_arg (state, code), exit);
     ensure_or_goto (code = emit_capture_cc (state, code), exit);
 
-    if (tail_p (state, next))
-        ensure_or_goto (code = emit_frame (state, next, code), exit);
+    if (!tail_p (state, next))
+        code = emit_frame (state, next, code);
 
 exit:
     r_gc_scope_close_and_protect (state, code);
