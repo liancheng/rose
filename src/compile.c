@@ -375,18 +375,34 @@ exit:
     return code;
 }
 
+static rbool validate_call_cc (RState* state, rsexp expr)
+{
+    if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (2u))) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 static rsexp compile_call_cc (RState* state, rsexp expr, rsexp next)
 {
     rsexp code;
 
+    if (!validate_call_cc (state, expr))
+        return R_FAILURE;
+
     r_gc_scope_open (state);
 
-    code = emit_apply (state);
-    code = compile (state, r_cadr (expr), code);
-    code = emit_arg (state, code);
-    code = emit_capture_cc (state, code);
-    code = tail_p (state, next) ? code : emit_frame (state, next, code);
+    ensure_or_goto (code = emit_apply (state), exit);
+    ensure_or_goto (code = compile (state, r_cadr (expr), code), exit);
+    ensure_or_goto (code = emit_arg (state, code), exit);
+    ensure_or_goto (code = emit_capture_cc (state, code), exit);
 
+    if (tail_p (state, next))
+        ensure_or_goto (code = emit_frame (state, next, code), exit);
+
+exit:
     r_gc_scope_close_and_protect (state, code);
 
     return code;
@@ -474,4 +490,30 @@ rsexp r_compile (RState* state, rsexp program)
     return r_failure_p (halt)
            ? R_FAILURE
            : compile_sequence (state, program, halt);
+}
+
+rsexp r_compile_from_port (RState* state, rsexp port)
+{
+    rsexp reader;
+    rsexp datum;
+    rsexp program;
+
+    ensure (reader = r_reader_new (state, port));
+
+    program = R_NULL;
+    datum = R_UNDEFINED;
+
+    while (TRUE) {
+        datum = r_read (reader);
+
+        if (r_failure_p (datum))
+            return R_FAILURE;
+
+        if (r_eof_object_p (datum))
+            break;
+
+        program = r_cons (state, datum, program);
+    }
+
+    return r_compile (state, program);
 }
