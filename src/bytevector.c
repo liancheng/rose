@@ -153,7 +153,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     /* If `list' is not a proper list... */
     if (r_failure_p (res)) {
-        error_wrong_type_arg (state, "list", list);
+        wrong_type_arg (state, "list", list);
         goto exit;
     }
 
@@ -167,7 +167,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     for (k = 0; k < length; ++k) {
         if (!r_byte_p (r_car (list))) {
-            error_wrong_type_arg (state, "type", list);
+            wrong_type_arg (state, "type", list);
             res = R_FAILURE;
             goto clean;
         }

@@ -1,4 +1,5 @@
 #include "detail/compile.h"
+#include "detail/error.h"
 #include "rose/bytevector.h"
 #include "rose/compile.h"
 #include "rose/eq.h"
@@ -22,163 +23,356 @@ static rbool tail_p (RState* state, rsexp next)
     return r_eq_p (state, reserved (state, INS_RETURN), r_car (next));
 }
 
-static void missing_or_extra_expression (RState* state, rsexp expr)
+static rbool validate_quotation (RState* state, rsexp expr)
 {
-    r_error_format (state, "missing or extra expression(s) in ~s", expr);
+    if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (2u))) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
-static void bad_syntax (RState* state, rsexp expr)
+static rsexp compile_quotation (RState* state, rsexp expr, rsexp next)
 {
-    r_error_format (state, "bad syntax ~s", expr);
+    rsexp code;
+
+    if (!validate_quotation (state, expr))
+        return R_FAILURE;
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (code = emit_const (state, r_cadr (expr), next), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
 }
 
-static void bad_variable (RState* state, rsexp var, rsexp expr)
+static rbool validate_assignment (RState* state, rsexp expr)
 {
-    r_error_format (state, "bad variable ~s in ~s", var, expr);
+    if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (3u))) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    if (!r_symbol_p (r_cadr (expr))) {
+        bad_variable (state, r_cadr (expr), expr);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
-static rsexp check_expr_length_eq (RState* state,
-                                   rsexp   expr,
-                                   ruint   expected)
+static rsexp compile_assignment (RState* state, rsexp expr, rsexp next)
+{
+    rsexp var, val, code;
+
+    if (!validate_assignment (state, expr))
+        return R_FAILURE;
+
+    var = r_cadr (expr);
+    val = r_caddr (expr);
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (code = emit_assign (state, var, next), exit);
+    ensure_or_goto (code = compile (state, val, code), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
+}
+
+static rbool validate_variable_definition (RState* state, rsexp expr)
+{
+    if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (3u))) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static rsexp compile_variable_definition (RState* state,
+                                          rsexp   expr,
+                                          rsexp   next)
+{
+    rsexp code;
+
+    if (!validate_variable_definition (state, expr))
+        return R_FAILURE;
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (code = emit_bind (state, r_cadr (expr), next), exit);
+    ensure_or_goto (code = compile (state, r_caddr (expr), code), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
+}
+
+static rbool validate_lambda_formals (RState* state,
+                                      rsexp expr,
+                                      rsexp formals)
+{
+    rsexp formal;
+
+    /* (lambda x body) or (define (f . x) body */
+    if (r_symbol_p (formals))
+        return TRUE;
+
+    /* (lambda () body) or (define (f) body */
+    if (r_null_p (formals))
+        return TRUE;
+
+    if (!r_pair_p (formals)) {
+        bad_formals (state, formals, expr);
+        return FALSE;
+    }
+
+    while (r_pair_p (formals)) {
+        formal = r_car (formals);
+
+        if (!r_symbol_p (formal)) {
+            bad_formals (state, formals, expr);
+            return FALSE;
+        }
+
+        formals = r_cdr (formals);
+    }
+
+    /* (lambda (x y z) body) or (define (f x y z) body) */
+    if (r_null_p (formals))
+        return TRUE;
+
+    /* (lambda (x y . z) body) or (define (f x y . z) body) */
+    if (r_symbol_p (formals))
+        return TRUE;
+
+    bad_formals (state, formals, expr);
+    return FALSE;
+}
+
+static rbool validate_lambda (RState* state, rsexp expr)
 {
     rsexp length;
+    rsize u_length;
 
     length = r_length (state, expr);
 
     if (r_failure_p (length)) {
         bad_syntax (state, expr);
-        goto exit;
-    }
-
-    if (r_uint_from_sexp (length) != expected) {
-        missing_or_extra_expression (state, expr);
-        goto exit;
-    }
-
-exit:
-    return length;
-}
-
-static rsexp compile_quote (RState* state, rsexp expr, rsexp next)
-{
-    rsexp length;
-
-    ensure (length = r_length (state, expr));
-
-    if (r_uint_from_sexp (length) != 2u) {
-        bad_syntax (state, expr);
         return R_FAILURE;
     }
-
-    return emit_const (state, r_cadr (expr), next);
-}
-
-static rsexp compile_assign_or_define (RState* state, rsexp expr, rsexp next)
-{
-    rsexp length;
-    rsexp var;
-    rsexp val;
-    rsexp code;
-
-    length = check_expr_length_eq (state, expr, 3u);
-
-    if (r_failure_p (length)) {
-        code = R_FAILURE;
-        goto exit;
-    }
-
-    if (!r_eq_p (state, length, r_uint_to_sexp (3u))) {
-        code = R_FAILURE;
-        goto exit;
-    }
-
-    var = r_cadr (expr);
-
-    if (!r_symbol_p (var)) {
-        bad_variable (state, var, expr);
-        code = R_FAILURE;
-        goto exit;
-    }
-
-    val = r_caddr (expr);
-    code = compile (state, val, next);
-
-exit:
-    return code;
-}
-
-static rsexp compile_assign (RState* state, rsexp expr, rsexp next)
-{
-    rsexp var = r_cadr (expr);
-    next = emit_assign (state, var, next);
-    return compile_assign_or_define (state, expr, next);
-}
-
-static rsexp compile_define (RState* state, rsexp expr, rsexp next)
-{
-    rsexp var = r_cadr (expr);
-    next = emit_bind (state, var, next);
-    return compile_assign_or_define (state, expr, next);
-}
-
-static rsexp compile_conditional (RState* state, rsexp expr, rsexp next)
-{
-    rsexp length;
-    ruint u_length;
-    rsexp then_expr, then_code;
-    rsexp else_expr, else_code;
-    rsexp test_expr, code;
-
-    expr = r_cdr (expr);
-    ensure_or_error (length = r_length (state, expr),
-                     bad_syntax (state, expr));
 
     u_length = r_uint_from_sexp (length);
 
-    if (u_length < 2 || u_length > 3) {
+    if (u_length < 3) {
         bad_syntax (state, expr);
         return R_FAILURE;
     }
 
-    test_expr = r_car (expr);
-    then_expr = r_cadr (expr);
-    else_expr = u_length == 2 ? R_UNSPECIFIED : r_caddr (expr);
-
-    ensure (then_code = compile (state, then_expr, next));
-    ensure (else_code = r_unspecified_p (else_expr)
-                      ? emit_const (state, R_UNSPECIFIED, next)
-                      : compile (state, else_expr, next));
-
-    ensure (code = emit_branch (state, then_code, else_code));
-    ensure (code = compile (state, test_expr, code));
-
-    return code;
+    return validate_lambda_formals (state, expr, r_cadr (expr));
 }
 
 static rsexp compile_lambda (RState* state, rsexp expr, rsexp next)
 {
-    rsexp vars = r_cadr (expr);
-    rsexp body = r_reverse (state, r_cddr (expr));
-    rsexp body_code = compile_sequence (state, body, emit_return (state));
+    rsexp formals;
+    rsexp body;
+    rsexp code;
 
-    return emit_close (state, vars, body_code, next);
+    if (!validate_lambda (state, expr))
+        return R_FAILURE;
+
+    formals = r_cadr (expr);
+    body = r_reverse (state, r_cddr (expr));
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (code = emit_return (state), exit);
+    ensure_or_goto (code = compile_sequence (state, body, code), exit);
+    ensure_or_goto (code = emit_close (state, formals, code, next), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
+}
+
+static rbool validate_procedure_formals (RState* state, rsexp expr)
+{
+    rsexp formals;
+    rsexp name;
+
+    if (!r_pair_p (r_cadr (expr))) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    formals = r_cdadr (expr);
+    name = r_caadr (expr);
+
+    if (!r_symbol_p (name)) {
+        bad_variable (state, name, expr);
+        return FALSE;
+    }
+
+    return validate_lambda_formals (state, expr, formals);
+}
+
+static rbool validate_procedure_definition (RState* state, rsexp expr)
+{
+    rsexp length;
+
+    length = r_length (state, expr), FALSE;
+
+    if (r_failure_p (length)) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    if (r_uint_from_sexp (length) < 3) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    return validate_procedure_formals (state, expr);
+}
+
+static rsexp compile_procedure_definition (RState* state,
+                                           rsexp   expr,
+                                           rsexp   next)
+{
+    rsexp var, body, formals;
+    rsexp bind, code;
+
+    if (!validate_procedure_definition (state, expr))
+        return R_FAILURE;
+
+    var = r_caadr (expr);
+    body = r_reverse (state, r_cddr (expr));
+    formals = r_cdadr (expr);
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (bind = emit_bind (state, var, next), exit);
+    ensure_or_goto (code = emit_return (state), exit);
+    ensure_or_goto (code = compile_sequence (state, body, code), exit);
+    ensure_or_goto (code = emit_close (state, formals, code, bind), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
+}
+
+static rsexp compile_definition (RState* state, rsexp expr, rsexp next)
+{
+    if (!r_pair_p (r_cdr (expr))) {
+        bad_syntax (state, expr);
+        return R_FAILURE;
+    }
+
+    return r_symbol_p (r_cadr (expr))
+           ? compile_variable_definition (state, expr, next)
+           : compile_procedure_definition (state, expr, next);
+}
+
+static rsize validate_contional (RState* state, rsexp expr)
+{
+    rsexp length;
+    rsize u_length;
+
+    length = r_length (state, expr);
+
+    if (r_failure_p (length)) {
+        bad_syntax (state, expr);
+        return 0;
+    }
+
+    u_length = r_uint_from_sexp (length);
+
+    if (u_length < 3 || u_length > 4) {
+        bad_syntax (state, expr);
+        return 0;
+    }
+
+    return u_length;
+}
+
+static rsexp compile_conditional (RState* state, rsexp expr, rsexp next)
+{
+    rsize length;
+    rsexp then_expr, then_code;
+    rsexp else_expr, else_code;
+    rsexp test_expr, code;
+
+    length = validate_contional (state, expr);
+
+    if (length == 0)
+        return R_FAILURE;
+
+    test_expr = r_cadr (expr);
+    then_expr = r_caddr (expr);
+    else_expr = length == 3 ? R_UNSPECIFIED : r_cadddr (expr);
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (then_code = compile (state, then_expr, next), exit);
+    ensure_or_goto (else_code = compile (state, else_expr, next), exit);
+
+    ensure_or_goto (code = emit_branch (state, then_code, else_code), exit);
+    ensure_or_goto (code = compile (state, test_expr, code), exit);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
+}
+
+static rbool validate_application (RState* state, rsexp expr)
+{
+    if (!r_list_p (expr)) {
+        bad_syntax (state, expr);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 static rsexp compile_application (RState* state, rsexp expr, rsexp next)
 {
-    rsexp proc = r_car (expr);
-    rsexp args = r_cdr (expr);
-    rsexp code = emit_apply (state);
+    rsexp proc, args, code;
 
-    code = compile (state, proc, code);
+    if (!validate_application (state, expr))
+        return R_FAILURE;
+
+    proc = r_car (expr);
+    args = r_cdr (expr);
+
+    r_gc_scope_open (state);
+
+    ensure_or_goto (code = emit_apply (state), exit);
+    ensure_or_goto (code = compile (state, proc, code), exit);
 
     while (!r_null_p (args)) {
-        code = emit_arg (state, code);
-        code = compile (state, r_car (args), code);
+        ensure_or_goto (code = emit_arg (state, code), exit);
+        ensure_or_goto (code = compile (state, r_car (args), code), exit);
         args = r_cdr (args);
     }
 
-    return tail_p (state, next) ? code : emit_frame (state, next, code);
+    if (!tail_p (state, next))
+        code = emit_frame (state, next, code);
+
+exit:
+    r_gc_scope_close_and_protect (state, code);
+
+    return code;
 }
 
 static rsexp compile_call_cc (RState* state, rsexp expr, rsexp next)
@@ -215,17 +409,17 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
     }
 
     if (form_eq_p (state, KW_QUOTE, expr)) {
-        code = compile_quote (state, expr, next);
+        code = compile_quotation (state, expr, next);
         goto exit;
     }
 
     if (form_eq_p (state, KW_DEFINE, expr)) {
-        code = compile_define (state, expr, next);
+        code = compile_definition (state, expr, next);
         goto exit;
     }
 
     if (form_eq_p (state, KW_SET_X, expr)) {
-        code = compile_assign (state, expr, next);
+        code = compile_assignment (state, expr, next);
         goto exit;
     }
 

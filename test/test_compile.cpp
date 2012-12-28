@@ -7,7 +7,7 @@ TEST_F (test_compile, halt)
     EXPECT_STREQ ("(halt)", rcw (""));
 }
 
-TEST_F (test_compile, refer)
+TEST_F (test_compile, reference)
 {
     EXPECT_STREQ ("(refer x (halt))", rcw ("x "));
 }
@@ -17,9 +17,10 @@ TEST_F (test_compile, constant)
     EXPECT_STREQ ("(const 1 (halt))", rcw ("1 "));
 }
 
-TEST_F (test_compile, quote)
+TEST_F (test_compile, quotation)
 {
     EXPECT_STREQ ("(const x (halt))", rcw ("'x "));
+    EXPECT_STREQ ("(const x (halt))", rcw ("(quote x)"));
 }
 
 TEST_F (test_compile, sequence)
@@ -27,18 +28,38 @@ TEST_F (test_compile, sequence)
     EXPECT_STREQ ("(refer x (refer y (halt)))", rcw ("x y "));
 }
 
-TEST_F (test_compile, assign)
+TEST_F (test_compile, assignment)
 {
     EXPECT_STREQ ("(const 1 (assign x (halt)))", rcw ("(set! x 1)"));
 }
 
-TEST_F (test_compile, define)
+TEST_F (test_compile, variable_definition)
 {
     EXPECT_STREQ ("(const 1 (bind x (halt)))", rcw ("(define x 1)"));
 }
 
+TEST_F (test_compile, procedure_definition)
+{
+    EXPECT_STREQ ("(close () (const 1 (return)) (bind f (halt)))",
+                  rcw ("(define (f) 1)"));
+
+    EXPECT_STREQ ("(close x (const 1 (return)) (bind f (halt)))",
+                  rcw ("(define (f . x) 1)"));
+
+    EXPECT_STREQ ("(close (x . y) (const 1 (return)) (bind f (halt)))",
+                  rcw ("(define (f x . y) 1)"));
+
+    EXPECT_STREQ ("(close (x y) (const 1 (return)) (bind f (halt)))",
+                  rcw ("(define (f x y) 1)"));
+}
+
 TEST_F (test_compile, conditional)
 {
+    /*
+     * R_UNSPECIFIED cannot be read by r_read, so we must compose the
+     * instruction DAG manually.
+     */
+
     rsexp halt = emit_halt (state);
     rsexp expected =
         emit_const (state, R_FALSE,
@@ -51,6 +72,12 @@ TEST_F (test_compile, conditional)
 
 TEST_F (test_compile, lambda)
 {
-    EXPECT_STREQ ("(close (x) (refer x (return)) (halt))",
-                  rcw ("(lambda (x) x)"));
+    EXPECT_STREQ ("(close (x y) (refer x (return)) (halt))",
+                  rcw ("(lambda (x y) x)"));
+
+    EXPECT_STREQ ("(close x (refer x (return)) (halt))",
+                  rcw ("(lambda x x)"));
+
+    EXPECT_STREQ ("(close (x . y) (refer x (return)) (halt))",
+                  rcw ("(lambda (x . y) x)"));
 }

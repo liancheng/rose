@@ -131,7 +131,7 @@ rsexp r_cdr (rsexp obj)
 rsexp r_checked_car (RState* state, rsexp obj)
 {
     if (!r_pair_p (obj)) {
-        error_wrong_type_arg (state, "pair", obj);
+        wrong_type_arg (state, "pair", obj);
         return R_FAILURE;
     }
 
@@ -141,7 +141,7 @@ rsexp r_checked_car (RState* state, rsexp obj)
 rsexp r_checked_cdr (RState* state, rsexp obj)
 {
     if (!r_pair_p (obj)) {
-        error_wrong_type_arg (state, "pair", obj);
+        wrong_type_arg (state, "pair", obj);
         return R_FAILURE;
     }
 
@@ -171,7 +171,7 @@ rsexp r_reverse (RState* state, rsexp list)
     while (!r_null_p (node)) {
         if (!r_pair_p (node)) {
             res = R_FAILURE;
-            error_wrong_type_arg (state, "pair", list);
+            wrong_type_arg (state, "pair", list);
             goto exit;
         }
 
@@ -195,7 +195,7 @@ rsexp r_append_x (RState* state, rsexp list, rsexp obj)
         return obj;
 
     if (!r_pair_p (list)) {
-        error_wrong_type_arg (state, "pair", list);
+        wrong_type_arg (state, "pair", list);
         return R_FAILURE;
     }
 
@@ -270,7 +270,7 @@ rsexp r_length (RState* state, rsexp list)
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
         if (!r_pair_p (list)) {
-            error_wrong_type_arg (state, "pair", list);
+            wrong_type_arg (state, "pair", list);
             return R_FAILURE;
         }
 

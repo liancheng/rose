@@ -209,11 +209,26 @@ rsexp r_inherit_errno_x (RState* state, rint errnum)
     return error;
 }
 
-rsexp error_wrong_type_arg (RState* state, rconstcstring expected, rsexp given)
+rsexp wrong_type_arg (RState* state, rconstcstring expected, rsexp given)
 {
     return r_error_format (state,
                            "wrong type argument, "
                            "expecting: ~w, given: ~s",
                            r_string_new (state, expected),
                            given);
+}
+
+rsexp bad_syntax (RState* state, rsexp expr)
+{
+    return r_error_format (state, "bad syntax ~s", expr);
+}
+
+rsexp bad_variable (RState* state, rsexp var, rsexp expr)
+{
+    return r_error_format (state, "bad variable ~s in ~s", var, expr);
+}
+
+rsexp bad_formals (RState* state, rsexp formals, rsexp expr)
+{
+    return r_error_format (state, "bad formals ~s in ~s", formals, expr);
 }

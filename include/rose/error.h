@@ -55,12 +55,17 @@ void r_raise (RState* state);
         }\
         while (0)
 
-#define ensure_or_error(stmt, error)\
+#define ensure_or_goto(stmt, label)\
         do {\
-            if (r_failure_p (stmt)) {\
-                (error);\
-                return R_FAILURE;\
-            }\
+            if (r_failure_p (stmt))\
+                goto label;\
+        }\
+        while (0)
+
+#define ensure_or_ret(stmt, ret)\
+        do {\
+            if (r_failure_p (stmt))\
+                return (ret);\
         }\
         while (0)
 

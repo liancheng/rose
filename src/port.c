@@ -275,7 +275,7 @@ rsexp r_get_output_string (RState* state, rsexp port)
 
     if (!output_string_port_p (port)) {
         res = R_FAILURE;
-        error_wrong_type_arg (state, "output-string-port", port);
+        wrong_type_arg (state, "output-string-port", port);
         goto exit;
     }
 
