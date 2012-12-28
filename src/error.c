@@ -232,3 +232,8 @@ rsexp bad_formals (RState* state, rsexp formals, rsexp expr)
 {
     return r_error_format (state, "bad formals ~s in ~s", formals, expr);
 }
+
+rsexp malformed_instruction (RState* state, rsexp ins)
+{
+    return r_error_format (state, "malformed instruction ~s", ins);
+}

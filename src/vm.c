@@ -1,5 +1,6 @@
 #include "detail/compile.h"
 #include "detail/env.h"
+#include "detail/error.h"
 #include "detail/vm.h"
 #include "detail/state.h"
 #include "rose/eq.h"
@@ -9,7 +10,7 @@
 #include "rose/sexp.h"
 #include "rose/symbol.h"
 
-typedef void (*RInstructionExecutor) (RState*, RVm*);
+typedef rsexp (*RInstructionExecutor) (RState*, RVm*);
 
 static rsexp pop (RVm* vm)
 {
@@ -25,62 +26,6 @@ static rsexp continuation (RState* state, rsexp stack)
     return r_procedure_new (state, code, R_NULL, r_list (state, 1, var));
 }
 
-static void exec_apply (RState* state, RVm* vm)
-{
-    rsexp proc      = vm->value;
-    rsexp proc_env  = r_procedure_env (proc);
-    rsexp proc_vars = r_procedure_vars (proc);
-
-    vm->next = r_procedure_body (proc);
-    vm->env  = extend (state, proc_env, proc_vars, vm->args);
-    vm->args = R_NULL;
-}
-
-static void exec_arg (RState* state, RVm* vm)
-{
-    vm->args = r_cons (state, vm->value, vm->args);
-    vm->next = r_cadr (vm->next);
-}
-
-static void exec_assign (RState* state, RVm* vm)
-{
-    vm->env = assign_x (state, vm->env, r_cadr (vm->next), vm->value);
-    vm->next = r_caddr (vm->next);
-}
-
-static void exec_bind (RState* state, RVm* vm)
-{
-    vm->env = bind_x (state, vm->env, r_cadr (vm->next), vm->value);
-    vm->next = r_caddr (vm->next);
-}
-
-static void exec_branch (RState* state, RVm* vm)
-{
-    vm->next = r_true_p (vm->value)
-             ? r_cadr (vm->next)
-             : r_caddr (vm->next);
-}
-
-static void exec_capture_cc (RState* state, RVm* vm)
-{
-    vm->value = continuation (state, vm->stack);
-    vm->next = r_cadr (vm->next);
-}
-
-static void exec_const (RState* state, RVm* vm)
-{
-    vm->value = r_cadr (vm->next);
-    vm->next = r_caddr (vm->next);
-}
-
-static void exec_close (RState* state, RVm* vm)
-{
-    rsexp vars = r_cadr (vm->next);
-    rsexp body = r_caddr (vm->next);
-    vm->value = r_procedure_new (state, body, vm->env, vars);
-    vm->next = r_cadddr (vm->next);
-}
-
 static rsexp call_frame (RState* state,
                          rsexp   ret,
                          rsexp   env,
@@ -90,28 +35,106 @@ static rsexp call_frame (RState* state,
     return r_list (state, 4, ret, env, args, stack);
 }
 
-static void exec_frame (RState* state, RVm* vm)
+static rsexp exec_apply (RState* state, RVm* vm)
+{
+    rsexp proc      = vm->value;
+    rsexp proc_env  = r_procedure_env (proc);
+    rsexp proc_vars = r_procedure_vars (proc);
+
+    vm->next = r_procedure_body (proc);
+    vm->env  = extend (state, proc_env, proc_vars, vm->args);
+    vm->args = R_NULL;
+
+    return vm->args;
+}
+
+static rsexp exec_arg (RState* state, RVm* vm)
+{
+    vm->args = r_cons (state, vm->value, vm->args);
+    vm->next = r_cadr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_assign (RState* state, RVm* vm)
+{
+    vm->env = assign_x (state, vm->env, r_cadr (vm->next), vm->value);
+    vm->next = r_caddr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_bind (RState* state, RVm* vm)
+{
+    vm->env = bind_x (state, vm->env, r_cadr (vm->next), vm->value);
+    vm->next = r_caddr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_branch (RState* state, RVm* vm)
+{
+    vm->next = r_true_p (vm->value)
+             ? r_cadr (vm->next)
+             : r_caddr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_capture_cc (RState* state, RVm* vm)
+{
+    vm->value = continuation (state, vm->stack);
+    vm->next = r_cadr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_const (RState* state, RVm* vm)
+{
+    vm->value = r_cadr (vm->next);
+    vm->next = r_caddr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_close (RState* state, RVm* vm)
+{
+    rsexp vars = r_cadr (vm->next);
+    rsexp body = r_caddr (vm->next);
+    vm->value = r_procedure_new (state, body, vm->env, vars);
+    vm->next = r_cadddr (vm->next);
+
+    return vm->args;
+}
+
+static rsexp exec_frame (RState* state, RVm* vm)
 {
     rsexp ret = r_cadr (vm->next);
 
     vm->stack = call_frame (state, ret, vm->env, vm->args, vm->stack);
     vm->args  = R_NULL;
     vm->next  = r_caddr (vm->next);
+
+    return vm->args;
 }
 
-static void exec_halt (RState* state, RVm* vm)
+static rsexp exec_halt (RState* state, RVm* vm)
 {
     vm->halt_p = TRUE;
+
+    return vm->args;
 }
 
-static void exec_refer (RState* state, RVm* vm)
+static rsexp exec_refer (RState* state, RVm* vm)
 {
     rsexp val = lookup (state, vm->env, r_cadr (vm->next));
     vm->value = r_undefined_p (val) ? val : r_car (val);
     vm->next = r_caddr (vm->next);
+
+    return vm->args;
 }
 
-static void exec_restore_cc (RState* state, RVm* vm)
+static rsexp exec_restore_cc (RState* state, RVm* vm)
 {
     rsexp stack = r_cadr (vm->next);
     rsexp var = r_caddr (vm->next);
@@ -119,17 +142,21 @@ static void exec_restore_cc (RState* state, RVm* vm)
     vm->value = r_car (lookup (state, vm->env, var));
     vm->next  = emit_return (state);
     vm->stack = stack;
+
+    return vm->args;
 }
 
-static void exec_return (RState* state, RVm* vm)
+static rsexp exec_return (RState* state, RVm* vm)
 {
     vm->next  = pop (vm);
     vm->env   = pop (vm);
     vm->args  = pop (vm);
     vm->stack = r_car (vm->stack);
+
+    return vm->args;
 }
 
-static void single_step (RState* state)
+static rsexp single_step (RState* state)
 {
     RVm* vm = &state->vm;
     rsexp ins = r_car (vm->next);
@@ -139,8 +166,12 @@ static void single_step (RState* state)
                    g_hash_table_lookup (vm->executors,
                                         r_cast (rconstpointer, ins)));
 
-    if (exec)
-        exec (state, &state->vm);
+    if (!exec) {
+        malformed_instruction (state, ins);
+        return R_FAILURE;
+    }
+
+    return exec (state, &state->vm);
 }
 
 static void install_instruction_executor (RState*              state,
@@ -206,7 +237,8 @@ rsexp r_run (RState* state, rsexp code)
     vm->halt_p = FALSE;
 
     while (!vm->halt_p)
-        single_step (state);
+        if (r_failure_p (single_step (state)))
+            return R_FAILURE;
 
     return vm->value;
 }
