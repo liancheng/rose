@@ -27,22 +27,22 @@ static rsexp continuation (RState* state, rsexp stack)
 }
 
 static rsexp call_frame (RState* state,
-                         rsexp   ret,
-                         rsexp   env,
-                         rsexp   args,
-                         rsexp   stack)
+                         rsexp ret,
+                         rsexp env,
+                         rsexp args,
+                         rsexp stack)
 {
     return r_list (state, 4, ret, env, args, stack);
 }
 
 static rsexp exec_apply (RState* state, RVm* vm)
 {
-    rsexp proc      = vm->value;
-    rsexp proc_env  = r_procedure_env (proc);
-    rsexp proc_vars = r_procedure_vars (proc);
+    rsexp proc    = vm->value;
+    rsexp env     = r_procedure_env (proc);
+    rsexp formals = r_procedure_formals (proc);
 
     vm->next = r_procedure_body (proc);
-    vm->env  = extend (state, proc_env, proc_vars, vm->args);
+    vm->env  = extend (state, env, formals, vm->args);
     vm->args = R_NULL;
 
     return vm->args;
@@ -58,7 +58,14 @@ static rsexp exec_arg (RState* state, RVm* vm)
 
 static rsexp exec_assign (RState* state, RVm* vm)
 {
+    rsexp var;
+
+    var = r_cadr (vm->next);
     vm->env = assign_x (state, vm->env, r_cadr (vm->next), vm->value);
+
+    if (r_failure_p (vm->env))
+        return R_FAILURE;
+
     vm->next = r_caddr (vm->next);
 
     return vm->args;
@@ -174,9 +181,9 @@ static rsexp single_step (RState* state)
     return exec (state, &state->vm);
 }
 
-static void install_instruction_executor (RState*              state,
-                                          RVm*                 vm,
-                                          RReservedWord        ins,
+static void install_instruction_executor (RState* state,
+                                          RVm* vm,
+                                          RReservedWord ins,
                                           RInstructionExecutor exec)
 {
     g_hash_table_insert (vm->executors,

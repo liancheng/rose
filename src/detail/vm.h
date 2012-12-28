@@ -6,6 +6,8 @@
 
 #include <glib.h>
 
+R_BEGIN_DECLS
+
 typedef struct RVm RVm;
 
 struct RVm {
@@ -21,5 +23,7 @@ struct RVm {
 
 void vm_init   (RState* state);
 void vm_finish (RState* state);
+
+R_END_DECLS
 
 #endif  //  __ROSE_DETAIL_VM_H__

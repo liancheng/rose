@@ -52,10 +52,10 @@ static void apply_exponent (mpq_t real, rint exponent)
 }
 
 static rbool fix_exactness (RNumberReader* reader,
-                            mpq_t          real,
-                            mpq_t          imag,
-                            double*        real_d,
-                            double*        imag_d)
+                            mpq_t real,
+                            mpq_t imag,
+                            double* real_d,
+                            double* imag_d)
 {
     /* If there exists the exactness prefix `#e', then the number is exact. */
     if (TRUE == reader->exact)
@@ -394,7 +394,7 @@ clear:
  *      ;
  */
 static rbool read_decimal_int_frac (RNumberReader* reader,
-                                    mpq_t          ureal)
+                                    mpq_t ureal)
 {
     mpz_t numer;
     mpz_t denom;
@@ -571,8 +571,8 @@ static rbool read_real (RNumberReader* reader, mpq_t real)
  *      ;
  */
 static rbool read_polar_complex (RNumberReader* reader,
-                                 double*        rho,
-                                 double*        theta)
+                                 double* rho,
+                                 double* theta)
 {
     mpq_t r;
     mpq_t t;
@@ -610,8 +610,8 @@ clear:
  *      ;
  */
 static rbool read_rect_ri (RNumberReader* reader,
-                           mpq_t          real,
-                           mpq_t          imag)
+                           mpq_t real,
+                           mpq_t imag)
 {
     char i;
     rint sign = 1;
@@ -643,8 +643,8 @@ static rbool read_rect_ri (RNumberReader* reader,
  *      ;
  */
 static rbool read_rect_i (RNumberReader* reader,
-                          mpq_t          real,
-                          mpq_t          imag)
+                          mpq_t real,
+                          mpq_t imag)
 {
     char i;
     rint sign = 1;
@@ -675,8 +675,8 @@ static rbool read_rect_i (RNumberReader* reader,
  *      ;
  */
 static rbool read_rect_r (RNumberReader* reader,
-                          mpq_t          real,
-                          mpq_t          imag)
+                          mpq_t real,
+                          mpq_t imag)
 {
     rconstcstring pos = mark (reader);
 
@@ -696,8 +696,8 @@ static rbool read_rect_r (RNumberReader* reader,
  *      ;
  */
 static rbool read_rect_complex (RNumberReader* reader,
-                                mpq_t          real,
-                                mpq_t          imag)
+                                mpq_t real,
+                                mpq_t imag)
 {
     rconstcstring pos = mark (reader);
 

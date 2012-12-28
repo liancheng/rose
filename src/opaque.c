@@ -64,9 +64,9 @@ void init_opaque_type_info (RState* state)
     init_builtin_type (state, R_TAG_OPAQUE, &type);
 }
 
-rsexp r_opaque_new (RState*           state,
-                    rpointer          opaque,
-                    ROpaqueGcMark     mark_fn,
+rsexp r_opaque_new (RState* state,
+                    rpointer opaque,
+                    ROpaqueGcMark mark_fn,
                     ROpaqueGcFinalize finalize_fn)
 {
     ROpaque* res = r_object_new (state, ROpaque, R_TAG_OPAQUE);

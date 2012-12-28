@@ -5,6 +5,8 @@
 #include "rose/gmp.h"
 #include "rose/number.h"
 
+R_BEGIN_DECLS
+
 typedef struct {
     R_OBJECT_HEADER
     mpq_t real;
@@ -24,5 +26,7 @@ RFlonum;
 
 #define flonum_to_sexp(flonum)  ((rsexp) (flonum))
 #define flonum_from_sexp(obj)   ((RFlonum*) (obj))
+
+R_END_DECLS
 
 #endif  /* __ROSE_DETAIL_NUMBER_H__ */

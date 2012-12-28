@@ -18,26 +18,26 @@ R_BEGIN_DECLS
 #define R_ERROR_UNKNOWN         (MAKE_INLINE_ERROR (R_ERROR_API + 0))
 #define R_ERROR_OOM             (MAKE_INLINE_ERROR (R_ERROR_API + 1))
 
-rsexp r_error_new              (RState*       state,
-                                rsexp         message,
-                                rsexp         irritants);
-rbool r_error_p                (rsexp         obj);
-rsexp r_error_object_message   (rsexp         error);
-rsexp r_error_object_irritants (rsexp         error);
-rsexp r_error_printf           (RState*       state,
+rsexp r_error_new              (RState* state,
+                                rsexp message,
+                                rsexp irritants);
+rbool r_error_p                (rsexp obj);
+rsexp r_error_object_message   (rsexp error);
+rsexp r_error_object_irritants (rsexp error);
+rsexp r_error_printf           (RState* state,
                                 rconstcstring format,
                                 ...);
-rsexp r_error_format           (RState*       state,
+rsexp r_error_format           (RState* state,
                                 rconstcstring format,
                                 ...);
-rsexp r_error                  (RState*       state,
+rsexp r_error                  (RState* state,
                                 rconstcstring message);
-rsexp r_last_error             (RState*       state);
-rsexp r_set_last_error_x       (RState*       state,
-                                rsexp         error);
-rsexp r_clear_last_error_x     (RState*       state);
-rsexp r_inherit_errno_x        (RState*       state,
-                                rint          errnum);
+rsexp r_last_error             (RState* state);
+rsexp r_set_last_error_x       (RState* state,
+                                rsexp error);
+rsexp r_clear_last_error_x     (RState* state);
+rsexp r_inherit_errno_x        (RState* state,
+                                rint errnum);
 
 typedef struct RNestedJump RNestedJump;
 

@@ -1,6 +1,7 @@
 #include "detail/gc.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "rose/procedure.h"
 
 typedef struct RProcedure RProcedure;
 
@@ -8,7 +9,7 @@ struct RProcedure {
     R_OBJECT_HEADER
     rsexp body;
     rsexp env;
-    rsexp vars;
+    rsexp formals;
 };
 
 #define procedure_to_sexp(obj)   (r_cast (rsexp, (obj)))
@@ -20,7 +21,7 @@ static void procedure_mark (RState* state, rsexp obj)
 
     r_gc_mark (state, procedure->body);
     r_gc_mark (state, procedure->env);
-    r_gc_mark (state, procedure->vars);
+    r_gc_mark (state, procedure->formals);
 }
 
 void init_procedure_type_info (RState* state)
@@ -44,7 +45,7 @@ rbool r_procedure_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_PROCEDURE;
 }
 
-rsexp r_procedure_new (RState* state, rsexp body, rsexp env, rsexp vars)
+rsexp r_procedure_new (RState* state, rsexp body, rsexp env, rsexp formals)
 {
     RProcedure* procedure = r_object_new (state, RProcedure, R_TAG_PROCEDURE);
 
@@ -52,8 +53,8 @@ rsexp r_procedure_new (RState* state, rsexp body, rsexp env, rsexp vars)
         return R_FAILURE;
 
     procedure->body = body;
-    procedure->env  = env;
-    procedure->vars = vars;
+    procedure->env = env;
+    procedure->formals = formals;
 
     return object_to_sexp (procedure);
 }
@@ -68,7 +69,7 @@ rsexp r_procedure_env (rsexp obj)
     return procedure_from_sexp (obj)->env;
 }
 
-rsexp r_procedure_vars (rsexp obj)
+rsexp r_procedure_formals (rsexp obj)
 {
-    return procedure_from_sexp (obj)->vars;
+    return procedure_from_sexp (obj)->formals;
 }

@@ -28,9 +28,9 @@ struct RPair {
 
 typedef rsexp (*ROutputFunc) (RState* state, rsexp, rsexp);
 
-static rsexp output_cdr (RState*     state,
-                         rsexp       port,
-                         rsexp       obj,
+static rsexp output_cdr (RState* state,
+                         rsexp port,
+                         rsexp obj,
                          ROutputFunc output_fn)
 {
     if (r_pair_p (obj)) {
@@ -46,9 +46,9 @@ static rsexp output_cdr (RState*     state,
     return R_UNSPECIFIED;
 }
 
-static rsexp pair_output (RState*     state,
-                          rsexp       port,
-                          rsexp       obj,
+static rsexp pair_output (RState* state,
+                          rsexp port,
+                          rsexp obj,
                           ROutputFunc output_fn)
 {
     ensure (r_port_puts (state, port, "("));

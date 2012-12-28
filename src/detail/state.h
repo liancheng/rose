@@ -79,10 +79,10 @@ struct RState {
     GHashTable*  user_type_ht;
 };
 
-void  init_builtin_type (RState*       state,
-                         RTypeTag      tag,
-                         RTypeInfo*    type);
-rsexp reserved          (RState*       state,
+void  init_builtin_type (RState* state,
+                         RTypeTag tag,
+                         RTypeInfo* type);
+rsexp reserved          (RState* state,
                          RReservedWord index);
 
 R_END_DECLS

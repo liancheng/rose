@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+R_BEGIN_DECLS
+
 typedef struct RTypeInfo RTypeInfo;
 
 typedef rbool (*REqvPred)     (RState*, rsexp, rsexp);
@@ -28,11 +30,13 @@ struct RTypeInfo {
     ops;
 };
 
-ruint      r_type_tag  (rsexp    obj);
-RTypeInfo* r_type_info (RState*  state,
-                        rsexp    obj);
+ruint      r_type_tag  (rsexp obj);
+RTypeInfo* r_type_info (RState* state,
+                        rsexp obj);
 
 #define object_from_sexp(obj)   (r_cast (RObject*, (obj)))
 #define object_to_sexp(obj)     (r_cast (rsexp, (obj)))
+
+R_END_DECLS
 
 #endif  /* __ROSE_DETAIL_SEXP_H__ */

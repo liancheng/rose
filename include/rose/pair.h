@@ -7,39 +7,39 @@
 
 R_BEGIN_DECLS
 
-rbool r_pair_p       (rsexp   obj);
+rbool r_pair_p       (rsexp obj);
 rsexp r_cons         (RState* state,
-                      rsexp   car,
-                      rsexp   cdr);
-rsexp r_car          (rsexp   obj);
-rsexp r_cdr          (rsexp   obj);
+                      rsexp car,
+                      rsexp cdr);
+rsexp r_car          (rsexp obj);
+rsexp r_cdr          (rsexp obj);
 rsexp r_checked_car  (RState* state,
-                      rsexp   obj);
+                      rsexp obj);
 rsexp r_checked_cdr  (RState* state,
-                      rsexp   obj);
-void  r_set_car_x    (rsexp   pair,
-                      rsexp   obj);
-void  r_set_cdr_x    (rsexp   pair,
-                      rsexp   obj);
+                      rsexp obj);
+void  r_set_car_x    (rsexp pair,
+                      rsexp obj);
+void  r_set_cdr_x    (rsexp pair,
+                      rsexp obj);
 rbool r_pair_equal_p (RState* state,
-                      rsexp   lhs,
-                      rsexp   rhs);
+                      rsexp lhs,
+                      rsexp rhs);
 rsexp r_reverse      (RState* state,
-                      rsexp   list);
+                      rsexp list);
 rsexp r_append_x     (RState* state,
-                      rsexp   list,
-                      rsexp   value);
-rbool r_list_p       (rsexp   obj);
+                      rsexp list,
+                      rsexp value);
+rbool r_list_p       (rsexp obj);
 rsexp r_vlist        (RState* state,
-                      rsize   k,
+                      rsize k,
                       va_list args);
 rsexp r_list         (RState* state,
-                      rsize   k,
+                      rsize k,
                       ...);
 rsexp r_length       (RState* state,
-                      rsexp   list);
-rsexp r_list_ref     (rsexp   list,
-                      rsize   k);
+                      rsexp list);
+rsexp r_list_ref     (rsexp list,
+                      rsize k);
 
 #define r_caar(o)   r_car (r_car   ((o)))
 #define r_cadr(o)   r_car (r_cdr   ((o)))

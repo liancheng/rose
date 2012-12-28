@@ -6,10 +6,10 @@
 
 R_BEGIN_DECLS
 
-rsexp r_reader_new       (RState*       state,
-                          rsexp         port);
-rsexp r_read             (rsexp         reader);
-rsexp r_read_from_string (RState*       state,
+rsexp r_reader_new       (RState* state,
+                          rsexp port);
+rsexp r_read             (rsexp reader);
+rsexp r_read_from_string (RState* state,
                           rconstcstring input);
 
 R_END_DECLS

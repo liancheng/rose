@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+R_BEGIN_DECLS
+
 typedef enum RPortMode {
     MODE_INPUT      = 0x01,
     MODE_OUTPUT     = 0x02,
@@ -21,6 +23,8 @@ RPortMode;
 typedef void (*RPortClearCookie) (RState*, rpointer);
 typedef void (*RPortMarkCookie)  (RState*, rpointer);
 
-FILE* port_to_stream (rsexp   port);
+FILE* port_to_stream (rsexp port);
+
+R_END_DECLS
 
 #endif  /* __ROSE_DETAIL_PORT_H__ */

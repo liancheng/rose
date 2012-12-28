@@ -10,7 +10,8 @@
 #include "rose/symbol.h"
 #include "rose/vector.h"
 
-static rsexp compile          (RState* state, rsexp expr, rsexp next);
+static rsexp compile (RState* state, rsexp expr, rsexp next);
+
 static rsexp compile_sequence (RState* state, rsexp seq, rsexp next);
 
 static rbool form_eq_p (RState* state, RReservedWord name, rsexp expr)
@@ -97,8 +98,8 @@ static rbool validate_variable_definition (RState* state, rsexp expr)
 }
 
 static rsexp compile_variable_definition (RState* state,
-                                          rsexp   expr,
-                                          rsexp   next)
+                                          rsexp expr,
+                                          rsexp next)
 {
     rsexp code;
 
@@ -245,8 +246,8 @@ static rbool validate_procedure_definition (RState* state, rsexp expr)
 }
 
 static rsexp compile_procedure_definition (RState* state,
-                                           rsexp   expr,
-                                           rsexp   next)
+                                           rsexp expr,
+                                           rsexp next)
 {
     rsexp var, body, formals;
     rsexp bind, code;

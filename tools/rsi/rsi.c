@@ -7,13 +7,14 @@ int main (int argc, char* argv[])
     RState* state;
     rsexp   source;
     rsexp   code;
+    rsexp   result;
     rint    exit_code;
 
+    exit_code = EXIT_FAILURE;
     state = r_state_open ();
 
     if (!state) {
         fprintf (stderr, "ROSE interpreter initialization failed.\n");
-        exit_code = EXIT_FAILURE;
         goto exit;
     }
 
@@ -32,7 +33,16 @@ int main (int argc, char* argv[])
     }
 
     r_format (state, "compiled code: ~s~%", code);
-    r_format (state, "result: ~s~%", r_run (state, code));
+
+    result = r_run (state, code);
+    r_format (state, "result: ~s~%", result);
+
+    if (r_failure_p (result)) {
+        r_format (state,
+                  "runtime error: ~a~%",
+                  r_error_object_message (r_last_error (state)));
+        goto clean;
+    }
 
     exit_code = EXIT_SUCCESS;
 

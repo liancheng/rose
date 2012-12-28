@@ -6,24 +6,24 @@
 R_BEGIN_DECLS
 
 rsexp r_vector_new     (RState* state,
-                        rsize   k,
-                        rsexp   fill);
+                        rsize k,
+                        rsexp fill);
 rsexp r_vector         (RState* state,
-                        rsize   k,
+                        rsize k,
                         ...);
-rbool r_vector_p       (rsexp   obj);
+rbool r_vector_p       (rsexp obj);
 rsexp r_vector_ref     (RState* state,
-                        rsexp   vector,
-                        rsize   k);
+                        rsexp vector,
+                        rsize k);
 rsexp r_vector_set_x   (RState* state,
-                        rsexp   vector,
-                        rsize   k,
-                        rsexp   obj);
-rsexp r_vector_length  (rsexp   vector);
+                        rsexp vector,
+                        rsize k,
+                        rsexp obj);
+rsexp r_vector_length  (rsexp vector);
 rsexp r_list_to_vector (RState* state,
-                        rsexp   list);
+                        rsexp list);
 rsexp r_vector_to_list (RState* state,
-                        rsexp   vector);
+                        rsexp vector);
 
 R_END_DECLS
 

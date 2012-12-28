@@ -6,7 +6,8 @@
 
 R_BEGIN_DECLS
 
-rsexp r_run (RState* state, rsexp code);
+rsexp r_run (RState* state,
+             rsexp code);
 
 R_END_DECLS
 

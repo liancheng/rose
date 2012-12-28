@@ -32,13 +32,13 @@ struct RPort {
 #define set_mode_x(port, m)     ((port)->mode |= (m))
 #define clear_mode_x(port, m)   ((port)->mode &= ~(m))
 
-static rsexp make_port (RState*          state,
-                        FILE*            stream,
-                        rconstcstring    name,
-                        RPortMode        mode,
-                        rpointer         cookie,
+static rsexp make_port (RState* state,
+                        FILE* stream,
+                        rconstcstring name,
+                        RPortMode mode,
+                        rpointer cookie,
                         RPortClearCookie clear_fn,
-                        RPortMarkCookie  mark_fn)
+                        RPortMarkCookie mark_fn)
 {
     rsexp  name_str;
     rsexp  res;

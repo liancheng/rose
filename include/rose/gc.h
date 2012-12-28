@@ -5,15 +5,15 @@
 
 R_BEGIN_DECLS
 
-rpointer r_alloc   (RState*  state,
-                    rsize    size);
-rpointer r_realloc (RState*  state,
+rpointer r_alloc   (RState* state,
+                    rsize size);
+rpointer r_realloc (RState* state,
                     rpointer ptr,
-                    rsize    size);
-rpointer r_calloc  (RState*  state,
-                    rsize    element_size,
-                    rsize    count);
-void     r_free    (RState*  state,
+                    rsize size);
+rpointer r_calloc  (RState* state,
+                    rsize element_size,
+                    rsize count);
+void     r_free    (RState* state,
                     rpointer ptr);
 
 #define r_new(state, type)\
@@ -31,11 +31,11 @@ void     r_free    (RState*  state,
 void r_gc_scope_open    (RState* state);
 void r_gc_scope_close   (RState* state);
 void r_gc_scope_protect (RState* state,
-                         rsexp   obj);
+                         rsexp obj);
 
 void r_full_gc          (RState* state);
 void r_gc_mark          (RState* state,
-                         rsexp   obj);
+                         rsexp obj);
 
 #define r_gc_scope_close_and_protect(state, obj)\
         do {\

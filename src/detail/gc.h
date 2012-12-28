@@ -4,6 +4,8 @@
 #include "rose/gc.h"
 #include "rose/sexp.h"
 
+R_BEGIN_DECLS
+
 typedef struct RGcState RGcState;
 
 struct RGcState {
@@ -23,16 +25,18 @@ struct RGcState {
 #define r_object_new(state, type, tag)\
         (r_cast (type*, r_object_alloc (state, tag)))
 
-RObject* r_object_alloc    (RState*   state,
-                            RTypeTag  type_tag);
-void     r_object_free     (RState*   state,
-                            RObject*  obj);
+RObject* r_object_alloc    (RState* state,
+                            RTypeTag type_tag);
+void     r_object_free     (RState* state,
+                            RObject* obj);
 
-rpointer default_alloc_fn  (rpointer  aux,
-                            rpointer  ptr,
-                            rsize     size);
-void     gc_scope_reset    (RState*   state);
-void     gc_init           (RState*   state);
-void     gc_finish         (RState*   state);
+rpointer default_alloc_fn  (rpointer aux,
+                            rpointer ptr,
+                            rsize size);
+void     gc_scope_reset    (RState* state);
+void     gc_init           (RState* state);
+void     gc_finish         (RState* state);
+
+R_END_DECLS
 
 #endif  //  __ROSE_DETAIL_GC_H__

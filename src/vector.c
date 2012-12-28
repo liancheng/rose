@@ -25,9 +25,9 @@ struct RVector {
 
 typedef RWriteFunc ROutputFunc;
 
-static rsexp vector_output (RState*     state,
-                            rsexp       port,
-                            rsexp       obj,
+static rsexp vector_output (RState* state,
+                            rsexp port,
+                            rsexp obj,
                             ROutputFunc output_fn)
 {
     rsize i;
