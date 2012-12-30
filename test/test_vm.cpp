@@ -1,6 +1,8 @@
 #include "utils.hpp"
 
-#include "rose/rose.h"
+#include "rose/eq.h"
+#include "rose/number.h"
+#include "rose/vm.h"
 
 class test_vm : public fixture_base {
 protected:

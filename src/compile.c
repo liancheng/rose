@@ -1,8 +1,8 @@
 #include "detail/compile.h"
-#include "detail/error.h"
 #include "rose/bytevector.h"
 #include "rose/compile.h"
 #include "rose/eq.h"
+#include "rose/error.h"
 #include "rose/number.h"
 #include "rose/port.h"
 #include "rose/reader.h"
@@ -27,7 +27,7 @@ static rbool tail_p (RState* state, rsexp next)
 static rbool validate_quotation (RState* state, rsexp expr)
 {
     if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (2u))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -54,12 +54,12 @@ exit:
 static rbool validate_assignment (RState* state, rsexp expr)
 {
     if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (3u))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
     if (!r_symbol_p (r_cadr (expr))) {
-        bad_variable (state, r_cadr (expr), expr);
+        r_error_code (state, R_ERR_BAD_VARIABLE, r_cadr (expr), expr);
         return FALSE;
     }
 
@@ -90,7 +90,7 @@ exit:
 static rbool validate_variable_definition (RState* state, rsexp expr)
 {
     if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (3u))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -132,7 +132,7 @@ static rbool validate_lambda_formals (RState* state,
         return TRUE;
 
     if (!r_pair_p (formals)) {
-        bad_formals (state, formals, expr);
+        r_error_code (state, R_ERR_BAD_FORMALS, formals, expr);
         return FALSE;
     }
 
@@ -140,7 +140,7 @@ static rbool validate_lambda_formals (RState* state,
         formal = r_car (formals);
 
         if (!r_symbol_p (formal)) {
-            bad_formals (state, formals, expr);
+            r_error_code (state, R_ERR_BAD_FORMALS, formals, expr);
             return FALSE;
         }
 
@@ -155,7 +155,7 @@ static rbool validate_lambda_formals (RState* state,
     if (r_symbol_p (formals))
         return TRUE;
 
-    bad_formals (state, formals, expr);
+    r_error_code (state, R_ERR_BAD_FORMALS, formals, expr);
     return FALSE;
 }
 
@@ -167,14 +167,14 @@ static rbool validate_lambda (RState* state, rsexp expr)
     length = r_length (state, expr);
 
     if (r_failure_p (length)) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return R_FAILURE;
     }
 
     u_length = r_uint_from_sexp (length);
 
     if (u_length < 3) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return R_FAILURE;
     }
 
@@ -191,7 +191,7 @@ static rsexp compile_lambda (RState* state, rsexp expr, rsexp next)
         return R_FAILURE;
 
     formals = r_cadr (expr);
-    body = r_reverse (state, r_cddr (expr));
+    body = r_reverse_x (state, r_cddr (expr));
 
     r_gc_scope_open (state);
 
@@ -211,7 +211,7 @@ static rbool validate_procedure_formals (RState* state, rsexp expr)
     rsexp name;
 
     if (!r_pair_p (r_cadr (expr))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -219,7 +219,7 @@ static rbool validate_procedure_formals (RState* state, rsexp expr)
     name = r_caadr (expr);
 
     if (!r_symbol_p (name)) {
-        bad_variable (state, name, expr);
+        r_error_code (state, R_ERR_BAD_VARIABLE, name, expr);
         return FALSE;
     }
 
@@ -233,12 +233,12 @@ static rbool validate_procedure_definition (RState* state, rsexp expr)
     length = r_length (state, expr), FALSE;
 
     if (r_failure_p (length)) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
     if (r_uint_from_sexp (length) < 3) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -256,7 +256,7 @@ static rsexp compile_procedure_definition (RState* state,
         return R_FAILURE;
 
     var = r_caadr (expr);
-    body = r_reverse (state, r_cddr (expr));
+    body = r_reverse_x (state, r_cddr (expr));
     formals = r_cdadr (expr);
 
     r_gc_scope_open (state);
@@ -275,7 +275,7 @@ exit:
 static rsexp compile_definition (RState* state, rsexp expr, rsexp next)
 {
     if (!r_pair_p (r_cdr (expr))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return R_FAILURE;
     }
 
@@ -292,14 +292,14 @@ static rsize validate_contional (RState* state, rsexp expr)
     length = r_length (state, expr);
 
     if (r_failure_p (length)) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return 0;
     }
 
     u_length = r_uint_from_sexp (length);
 
     if (u_length < 3 || u_length > 4) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return 0;
     }
 
@@ -339,7 +339,7 @@ exit:
 static rbool validate_application (RState* state, rsexp expr)
 {
     if (!r_list_p (expr)) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -379,7 +379,7 @@ exit:
 static rbool validate_call_cc (RState* state, rsexp expr)
 {
     if (!r_eq_p (state, r_length (state, expr), r_uint_to_sexp (2u))) {
-        bad_syntax (state, expr);
+        r_error_code (state, R_ERR_BAD_SYNTAX, expr);
         return FALSE;
     }
 
@@ -458,7 +458,7 @@ static rsexp compile (RState* state, rsexp expr, rsexp next)
     code = compile_application (state, expr, next);
     goto exit;
 
-    bad_syntax (state, expr);
+    r_error_code (state, R_ERR_BAD_SYNTAX, expr);
     code = R_FAILURE;
 
 exit:

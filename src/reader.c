@@ -13,7 +13,6 @@
 
 #include <alloca.h>
 #include <assert.h>
-#include <stdarg.h>
 
 static rsexp read_datum (RDatumReader* reader);
 
@@ -144,7 +143,7 @@ static rsexp read_vector (RDatumReader* reader)
 
     consume (reader);
 
-    res = r_list_to_vector (reader->state, r_reverse (reader->state, list));
+    res = r_list_to_vector (reader->state, r_reverse_x (reader->state, list));
 
 clean:
     r_gc_scope_close_and_protect (reader->state, res);
@@ -195,7 +194,7 @@ static rsexp read_full_list (RDatumReader* reader)
         res = r_cons (reader->state, datum, res);
     }
 
-    res = r_reverse (reader->state, res);
+    res = r_reverse_x (reader->state, res);
 
     if (match (reader, TKN_DOT)) {
         datum = read_datum (reader);
@@ -302,7 +301,7 @@ static rsexp read_bytevector (RDatumReader* reader)
         goto exit;
 
     res = r_list_to_bytevector (reader->state,
-                                r_reverse (reader->state, bytes));
+                                r_reverse_x (reader->state, bytes));
 
 exit:
     return res;

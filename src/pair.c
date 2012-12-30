@@ -1,8 +1,8 @@
-#include "detail/error.h"
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/bytevector.h"
 #include "rose/eq.h"
+#include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
@@ -131,7 +131,7 @@ rsexp r_cdr (rsexp obj)
 rsexp r_checked_car (RState* state, rsexp obj)
 {
     if (!r_pair_p (obj)) {
-        wrong_type_arg (state, "pair", obj);
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, obj);
         return R_FAILURE;
     }
 
@@ -141,7 +141,7 @@ rsexp r_checked_car (RState* state, rsexp obj)
 rsexp r_checked_cdr (RState* state, rsexp obj)
 {
     if (!r_pair_p (obj)) {
-        wrong_type_arg (state, "pair", obj);
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, obj);
         return R_FAILURE;
     }
 
@@ -160,6 +160,25 @@ void r_set_cdr_x (rsexp pair, rsexp obj)
 
 rsexp r_reverse (RState* state, rsexp list)
 {
+    rsexp res = R_NULL;
+
+    while (!r_null_p (list)) {
+        if (!r_pair_p (list)) {
+            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+            res = R_FAILURE;
+            goto exit;
+        }
+
+        res = r_cons (state, r_car (list), res);
+        list = r_cdr (list);
+    }
+
+exit:
+    return res;
+}
+
+rsexp r_reverse_x (RState* state, rsexp list)
+{
     rsexp node;
     rsexp next;
     rsexp prev;
@@ -171,7 +190,7 @@ rsexp r_reverse (RState* state, rsexp list)
     while (!r_null_p (node)) {
         if (!r_pair_p (node)) {
             res = R_FAILURE;
-            wrong_type_arg (state, "pair", list);
+            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
             goto exit;
         }
 
@@ -195,7 +214,7 @@ rsexp r_append_x (RState* state, rsexp list, rsexp obj)
         return obj;
 
     if (!r_pair_p (list)) {
-        wrong_type_arg (state, "pair", list);
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
         return R_FAILURE;
     }
 
@@ -244,7 +263,7 @@ rsexp r_vlist (RState* state, rsize k, va_list args)
         }
     }
 
-    res = r_reverse (state, res);
+    res = r_reverse_x (state, res);
 
 exit:
     r_gc_scope_close_and_protect (state, res);
@@ -270,7 +289,7 @@ rsexp r_length (RState* state, rsexp list)
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
         if (!r_pair_p (list)) {
-            wrong_type_arg (state, "pair", list);
+            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
             return R_FAILURE;
         }
 

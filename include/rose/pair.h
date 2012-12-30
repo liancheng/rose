@@ -26,6 +26,8 @@ rbool r_pair_equal_p (RState* state,
                       rsexp rhs);
 rsexp r_reverse      (RState* state,
                       rsexp list);
+rsexp r_reverse_x    (RState* state,
+                      rsexp list);
 rsexp r_append_x     (RState* state,
                       rsexp list,
                       rsexp value);

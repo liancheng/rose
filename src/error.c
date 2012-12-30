@@ -3,6 +3,8 @@
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/number.h"
+#include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/string.h"
 
@@ -20,6 +22,20 @@ struct RError {
 
 #define error_from_sexp(obj) (r_cast (RError*, (obj)))
 #define error_to_sexp(error) (r_cast (rsexp, (error)))
+
+static rconstcstring compiler_error_messages [] = {
+    "bad syntax ~s",
+    "bad variable ~s in ~s",
+    "bad formals ~s in ~s",
+};
+
+static rconstcstring runtime_error_messages [] = {
+    "unknown instruction ~s",
+    "wrong type argument ~s",
+    "unbound variable: ~s",
+    "wrong type to apply: ~s",
+    "wrong number of arguments to ~s",
+};
 
 static rsexp error_write (RState* state, rsexp port, rsexp obj)
 {
@@ -131,12 +147,26 @@ rsexp r_error_printf (RState* state, rconstcstring format, ...)
     rsexp   res;
 
     r_gc_scope_open (state);
-
     va_start (args, format);
-    message = r_string_vprintf (state, format, args);
-    res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
-    va_end (args);
 
+    message = r_string_vprintf (state, format, args);
+
+    if (r_failure_p (message)) {
+        res = r_last_error (state);
+        goto exit;
+    }
+
+    res = r_error_new (state, message, R_NULL);
+
+    if (r_failure_p (res)) {
+        res = r_last_error (state);
+        goto exit;
+    }
+
+    r_set_last_error_x (state, res);
+
+exit:
+    va_end (args);
     r_gc_scope_close_and_protect (state, res);
 
     return res;
@@ -149,12 +179,26 @@ rsexp r_error_format (RState* state, rconstcstring format, ...)
     rsexp   res;
 
     r_gc_scope_open (state);
-
     va_start (args, format);
-    message = r_string_vformat (state, format, args);
-    res = r_set_last_error_x (state, r_error_new (state, message, R_NULL));
-    va_end (args);
 
+    message = r_string_vformat (state, format, args);
+
+    if (r_failure_p (message)) {
+        res = r_last_error (state);
+        goto exit;
+    } 
+
+    res = r_error_new (state, message, R_NULL);
+
+    if (r_failure_p (res)) {
+        res = r_last_error (state);
+        goto exit;
+    }
+
+    r_set_last_error_x (state, res);
+
+exit:
+    va_end (args);
     r_gc_scope_close_and_protect (state, res);
 
     return res;
@@ -162,8 +206,53 @@ rsexp r_error_format (RState* state, rconstcstring format, ...)
 
 rsexp r_error (RState* state, rconstcstring message)
 {
-    rsexp error = r_error_new (state, r_string_new (state, message), R_NULL);
+    rsexp string = r_string_new (state, message);
+    rsexp error = r_error_new (state, string, R_NULL);
     return r_set_last_error_x (state, error);
+}
+
+rsexp r_verror_code (RState* state, rint error_code, va_list args)
+{
+    rint index;
+    rconstcstring format;
+    rsexp message, error;
+
+    if (R_ERR_COMPILE < error_code && error_code < R_ERR_COMPILE_MAX) {
+        index = error_code - R_ERR_COMPILE - 1;
+        format = compiler_error_messages [index];
+    }
+    else if (R_ERR_RUNTIME < error_code && error_code < R_ERR_RUNTIME_MAX) {
+        index = error_code - R_ERR_RUNTIME - 1;
+        format = runtime_error_messages [index];
+    }
+    else {
+        goto unknown;
+    }
+
+    message = r_string_vformat (state, format, args);
+    error = r_error_new (state, message,
+                         r_list (state, 1, r_int_to_sexp (error_code)));
+
+    return r_set_last_error_x (state, error);
+
+unknown:
+    return R_ERROR_UNKNOWN;
+}
+
+rsexp r_error_code (RState* state, rint error_code, ...)
+{
+    va_list args;
+    rsexp res;
+
+    r_gc_scope_open (state);
+    va_start (args, error_code);
+
+    res = r_verror_code (state, error_code, args);
+
+    va_end (args);
+    r_gc_scope_close_and_protect (state, res);
+
+    return res;
 }
 
 rsexp r_last_error (RState* state)
@@ -173,9 +262,8 @@ rsexp r_last_error (RState* state)
 
 rsexp r_set_last_error_x (RState* state, rsexp error)
 {
-    rsexp old = state->last_error;
     state->last_error = error;
-    return old;
+    return error;
 }
 
 rsexp r_clear_last_error_x (RState* state)
@@ -207,33 +295,4 @@ rsexp r_inherit_errno_x (RState* state, rint errnum)
     r_gc_scope_close_and_protect (state, error);
 
     return error;
-}
-
-rsexp wrong_type_arg (RState* state, rconstcstring expected, rsexp given)
-{
-    return r_error_format (state,
-                           "wrong type argument, "
-                           "expecting: ~w, given: ~s",
-                           r_string_new (state, expected),
-                           given);
-}
-
-rsexp bad_syntax (RState* state, rsexp expr)
-{
-    return r_error_format (state, "bad syntax ~s", expr);
-}
-
-rsexp bad_variable (RState* state, rsexp var, rsexp expr)
-{
-    return r_error_format (state, "bad variable ~s in ~s", var, expr);
-}
-
-rsexp bad_formals (RState* state, rsexp formals, rsexp expr)
-{
-    return r_error_format (state, "bad formals ~s in ~s", formals, expr);
-}
-
-rsexp malformed_instruction (RState* state, rsexp ins)
-{
-    return r_error_format (state, "malformed instruction ~s", ins);
 }

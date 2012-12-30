@@ -1,9 +1,10 @@
 #include "detail/compile.h"
 #include "detail/env.h"
-#include "detail/error.h"
 #include "detail/vm.h"
 #include "detail/state.h"
 #include "rose/eq.h"
+#include "rose/error.h"
+#include "rose/native.h"
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/procedure.h"
@@ -35,17 +36,46 @@ static rsexp call_frame (RState* state,
     return r_list (state, 4, ret, env, args, stack);
 }
 
-static rsexp exec_apply (RState* state, RVm* vm)
+static rsexp apply_native_proc (RState* state, RVm* vm)
+{
+    vm->value = r_native_apply (state, vm->value, vm->args);
+    vm->next = emit_return (state);
+
+    return vm->value;
+}
+
+static rsexp apply (RState* state, RVm* vm)
 {
     rsexp proc    = vm->value;
     rsexp env     = r_procedure_env (proc);
     rsexp formals = r_procedure_formals (proc);
 
     vm->next = r_procedure_body (proc);
-    vm->env  = extend (state, env, formals, vm->args);
+    vm->env  = env_extend (state, env, formals, vm->args);
     vm->args = R_NULL;
 
-    return vm->args;
+    return vm->value;
+}
+
+static rsexp exec_apply (RState* state, RVm* vm)
+{
+    rsexp res;
+
+    if (r_procedure_p (vm->value)) {
+        res = apply (state, vm);
+        goto exit;
+    }
+
+    if (r_native_p (vm->value)) {
+        res = apply_native_proc (state, vm);
+        goto exit;
+    }
+
+    r_error_code (state, R_ERR_WRONG_APPLY, vm->value);
+    res = R_FAILURE;
+
+exit:
+    return res;
 }
 
 static rsexp exec_arg (RState* state, RVm* vm)
@@ -53,7 +83,7 @@ static rsexp exec_arg (RState* state, RVm* vm)
     vm->args = r_cons (state, vm->value, vm->args);
     vm->next = r_cadr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_assign (RState* state, RVm* vm)
@@ -61,22 +91,22 @@ static rsexp exec_assign (RState* state, RVm* vm)
     rsexp var;
 
     var = r_cadr (vm->next);
-    vm->env = assign_x (state, vm->env, r_cadr (vm->next), vm->value);
+    vm->env = r_env_assign_x (state, vm->env, var, vm->value);
 
     if (r_failure_p (vm->env))
         return R_FAILURE;
 
     vm->next = r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_bind (RState* state, RVm* vm)
 {
-    vm->env = bind_x (state, vm->env, r_cadr (vm->next), vm->value);
+    vm->env = r_env_bind_x (state, vm->env, r_cadr (vm->next), vm->value);
     vm->next = r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_branch (RState* state, RVm* vm)
@@ -85,7 +115,7 @@ static rsexp exec_branch (RState* state, RVm* vm)
              ? r_cadr (vm->next)
              : r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_capture_cc (RState* state, RVm* vm)
@@ -93,7 +123,7 @@ static rsexp exec_capture_cc (RState* state, RVm* vm)
     vm->value = continuation (state, vm->stack);
     vm->next = r_cadr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_const (RState* state, RVm* vm)
@@ -101,17 +131,17 @@ static rsexp exec_const (RState* state, RVm* vm)
     vm->value = r_cadr (vm->next);
     vm->next = r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_close (RState* state, RVm* vm)
 {
-    rsexp vars = r_cadr (vm->next);
+    rsexp formals = r_cadr (vm->next);
     rsexp body = r_caddr (vm->next);
-    vm->value = r_procedure_new (state, body, vm->env, vars);
+    vm->value = r_procedure_new (state, body, vm->env, formals);
     vm->next = r_cadddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_frame (RState* state, RVm* vm)
@@ -122,23 +152,23 @@ static rsexp exec_frame (RState* state, RVm* vm)
     vm->args  = R_NULL;
     vm->next  = r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_halt (RState* state, RVm* vm)
 {
     vm->halt_p = TRUE;
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_refer (RState* state, RVm* vm)
 {
-    rsexp val = lookup (state, vm->env, r_cadr (vm->next));
+    rsexp val = r_env_lookup (state, vm->env, r_cadr (vm->next));
     vm->value = r_undefined_p (val) ? val : r_car (val);
     vm->next = r_caddr (vm->next);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_restore_cc (RState* state, RVm* vm)
@@ -146,11 +176,11 @@ static rsexp exec_restore_cc (RState* state, RVm* vm)
     rsexp stack = r_cadr (vm->next);
     rsexp var = r_caddr (vm->next);
 
-    vm->value = r_car (lookup (state, vm->env, var));
+    vm->value = r_car (r_env_lookup (state, vm->env, var));
     vm->next  = emit_return (state);
     vm->stack = stack;
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp exec_return (RState* state, RVm* vm)
@@ -160,7 +190,7 @@ static rsexp exec_return (RState* state, RVm* vm)
     vm->args  = pop (vm);
     vm->stack = r_car (vm->stack);
 
-    return vm->args;
+    return vm->value;
 }
 
 static rsexp single_step (RState* state)
@@ -174,7 +204,7 @@ static rsexp single_step (RState* state)
                                         r_cast (rconstpointer, ins)));
 
     if (!exec) {
-        malformed_instruction (state, ins);
+        r_error_code (state, R_ERR_UNKNOWN_INSTR, vm->next);
         return R_FAILURE;
     }
 
@@ -208,7 +238,7 @@ void vm_init (RState* state)
     RVm* vm = &state->vm;
 
     vm->args   = R_UNDEFINED;
-    vm->env    = empty_env (state);
+    vm->env    = default_env (state);
     vm->stack  = R_NULL;
     vm->value  = R_UNDEFINED;
     vm->next   = R_UNDEFINED;

@@ -1,7 +1,7 @@
-#include "detail/error.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
+#include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
@@ -153,7 +153,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     /* If `list' is not a proper list... */
     if (r_failure_p (res)) {
-        wrong_type_arg (state, "list", list);
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
         goto exit;
     }
 
@@ -167,7 +167,7 @@ rsexp r_list_to_bytevector (RState* state, rsexp list)
 
     for (k = 0; k < length; ++k) {
         if (!r_byte_p (r_car (list))) {
-            wrong_type_arg (state, "type", list);
+            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
             res = R_FAILURE;
             goto clean;
         }

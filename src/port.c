@@ -1,6 +1,6 @@
-#include "detail/error.h"
 #include "detail/port.h"
 #include "detail/state.h"
+#include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/string.h"
 
@@ -275,7 +275,7 @@ rsexp r_get_output_string (RState* state, rsexp port)
 
     if (!output_string_port_p (port)) {
         res = R_FAILURE;
-        wrong_type_arg (state, "output-string-port", port);
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
         goto exit;
     }
 

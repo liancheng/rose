@@ -18,6 +18,20 @@ R_BEGIN_DECLS
 #define R_ERROR_UNKNOWN         (MAKE_INLINE_ERROR (R_ERROR_API + 0))
 #define R_ERROR_OOM             (MAKE_INLINE_ERROR (R_ERROR_API + 1))
 
+#define R_ERR_COMPILE           10000
+#define R_ERR_BAD_SYNTAX        (R_ERR_COMPILE + 1)
+#define R_ERR_BAD_VARIABLE      (R_ERR_COMPILE + 2)
+#define R_ERR_BAD_FORMALS       (R_ERR_COMPILE + 3)
+#define R_ERR_COMPILE_MAX       20000
+
+#define R_ERR_RUNTIME           20000
+#define R_ERR_WRONG_TYPE_ARG    (R_ERR_RUNTIME + 1)
+#define R_ERR_UNKNOWN_INSTR     (R_ERR_RUNTIME + 2)
+#define R_ERR_UNBOUND_VAR       (R_ERR_RUNTIME + 3)
+#define R_ERR_WRONG_APPLY       (R_ERR_RUNTIME + 4)
+#define R_ERR_WRONG_ARG_NUM     (R_ERR_RUNTIME + 5)
+#define R_ERR_RUNTIME_MAX       30000
+
 rsexp r_error_new              (RState* state,
                                 rsexp message,
                                 rsexp irritants);
@@ -32,6 +46,9 @@ rsexp r_error_format           (RState* state,
                                 ...);
 rsexp r_error                  (RState* state,
                                 rconstcstring message);
+rsexp r_error_code             (RState* state,
+                                rint error_code,
+                                ...);
 rsexp r_last_error             (RState* state);
 rsexp r_set_last_error_x       (RState* state,
                                 rsexp error);

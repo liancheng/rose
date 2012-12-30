@@ -13,6 +13,7 @@ void init_procedure_type_info     (RState* state);
 void init_error_type_info         (RState* state);
 void init_fixnum_type_info        (RState* state);
 void init_flonum_type_info        (RState* state);
+void init_native_type_info        (RState* state);
 void init_opaque_type_info        (RState* state);
 void init_pair_type_info          (RState* state);
 void init_port_type_info          (RState* state);
@@ -82,6 +83,7 @@ static void init_builtin_types (RState* state)
     init_error_type_info         (state);
     init_fixnum_type_info        (state);
     init_flonum_type_info        (state);
+    init_native_type_info        (state);
     init_port_type_info          (state);
     init_string_type_info        (state);
     init_vector_type_info        (state);
