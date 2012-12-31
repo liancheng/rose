@@ -56,14 +56,12 @@ static rbool check_index_overflow (RState* state, rsexp bv, rsize k)
 {
     rsize length = r_uint_from_sexp (r_bytevector_length (bv));
 
-    if (k < length)
-        return TRUE;
+    if (k >= length) {
+        r_error_code (state, R_ERR_INDEX_OVERFLOW);
+        return FALSE;
+    }
 
-    r_error_printf (state,
-                    "bytevector index overflow, length: %u, index: %u",
-                    length, k);
-
-    return FALSE;
+    return TRUE;
 }
 
 static rbool bytevector_equal_p (RState* state, rsexp lhs, rsexp rhs)

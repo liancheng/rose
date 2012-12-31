@@ -4,9 +4,9 @@
 #include "detail/state.h"
 #include "rose/eq.h"
 #include "rose/error.h"
-#include "rose/native.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/primitive.h"
 #include "rose/procedure.h"
 #include "rose/sexp.h"
 #include "rose/symbol.h"
@@ -36,9 +36,11 @@ static rsexp call_frame (RState* state,
     return r_list (state, 4, ret, env, args, stack);
 }
 
-static rsexp apply_native_proc (RState* state, RVm* vm)
+static rsexp apply_primitive (RState* state, RVm* vm)
 {
-    vm->value = r_native_apply (state, vm->value, vm->args);
+    r_gc_scope_open (state);
+
+    vm->value = r_primitive_apply (state, vm->value, vm->args);
     vm->next = emit_return (state);
 
     return vm->value;
@@ -46,13 +48,18 @@ static rsexp apply_native_proc (RState* state, RVm* vm)
 
 static rsexp apply (RState* state, RVm* vm)
 {
-    rsexp proc    = vm->value;
-    rsexp env     = r_procedure_env (proc);
-    rsexp formals = r_procedure_formals (proc);
+    rsexp proc, body, env, formals;
+
+    proc = vm->value;
+    body = r_procedure_body (proc);
+    env = r_procedure_env (proc);
+    formals = r_procedure_formals (proc);
 
     vm->next = r_procedure_body (proc);
-    vm->env  = env_extend (state, env, formals, vm->args);
+    vm->env = env_extend (state, env, formals, vm->args);
     vm->args = R_NULL;
+
+    r_gc_scope_open (state);
 
     return vm->value;
 }
@@ -66,8 +73,8 @@ static rsexp exec_apply (RState* state, RVm* vm)
         goto exit;
     }
 
-    if (r_native_p (vm->value)) {
-        res = apply_native_proc (state, vm);
+    if (r_primitive_p (vm->value)) {
+        res = apply_primitive (state, vm);
         goto exit;
     }
 
@@ -189,6 +196,8 @@ static rsexp exec_return (RState* state, RVm* vm)
     vm->env   = pop (vm);
     vm->args  = pop (vm);
     vm->stack = r_car (vm->stack);
+
+    r_gc_scope_close (state);
 
     return vm->value;
 }

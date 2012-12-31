@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GC_ARENA_CHUNK_SIZE     16
+#define GC_ARENA_CHUNK_SIZE     256
 #define GC_DEFAULT_THRESHOLD    128
 
 typedef enum {
@@ -33,10 +33,15 @@ static void gc_scope_protect (RState* state, RObject* obj)
     RGcState* gc = &state->gc;
 
     if (gc->arena_index >= gc->arena_size) {
+#ifdef ROSE_DYNAMIC_ARENA
         gc->arena_size += GC_ARENA_CHUNK_SIZE;
         gc->arena = r_realloc (state,
                                gc->arena,
                                gc->arena_size * sizeof (RObject*));
+#else
+        fprintf (stderr, "arena index overflow\n");
+        abort ();
+#endif
     }
 
     gc->arena [gc->arena_index++] = obj;

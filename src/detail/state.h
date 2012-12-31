@@ -53,30 +53,42 @@ typedef enum {
 }
 RReservedWord;
 
-struct RState {
-    /* Garbage collector */
-    RGcState     gc;
+typedef struct RSymbolState {
+    GHashTable* index_to_symbol;
+    rsize symbol_index;
+    rconstcstring* symbols;
+}
+RSymbolState;
 
-    /* Virtual machine */
-    RVm          vm;
+/* Records various execution state of the ROSE interpreter. */
+struct RState {
+    /* State of the garbage collector */
+    RGcState gc;
+
+    /* State of the virtual machine */
+    RVm vm;
+
+    /* State for symbol internalization */
+    RSymbolState symbol_state;
 
     /* Error handling */
-    rsexp        last_error;
+    rsexp last_error;
     RNestedJump* error_jmp;
 
     /* Memory allocation function */
-    RAllocFunc   alloc_fn;
-    rpointer     alloc_aux;
+    RAllocFunc alloc_fn;
+    rpointer alloc_aux;
 
     /* Runtime data */
-    rsexp        current_input_port;
-    rsexp        current_output_port;
-    rsexp        current_error_port;
-    rsexp        reserved [RESERVED_WORD_COUNT];
+    rsexp current_input_port;
+    rsexp current_output_port;
+    rsexp current_error_port;
 
-    /* Type information */
-    RTypeInfo    builtin_types [R_TAG_MAX];
-    GHashTable*  user_type_ht;
+    /* Reserved words */
+    rsexp reserved [RESERVED_WORD_COUNT];
+
+    /* Type information for builtin types */
+    RTypeInfo builtin_types [R_TAG_MAX];
 };
 
 void  init_builtin_type (RState* state,

@@ -13,10 +13,6 @@ rsexp r_cons         (RState* state,
                       rsexp cdr);
 rsexp r_car          (rsexp obj);
 rsexp r_cdr          (rsexp obj);
-rsexp r_checked_car  (RState* state,
-                      rsexp obj);
-rsexp r_checked_cdr  (RState* state,
-                      rsexp obj);
 void  r_set_car_x    (rsexp pair,
                       rsexp obj);
 void  r_set_cdr_x    (rsexp pair,
@@ -40,7 +36,8 @@ rsexp r_list         (RState* state,
                       ...);
 rsexp r_length       (RState* state,
                       rsexp list);
-rsexp r_list_ref     (rsexp list,
+rsexp r_list_ref     (RState* state,
+                      rsexp list,
                       rsize k);
 
 #define r_caar(o)   r_car (r_car   ((o)))
@@ -71,35 +68,6 @@ rsexp r_list_ref     (rsexp list,
 #define r_cddadr(o) r_cdr (r_cdadr ((o)))
 #define r_cdddar(o) r_cdr (r_cddar ((o)))
 #define r_cddddr(o) r_cdr (r_cdddr ((o)))
-
-#define r_checked_caar(s, o)   r_checked_car ((s), r_checked_car   ((s), (o)))
-#define r_checked_cadr(s, o)   r_checked_car ((s), r_checked_cdr   ((s), (o)))
-#define r_checked_cdar(s, o)   r_checked_cdr ((s), r_checked_car   ((s), (o)))
-#define r_checked_cddr(s, o)   r_checked_cdr ((s), r_checked_cdr   ((s), (o)))
-#define r_checked_caaar(s, o)  r_checked_car ((s), r_checked_caar  ((s), (o)))
-#define r_checked_caadr(s, o)  r_checked_car ((s), r_checked_cadr  ((s), (o)))
-#define r_checked_cadar(s, o)  r_checked_car ((s), r_checked_cdar  ((s), (o)))
-#define r_checked_caddr(s, o)  r_checked_car ((s), r_checked_cddr  ((s), (o)))
-#define r_checked_cdaar(s, o)  r_checked_cdr ((s), r_checked_caar  ((s), (o)))
-#define r_checked_cdadr(s, o)  r_checked_cdr ((s), r_checked_cadr  ((s), (o)))
-#define r_checked_cddar(s, o)  r_checked_cdr ((s), r_checked_cdar  ((s), (o)))
-#define r_checked_cdddr(s, o)  r_checked_cdr ((s), r_checked_cddr  ((s), (o)))
-#define r_checked_caaaar(s, o) r_checked_car ((s), r_checked_caaar ((s), (o)))
-#define r_checked_caaadr(s, o) r_checked_car ((s), r_checked_caadr ((s), (o)))
-#define r_checked_caadar(s, o) r_checked_car ((s), r_checked_cadar ((s), (o)))
-#define r_checked_caaddr(s, o) r_checked_car ((s), r_checked_caddr ((s), (o)))
-#define r_checked_cadaar(s, o) r_checked_car ((s), r_checked_cdaar ((s), (o)))
-#define r_checked_cadadr(s, o) r_checked_car ((s), r_checked_cdadr ((s), (o)))
-#define r_checked_caddar(s, o) r_checked_car ((s), r_checked_cddar ((s), (o)))
-#define r_checked_cadddr(s, o) r_checked_car ((s), r_checked_cdddr ((s), (o)))
-#define r_checked_cdaaar(s, o) r_checked_cdr ((s), r_checked_caaar ((s), (o)))
-#define r_checked_cdaadr(s, o) r_checked_cdr ((s), r_checked_caadr ((s), (o)))
-#define r_checked_cdadar(s, o) r_checked_cdr ((s), r_checked_cadar ((s), (o)))
-#define r_checked_cdaddr(s, o) r_checked_cdr ((s), r_checked_caddr ((s), (o)))
-#define r_checked_cddaar(s, o) r_checked_cdr ((s), r_checked_cdaar ((s), (o)))
-#define r_checked_cddadr(s, o) r_checked_cdr ((s), r_checked_cdadr ((s), (o)))
-#define r_checked_cdddar(s, o) r_checked_cdr ((s), r_checked_cddar ((s), (o)))
-#define r_checked_cddddr(s, o) r_checked_cdr ((s), r_checked_cdddr ((s), (o)))
 
 R_END_DECLS
 

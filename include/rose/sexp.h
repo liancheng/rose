@@ -63,7 +63,7 @@ typedef enum {
     R_TAG_VECTOR        = 0x0a,
     R_TAG_BYTEVECTOR    = 0x0b,
     R_TAG_PROCEDURE     = 0x0c,
-    R_TAG_NATIVE_PROC   = 0x0d,
+    R_TAG_PRIMITIVE     = 0x0d,
     R_TAG_ENV           = 0x0e,
     R_TAG_PORT          = 0x0f,
     R_TAG_ERROR         = 0x10,

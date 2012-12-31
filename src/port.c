@@ -1,7 +1,10 @@
+#include "detail/env.h"
 #include "detail/port.h"
 #include "detail/state.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/pair.h"
+#include "rose/primitive.h"
 #include "rose/string.h"
 
 #include <assert.h>
@@ -542,20 +545,18 @@ rsexp r_port_write (RState* state, rsexp port, rsexp obj)
 {
     RTypeInfo* type = r_type_info (state, obj);
 
-    if (type->ops.write)
-        return type->ops.write (state, port, obj);
-    else
-        return r_port_printf (state, port, "#<%s>", type->name);
+    return type->ops.write
+           ? type->ops.write (state, port, obj)
+           : r_port_printf (state, port, "#<%s>", type->name);
 }
 
 rsexp r_port_display (RState* state, rsexp port, rsexp obj)
 {
     RTypeInfo* type = r_type_info (state, obj);
 
-    if (type->ops.display)
-        return type->ops.display (state, port, obj);
-    else
-        return r_port_printf (state, port, "#<%s>", type->name);
+    return type->ops.display
+           ? type->ops.display (state, port, obj)
+           : r_port_printf (state, port, "#<%s>", type->name);
 }
 
 rsexp r_write (RState* state, rsexp obj)
@@ -566,4 +567,201 @@ rsexp r_write (RState* state, rsexp obj)
 rsexp r_display (RState* state, rsexp obj)
 {
     return r_port_display (state, r_current_output_port (state), obj);
+}
+
+rsexp np_write (RState* state, rsexp args)
+{
+    rsexp datum;
+    rsexp port;
+
+    r_match_args (state, args, 1, 1, FALSE, &datum, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_output_port (state);
+
+    return r_port_write (state, port, datum);
+}
+
+rsexp np_display (RState* state, rsexp args)
+{
+    rsexp datum;
+    rsexp port;
+
+    r_match_args (state, args, 1, 1, FALSE, &datum, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_output_port (state);
+
+    if (!r_output_port_p (port)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
+        return R_FAILURE;
+    }
+
+    return r_port_display (state, port, datum);
+}
+
+rsexp np_write_char (RState* state, rsexp args)
+{
+    rsexp ch;
+    rsexp port;
+
+    r_match_args (state, args, 1, 1, FALSE, &ch, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_output_port (state);
+
+    if (!r_output_port_p (port)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
+        return R_FAILURE;
+    }
+
+    return r_port_write_char (state, port, r_char_from_sexp (ch));
+}
+
+rsexp np_newline (RState* state, rsexp args)
+{
+    rsexp port;
+
+    r_match_args (state, args, 0, 1, FALSE, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_output_port (state);
+
+    if (!r_output_port_p (port)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
+        return R_FAILURE;
+    }
+
+    return r_port_write_char (state, port, '\n');
+}
+
+rsexp np_read_char (RState* state, rsexp args)
+{
+    rsexp port;
+
+    r_match_args (state, args, 0, 1, FALSE, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_input_port (state);
+
+    if (!r_input_port_p (port)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
+        return R_FAILURE;
+    }
+
+    return r_port_read_char (state, port);
+}
+
+rsexp np_current_input_port (RState* state, rsexp args)
+{
+    return r_current_input_port (state);
+}
+
+rsexp np_current_output_port (RState* state, rsexp args)
+{
+    return r_current_output_port (state);
+}
+
+rsexp np_current_error_port (RState* state, rsexp args)
+{
+    return r_current_error_port (state);
+}
+
+rsexp np_set_current_input_port_x (RState* state, rsexp args)
+{
+    r_set_current_input_port_x (state, r_car (args));
+    return R_UNSPECIFIED;
+}
+
+rsexp np_set_current_output_port_x (RState* state, rsexp args)
+{
+    r_set_current_output_port_x (state, r_car (args));
+    return R_UNSPECIFIED;
+}
+
+rsexp np_set_current_error_port_x (RState* state, rsexp args)
+{
+    r_set_current_error_port_x (state, r_car (args));
+    return R_UNSPECIFIED;
+}
+
+rsexp np_open_input_string (RState* state, rsexp args)
+{
+    return r_open_input_string (state, r_car (args));
+}
+
+rsexp np_open_output_string (RState* state, rsexp args)
+{
+    return r_open_output_string (state);
+}
+
+rsexp np_get_output_string (RState* state, rsexp args)
+{
+    return r_get_output_string (state, r_car (args));
+}
+
+rsexp np_port_p (RState* state, rsexp args)
+{
+    return r_bool_to_sexp (r_port_p (r_car (args)));
+}
+
+rsexp np_input_port_p (RState* state, rsexp args)
+{
+    return r_bool_to_sexp (r_input_port_p (r_car (args)));
+}
+
+rsexp np_output_port_p (RState* state, rsexp args)
+{
+    return r_bool_to_sexp (r_output_port_p (r_car (args)));
+}
+
+rsexp np_close_port (RState* state, rsexp args)
+{
+    rsexp port = r_car (args);
+
+    if (!r_port_p (port)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, port);
+        return R_FAILURE;
+    }
+
+    r_close_port (port);
+
+    return R_UNSPECIFIED;
+}
+
+void port_init_primitives (RState* state, rsexp* env)
+{
+    bind_primitive_x (state, env, "current-input-port",
+                      np_current_input_port, 0, 0, FALSE);
+    bind_primitive_x (state, env, "current-output-port",
+                      np_current_output_port, 0, 0, FALSE);
+    bind_primitive_x (state, env, "current-error-port",
+                      np_current_error_port, 0, 0, FALSE);
+
+    bind_primitive_x (state, env, "set-current-input-port!",
+                      np_set_current_input_port_x, 1, 0, FALSE);
+    bind_primitive_x (state, env, "set-current-output-port!",
+                      np_set_current_output_port_x, 1, 0, FALSE);
+    bind_primitive_x (state, env, "set-current-error-port!",
+                      np_set_current_error_port_x, 1, 0, FALSE);
+
+    bind_primitive_x (state, env, "open-input-string",
+                      np_open_input_string, 1, 0, FALSE);
+    bind_primitive_x (state, env, "open-output-string",
+                      np_open_output_string, 0, 0, FALSE);
+    bind_primitive_x (state, env, "get-output-string",
+                      np_get_output_string, 1, 0, FALSE);
+
+    bind_primitive_x (state, env, "input-port?",
+                      np_input_port_p, 1, 0, FALSE);
+    bind_primitive_x (state, env, "output-port?",
+                      np_output_port_p, 1, 0, FALSE);
+
+    bind_primitive_x (state, env, "port?",      np_port_p,     1, 0, FALSE);
+    bind_primitive_x (state, env, "display",    np_display,    1, 1, FALSE);
+    bind_primitive_x (state, env, "write",      np_write,      1, 1, FALSE);
+    bind_primitive_x (state, env, "newline",    np_newline,    0, 1, FALSE);
+    bind_primitive_x (state, env, "read-char",  np_read_char,  0, 1, FALSE);
+    bind_primitive_x (state, env, "write-char", np_write_char, 1, 1, FALSE);
+    bind_primitive_x (state, env, "close-port", np_close_port, 1, 1, FALSE);
 }

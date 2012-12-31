@@ -13,10 +13,10 @@ void init_procedure_type_info     (RState* state);
 void init_error_type_info         (RState* state);
 void init_fixnum_type_info        (RState* state);
 void init_flonum_type_info        (RState* state);
-void init_native_type_info        (RState* state);
 void init_opaque_type_info        (RState* state);
 void init_pair_type_info          (RState* state);
 void init_port_type_info          (RState* state);
+void init_primitive_type_info     (RState* state);
 void init_smi_type_info           (RState* state);
 void init_special_const_type_info (RState* state);
 void init_string_type_info        (RState* state);
@@ -30,7 +30,7 @@ static void reserve (RState*       state,
     state->reserved [index] = r_symbol_new_static (state, symbol);
 }
 
-static void init_reserved_words (RState* state)
+static void state_init_reserved_words (RState* state)
 {
     reserve (state, KW_QUOTE,            "quote");
     reserve (state, KW_LAMBDA,           "lambda");
@@ -69,7 +69,7 @@ static void init_reserved_words (RState* state)
     reserve (state, INS_RETURN,          "return");
 }
 
-static void init_builtin_types (RState* state)
+static void state_init_builtin_types (RState* state)
 {
     /* Immediate types */
     init_char_type_info          (state);
@@ -83,7 +83,7 @@ static void init_builtin_types (RState* state)
     init_error_type_info         (state);
     init_fixnum_type_info        (state);
     init_flonum_type_info        (state);
-    init_native_type_info        (state);
+    init_primitive_type_info     (state);
     init_port_type_info          (state);
     init_string_type_info        (state);
     init_vector_type_info        (state);
@@ -91,7 +91,7 @@ static void init_builtin_types (RState* state)
     init_procedure_type_info     (state);
 }
 
-static void init_std_ports (RState* state)
+static void state_init_std_ports (RState* state)
 {
     state->current_input_port  = r_stdin_port  (state);
     state->current_output_port = r_stdout_port (state);
@@ -129,9 +129,9 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 
     gc_init (state);
 
-    init_builtin_types  (state);
-    init_std_ports      (state);
-    init_reserved_words (state);
+    state_init_builtin_types  (state);
+    state_init_std_ports      (state);
+    state_init_reserved_words (state);
 
     vm_init (state);
 
@@ -148,5 +148,6 @@ void r_state_free (RState* state)
 {
     vm_finish (state);
     gc_finish (state);
+
     r_free (state, state);
 }

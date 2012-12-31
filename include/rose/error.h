@@ -30,6 +30,7 @@ R_BEGIN_DECLS
 #define R_ERR_UNBOUND_VAR       (R_ERR_RUNTIME + 3)
 #define R_ERR_WRONG_APPLY       (R_ERR_RUNTIME + 4)
 #define R_ERR_WRONG_ARG_NUM     (R_ERR_RUNTIME + 5)
+#define R_ERR_INDEX_OVERFLOW    (R_ERR_RUNTIME + 6)
 #define R_ERR_RUNTIME_MAX       30000
 
 rsexp r_error_new              (RState* state,

@@ -1,3 +1,4 @@
+#include "detail/env.h"
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/bytevector.h"
@@ -8,6 +9,7 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/procedure.h"
+#include "rose/primitive.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
@@ -126,26 +128,6 @@ rsexp r_car (rsexp obj)
 rsexp r_cdr (rsexp obj)
 {
     return pair_from_sexp (obj)->cdr;
-}
-
-rsexp r_checked_car (RState* state, rsexp obj)
-{
-    if (!r_pair_p (obj)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, obj);
-        return R_FAILURE;
-    }
-
-    return r_car (obj);
-}
-
-rsexp r_checked_cdr (RState* state, rsexp obj)
-{
-    if (!r_pair_p (obj)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, obj);
-        return R_FAILURE;
-    }
-
-    return r_cdr (obj);
 }
 
 void r_set_car_x (rsexp pair, rsexp obj)
@@ -296,10 +278,150 @@ rsexp r_length (RState* state, rsexp list)
     return r_uint_to_sexp (n);
 }
 
-rsexp r_list_ref (rsexp list, rsize k)
+rsexp r_list_ref (RState* state, rsexp seq, rsize k)
 {
-    while (k--)
-        list = r_cdr (list);
+    rsize i;
+    rsexp res;
 
-    return r_car (list);
+    for (i = 0; i <= k; ++i) {
+        if (r_null_p (seq))
+            break;
+
+        if (!r_pair_p (seq)) {
+            r_error_code (state, R_ERR_WRONG_TYPE_ARG, seq);
+            return R_FAILURE;
+        }
+
+        res = r_car (seq);
+        seq = r_cdr (seq);
+    }
+
+    if (i <= k) {
+        r_error_code (state, R_ERR_INDEX_OVERFLOW);
+        return R_FAILURE;
+    }
+
+    return res;
+}
+
+rsexp np_cons (RState* state, rsexp args)
+{
+    rsexp car, cdr;
+    r_match_args (state, args, 2, 0, FALSE, &car, &cdr);
+    return r_cons (state, car, cdr);
+}
+
+rsexp np_pair_p (RState* state, rsexp args)
+{
+    return r_bool_to_sexp (r_pair_p (r_car (args)));
+}
+
+rsexp np_null_p (RState* state, rsexp args)
+{
+    return r_bool_to_sexp (r_null_p (r_car (args)));
+}
+
+rsexp np_car (RState* state, rsexp args)
+{
+    rsexp pair = r_car (args);
+
+    if (!r_pair_p (pair)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        return R_FAILURE;
+    }
+
+    return r_car (pair);
+}
+
+rsexp np_cdr (RState* state, rsexp args)
+{
+    rsexp pair = r_car (args);
+
+    if (!r_pair_p (pair)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        return R_FAILURE;
+    }
+
+    return r_cdr (pair);
+}
+
+rsexp np_set_car_x (RState* state, rsexp args)
+{
+    rsexp pair = r_car (args);
+    rsexp car = r_cadr (args);
+
+    if (!r_pair_p (pair)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        return R_FAILURE;
+    }
+
+    r_set_car_x (pair, car);
+
+    return R_UNSPECIFIED;
+}
+
+rsexp np_set_cdr_x (RState* state, rsexp args)
+{
+    rsexp pair = r_car (args);
+    rsexp cdr = r_cadr (args);
+
+    if (!r_pair_p (pair)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        return R_FAILURE;
+    }
+
+    r_set_cdr_x (pair, cdr);
+
+    return R_UNDEFINED;
+}
+
+rsexp np_list (RState* state, rsexp args)
+{
+    return args;
+}
+
+rsexp np_reverse (RState* state, rsexp args)
+{
+    return r_reverse (state, r_car (args));
+}
+
+rsexp np_reverse_x (RState* state, rsexp args)
+{
+    return r_reverse_x (state, r_car (args));
+}
+
+rsexp np_append_x (RState* state, rsexp args)
+{
+    return r_append_x (state, r_car (args), r_cadr (args));
+}
+
+rsexp np_list_ref (RState* state, rsexp args)
+{
+    rsexp list, k;
+
+    list = r_car (args);
+    k = r_cadr (args);
+
+    if (!r_small_int_p (k)) {
+        r_error_code (state, R_ERR_WRONG_TYPE_ARG, k);
+        return R_FAILURE;
+    }
+
+    return r_list_ref (state, list, r_uint_from_sexp (k));
+}
+
+void pair_init_primitives (RState* state, rsexp* env)
+{
+    bind_primitive_x (state, env, "cons",     np_cons,      2, 0, FALSE);
+    bind_primitive_x (state, env, "pair?",    np_pair_p,    1, 0, FALSE);
+    bind_primitive_x (state, env, "null?",    np_null_p,    1, 0, FALSE);
+    bind_primitive_x (state, env, "car",      np_car,       1, 0, FALSE);
+    bind_primitive_x (state, env, "cdr",      np_cdr,       1, 0, FALSE);
+    bind_primitive_x (state, env, "set-car!", np_set_car_x, 2, 0, FALSE);
+    bind_primitive_x (state, env, "set-cdr!", np_set_cdr_x, 2, 0, FALSE);
+    bind_primitive_x (state, env, "list",     np_list,      0, 0, TRUE);
+    bind_primitive_x (state, env, "reverse",  np_reverse,   1, 0, FALSE);
+    bind_primitive_x (state, env, "reverse!", np_reverse_x, 1, 0, FALSE);
+    bind_primitive_x (state, env, "append!",  np_append_x,  2, 0, FALSE);
+    bind_primitive_x (state, env, "list-ref", np_list_ref,  2, 0, FALSE);
 }

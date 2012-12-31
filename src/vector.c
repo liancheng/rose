@@ -108,14 +108,12 @@ static rbool check_index_overflow (RState* state, rsexp vec, rsize k)
 {
     rsize length = r_uint_from_sexp (r_vector_length (vec));
 
-    if (k < length)
-        return TRUE;
+    if (k >= length) {
+        r_error_code (state, R_ERR_INDEX_OVERFLOW);
+        return FALSE;
+    }
 
-    r_error_printf (state,
-                    "vector index overflow, length: %u, index: %u",
-                    length, k);
-
-    return FALSE;
+    return TRUE;
 }
 
 static void vector_mark (RState* state, rsexp obj)

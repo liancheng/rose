@@ -35,6 +35,7 @@ static rconstcstring runtime_error_messages [] = {
     "unbound variable: ~s",
     "wrong type to apply: ~s",
     "wrong number of arguments to ~s",
+    "index overflow",
 };
 
 static rsexp error_write (RState* state, rsexp port, rsexp obj)
