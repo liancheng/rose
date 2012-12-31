@@ -15,16 +15,16 @@ struct RProcedure {
 #define procedure_to_sexp(obj)   (r_cast (rsexp, (obj)))
 #define procedure_from_sexp(obj) (r_cast (RProcedure*, (obj)))
 
-static void procedure_mark (RState* state, rsexp obj)
+static void procedure_mark (RState* r, rsexp obj)
 {
     RProcedure* procedure = procedure_from_sexp (obj);
 
-    r_gc_mark (state, procedure->body);
-    r_gc_mark (state, procedure->env);
-    r_gc_mark (state, procedure->formals);
+    r_gc_mark (r, procedure->body);
+    r_gc_mark (r, procedure->env);
+    r_gc_mark (r, procedure->formals);
 }
 
-void init_procedure_type_info (RState* state)
+void init_procedure_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -37,7 +37,7 @@ void init_procedure_type_info (RState* state)
     type.ops.finalize = NULL;
     type.ops.mark     = procedure_mark;
 
-    init_builtin_type (state, R_TAG_PROCEDURE, &type);
+    init_builtin_type (r, R_TAG_PROCEDURE, &type);
 }
 
 rbool r_procedure_p (rsexp obj)
@@ -45,9 +45,9 @@ rbool r_procedure_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_PROCEDURE;
 }
 
-rsexp r_procedure_new (RState* state, rsexp body, rsexp env, rsexp formals)
+rsexp r_procedure_new (RState* r, rsexp body, rsexp env, rsexp formals)
 {
-    RProcedure* procedure = r_object_new (state, RProcedure, R_TAG_PROCEDURE);
+    RProcedure* procedure = r_object_new (r, RProcedure, R_TAG_PROCEDURE);
 
     if (!procedure)
         return R_FAILURE;

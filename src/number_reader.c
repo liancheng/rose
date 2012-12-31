@@ -726,7 +726,7 @@ static rsexp read_number (RNumberReader* reader)
     read_prefix (reader);
 
     if (read_polar_complex (reader, &rho, &theta)) {
-        number = r_flonum_new (reader->state,
+        number = r_flonum_new (reader->r,
                                rho * r_cos (theta),
                                rho * r_sin (theta));
         goto clear;
@@ -737,8 +737,8 @@ static rsexp read_number (RNumberReader* reader)
         double i;
 
         number = fix_exactness (reader, real, imag, &r, &i)
-               ? r_fixnum_new (reader->state, real, imag)
-               : r_flonum_new (reader->state, r, i);
+               ? r_fixnum_new (reader->r, real, imag)
+               : r_flonum_new (reader->r, r, i);
 
         goto clear;
     }
@@ -784,9 +784,9 @@ rsexp r_number_read (RNumberReader* reader, rconstcstring text)
     return number;
 }
 
-void r_number_reader_init (RState* state, RNumberReader* reader)
+void r_number_reader_init (RState* r, RNumberReader* reader)
 {
-    reader->state   = state;
+    reader->r       = r;
     reader->begin   = NULL;
     reader->end     = NULL;
     reader->pos     = NULL;

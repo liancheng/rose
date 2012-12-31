@@ -8,9 +8,9 @@
 
 R_BEGIN_DECLS
 
-rsexp r_string_to_number    (RState* state,
+rsexp r_string_to_number    (RState* r,
                              rconstcstring text);
-rsexp r_flonum_new          (RState* state,
+rsexp r_flonum_new          (RState* r,
                              double real,
                              double imag);
 rbool r_flonum_p            (rsexp obj);
@@ -18,10 +18,10 @@ void  r_flonum_set_real_x   (rsexp obj,
                              double real);
 void  r_flonum_set_imag_x   (rsexp obj,
                              double imag);
-rsexp r_fixnum_new          (RState* state,
+rsexp r_fixnum_new          (RState* r,
                              mpq_t real,
                              mpq_t imag);
-rsexp r_fixreal_new         (RState* state,
+rsexp r_fixreal_new         (RState* r,
                              mpq_t real);
 rsexp r_fixnum_normalize    (rsexp obj);
 rbool r_fixnum_p            (rsexp obj);

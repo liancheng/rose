@@ -21,8 +21,8 @@ struct RVm {
     GHashTable* executors;
 };
 
-void vm_init   (RState* state);
-void vm_finish (RState* state);
+void vm_init   (RState* r);
+void vm_finish (RState* r);
 
 R_END_DECLS
 

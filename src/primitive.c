@@ -20,13 +20,13 @@ struct RPrimitive {
 #define primitive_to_sexp(obj)   (r_cast (rsexp, (obj)))
 #define primitive_from_sexp(obj) (r_cast (RPrimitive*, (obj)))
 
-static rbool validate_arity (RState* state, RPrimitive* prim, rsexp args)
+static rbool validate_arity (RState* r, RPrimitive* prim, rsexp args)
 {
     rsize length;
 
     assert (!(prim->optional > 0 && prim->rest_p));
 
-    length = r_uint_from_sexp (r_length (state, args));
+    length = r_uint_from_sexp (r_length (r, args));
 
     return prim->rest_p
            ? length >= prim->required
@@ -34,7 +34,7 @@ static rbool validate_arity (RState* state, RPrimitive* prim, rsexp args)
              length <= prim->required + prim->optional;
 }
 
-static void r_vmatch_args (RState* state,
+static void r_vmatch_args (RState* r,
                            rsexp args,
                            rsize required,
                            rsize optional,
@@ -60,16 +60,16 @@ static void r_vmatch_args (RState* state,
             }
 }
 
-rsexp r_primitive_new (RState* state,
+rsexp r_primitive_new (RState* r,
                        rconstcstring name,
                        RPrimitiveFunc func,
                        rsize required,
                        rsize optional,
                        rbool rest_p)
 {
-    RPrimitive* prim = r_object_new (state, RPrimitive, R_TAG_PRIMITIVE);
+    RPrimitive* prim = r_object_new (r, RPrimitive, R_TAG_PRIMITIVE);
 
-    prim->name     = r_symbol_new (state, name);
+    prim->name     = r_symbol_new (r, name);
     prim->func     = func;
     prim->required = required;
     prim->optional = optional;
@@ -83,18 +83,18 @@ rbool r_primitive_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_PRIMITIVE;
 }
 
-static rsexp primitive_write (RState* state, rsexp port, rsexp obj)
+static rsexp primitive_write (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_write (state, port, primitive_from_sexp (obj)->name);
+    return r_port_write (r, port, primitive_from_sexp (obj)->name);
 }
 
-static rsexp primitive_display (RState* state, rsexp port, rsexp obj)
+static rsexp primitive_display (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_format (state, port, "#<primitive:~s>",
+    return r_port_format (r, port, "#<primitive:~s>",
                           primitive_from_sexp (obj)->name);
 }
 
-void init_primitive_type_info (RState* state)
+void init_primitive_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -107,24 +107,24 @@ void init_primitive_type_info (RState* state)
     type.ops.mark     = NULL;
     type.ops.finalize = NULL;
 
-    init_builtin_type (state, R_TAG_PRIMITIVE, &type);
+    init_builtin_type (r, R_TAG_PRIMITIVE, &type);
 }
 
-rsexp r_primitive_apply (RState* state, rsexp obj, rsexp args)
+rsexp r_primitive_apply (RState* r, rsexp obj, rsexp args)
 {
     RPrimitive* prim;
 
     prim = primitive_from_sexp (obj);
 
-    if (!validate_arity (state, prim, args)) {
-        r_error_code (state, R_ERR_WRONG_ARG_NUM, obj);
+    if (!validate_arity (r, prim, args)) {
+        r_error_code (r, R_ERR_WRONG_ARG_NUM, obj);
         return R_FAILURE;
     }
 
-    return prim->func (state, args);
+    return prim->func (r, args);
 }
 
-void r_match_args (RState* state,
+void r_match_args (RState* r,
                    rsexp args,
                    rsize required,
                    rsize optional,
@@ -135,6 +135,6 @@ void r_match_args (RState* state,
     assert (!(optional > 0 && rest_p));
 
     va_start (va, rest_p);
-    r_vmatch_args (state, args, required, optional, rest_p, va);
+    r_vmatch_args (r, args, required, optional, rest_p, va);
     va_end (va);
 }

@@ -3,10 +3,10 @@
 
 #include "rose/sexp.h"
 
-typedef void (*ROpaqueGcMark)     (RState* state, rpointer opaque);
-typedef void (*ROpaqueGcFinalize) (RState* state, rpointer opaque);
+typedef void (*ROpaqueGcMark)     (RState* r, rpointer opaque);
+typedef void (*ROpaqueGcFinalize) (RState* r, rpointer opaque);
 
-rsexp    r_opaque_new (RState* state,
+rsexp    r_opaque_new (RState* r,
                        rpointer opaque,
                        ROpaqueGcMark mark_fn,
                        ROpaqueGcFinalize finalize_fn);

@@ -11,21 +11,21 @@
 
 class fixture_base : public testing::Test {
 protected:
-    RState* state;
+    RState* r;
 
     virtual void SetUp ()
     {
-        state = r_state_open ();
+        r = r_state_open ();
     }
 
     virtual void TearDown ()
     {
-        r_state_free (state);
+        r_state_free (r);
     }
 
-    rsexp r (rsexp port)
+    rsexp read_seq (rsexp port)
     {
-        rsexp reader  = r_reader_new (state, port);
+        rsexp reader  = r_reader_new (r, port);
         rsexp program = R_NULL;
 
         while (true) {
@@ -34,56 +34,41 @@ protected:
             if (r_eof_object_p (datum))
                 break;
 
-            program = r_cons (state, datum, program);
+            program = r_cons (r, datum, program);
         }
 
         return program;
     }
 
-    rsexp r (rconstcstring source)
+    rsexp read_seq (rconstcstring source)
     {
-        rsexp str  = r_string_new (state, source);
-        rsexp port = r_open_input_string (state, str);
+        rsexp str  = r_string_new (r, source);
+        rsexp port = r_open_input_string (r, str);
 
-        return r (port);
+        return read_seq (port);
     }
 
-    rsexp rd (rsexp port)
+    rsexp read (rsexp port)
     {
-        return r_read (r_reader_new (state, port));
+        return r_read (r_reader_new (r, port));
     }
 
-    rsexp rd (rconstcstring input)
+    rsexp read (rconstcstring input)
     {
-        rsexp port = r_open_input_string (state, r_string_new (state, input));
-        return rd (port);
+        rsexp port = r_open_input_string (r, r_string_new (r, input));
+        return read (port);
     }
 
-    rsexp c (rsexp program)
+    rsexp compile (rsexp program)
     {
-        return r_compile (state, program);
+        return r_compile (r, program);
     }
 
-    rconstcstring w (rsexp obj)
+    rconstcstring to_cstr (rsexp obj)
     {
-        rsexp out = r_open_output_string (state);
-        r_port_write (state, out, obj);
-        return r_string_to_cstr (r_get_output_string (state, out));
-    }
-
-    rconstcstring rdw (rconstcstring source)
-    {
-        return w (rd (source));
-    }
-
-    rsexp rc (rsexp port)
-    {
-        return c (r (port));
-    }
-
-    rconstcstring rcw (rconstcstring source)
-    {
-        return w (c (r (source)));
+        rsexp out = r_open_output_string (r);
+        r_port_write (r, out, obj);
+        return r_string_to_cstr (r_get_output_string (r, out));
     }
 };
 

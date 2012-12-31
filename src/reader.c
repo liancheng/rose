@@ -24,9 +24,9 @@ static rint feed_lexer (RDatumReader* reader)
                              QUEX_NAME (buffer_fill_region_begin)
                                        (&reader->lexer));
 
-    RState*  state = reader->state;
+    RState*  r     = reader->r;
     rint     size  = QUEX_NAME (buffer_fill_region_size) (&reader->lexer);
-    rcstring line  = r_port_gets (state, reader->input_port, begin, size);
+    rcstring line  = r_port_gets (r, reader->input_port, begin, size);
     rint     len   = line ? strlen (line) : 0;
 
     QUEX_NAME (buffer_fill_region_finish) (&reader->lexer, len);
@@ -98,16 +98,16 @@ static void syntax_error (RDatumReader* reader,
 {
     rsexp error;
 
-    r_gc_scope_open (reader->state);
+    r_gc_scope_open (reader->r);
 
-    error = r_error_format (reader->state,
+    error = r_error_format (reader->r,
                             "~a:~a:~a: ~a~%",
                             r_port_get_name (reader->input_port),
                             r_int_to_sexp (reader->current_line),
                             r_int_to_sexp (reader->current_column),
-                            r_string_new (reader->state, message));
+                            r_string_new (reader->r, message));
 
-    r_gc_scope_close_and_protect (reader->state, error);
+    r_gc_scope_close_and_protect (reader->r, error);
 }
 
 static rsexp read_vector (RDatumReader* reader)
@@ -121,7 +121,7 @@ static rsexp read_vector (RDatumReader* reader)
     if (!match (reader, TKN_HASH_LP))
         goto exit;
 
-    r_gc_scope_open (reader->state);
+    r_gc_scope_open (reader->r);
 
     for (list = R_NULL; lookahead (reader)->_id != TKN_RP; ) {
         datum = read_datum (reader);
@@ -138,15 +138,15 @@ static rsexp read_vector (RDatumReader* reader)
             goto clean;
         }
 
-        list = r_cons (reader->state, datum, list);
+        list = r_cons (reader->r, datum, list);
     }
 
     consume (reader);
 
-    res = r_list_to_vector (reader->state, r_reverse_x (reader->state, list));
+    res = r_list_to_vector (reader->r, r_reverse_x (reader->r, list));
 
 clean:
-    r_gc_scope_close_and_protect (reader->state, res);
+    r_gc_scope_close_and_protect (reader->r, res);
 
 exit:
     return res;
@@ -173,9 +173,9 @@ static rsexp read_full_list (RDatumReader* reader)
         goto exit;
     }
 
-    r_gc_scope_open (reader->state);
+    r_gc_scope_open (reader->r);
 
-    res = r_cons (reader->state, datum, R_NULL);
+    res = r_cons (reader->r, datum, R_NULL);
 
     while (TRUE) {
         rtokenid id = lookahead (reader)->_id;
@@ -191,10 +191,10 @@ static rsexp read_full_list (RDatumReader* reader)
             goto clean;
         }
 
-        res = r_cons (reader->state, datum, res);
+        res = r_cons (reader->r, datum, res);
     }
 
-    res = r_reverse_x (reader->state, res);
+    res = r_reverse_x (reader->r, res);
 
     if (match (reader, TKN_DOT)) {
         datum = read_datum (reader);
@@ -205,7 +205,7 @@ static rsexp read_full_list (RDatumReader* reader)
             goto clean;
         }
 
-        res = r_append_x (reader->state, res, datum);
+        res = r_append_x (reader->r, res, datum);
     }
 
     if (!match (reader, TKN_RP)) {
@@ -214,7 +214,7 @@ static rsexp read_full_list (RDatumReader* reader)
     }
 
 clean:
-    r_gc_scope_close_and_protect (reader->state, res);
+    r_gc_scope_close_and_protect (reader->r, res);
 
 exit:
     return res;
@@ -228,19 +228,19 @@ static rsexp read_abbreviation (RDatumReader* reader)
 
     switch (lookahead (reader)->_id) {
         case TKN_QUOTE:
-            prefix = reserved (reader->state, KW_QUOTE);
+            prefix = reserved (reader->r, KW_QUOTE);
             break;
 
         case TKN_BACKTICK:
-            prefix = reserved (reader->state, KW_QUASIQUOTE);
+            prefix = reserved (reader->r, KW_QUASIQUOTE);
             break;
 
         case TKN_COMMA:
-            prefix = reserved (reader->state, KW_UNQUOTE);
+            prefix = reserved (reader->r, KW_UNQUOTE);
             break;
 
         case TKN_COMMA_AT:
-            prefix = reserved (reader->state, KW_UNQUOTE_SPLICING);
+            prefix = reserved (reader->r, KW_UNQUOTE_SPLICING);
             break;
 
         default:
@@ -255,7 +255,7 @@ static rsexp read_abbreviation (RDatumReader* reader)
         goto exit;
     }
 
-    res = r_list (reader->state, 2, prefix, datum);
+    res = r_list (reader->r, 2, prefix, datum);
 
 exit:
     return res;
@@ -294,14 +294,14 @@ static rsexp read_bytevector (RDatumReader* reader)
             goto exit;
         }
 
-        bytes = r_cons (reader->state, datum, bytes);
+        bytes = r_cons (reader->r, datum, bytes);
     }
 
     if (!match (reader, TKN_RP))
         goto exit;
 
-    res = r_list_to_bytevector (reader->state,
-                                r_reverse_x (reader->state, bytes));
+    res = r_list_to_bytevector (reader->r,
+                                r_reverse_x (reader->r, bytes));
 
 exit:
     return res;
@@ -330,7 +330,7 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         case TKN_NUMBER:
-            datum = r_string_to_number (reader->state, text);
+            datum = r_string_to_number (reader->r, text);
             break;
 
         case TKN_CHARACTER:
@@ -338,11 +338,11 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         case TKN_STRING:
-            datum = r_string_new (reader->state, text);
+            datum = r_string_new (reader->r, text);
             break;
 
         case TKN_IDENTIFIER:
-            datum = r_symbol_new (reader->state, text);
+            datum = r_symbol_new (reader->r, text);
             break;
 
         case TKN_HASH_U8_LP:
@@ -373,29 +373,29 @@ static rsexp read_datum (RDatumReader* reader)
     return r_failure_p (datum) ? read_compound_datum (reader) : datum;
 }
 
-static void reader_finalize (RState* state, rpointer obj)
+static void reader_finalize (RState* r, rpointer obj)
 {
     RDatumReader* reader = r_cast (RDatumReader*, obj);
 
-    assert (state == reader->state);
+    assert (r == reader->r);
 
     QUEX_NAME (destruct) (&reader->lexer);
     QUEX_NAME_TOKEN (destruct) (&reader->token);
 
-    r_free (state, reader);
+    r_free (r, reader);
 }
 
-rsexp r_reader_new (RState* state, rsexp port)
+rsexp r_reader_new (RState* r, rsexp port)
 {
     RDatumReader* reader;
     rsexp         res = R_FAILURE;
 
-    reader = r_new0 (state, RDatumReader);
+    reader = r_new0 (r, RDatumReader);
 
     if (!reader)
         goto exit;
 
-    reader->state          = state;
+    reader->r              = r;
     reader->input_port     = port;
     reader->lookahead      = NULL;
     reader->current_line   = 0;
@@ -405,10 +405,10 @@ rsexp r_reader_new (RState* state, rsexp port)
     QUEX_NAME_TOKEN (construct) (&reader->token);
     QUEX_NAME (token_p_set) (&reader->lexer, &reader->token);
 
-    res = r_opaque_new (state, reader, NULL, reader_finalize);
+    res = r_opaque_new (r, reader, NULL, reader_finalize);
 
     if (r_failure_p (res))
-        r_free (state, reader);
+        r_free (r, reader);
 
 exit:
     return res;
@@ -420,11 +420,11 @@ rsexp r_read (rsexp reader)
     return lookahead (r)->_id == TKN_TERMINATION ? R_EOF : read_datum (r);
 }
 
-rsexp r_read_from_string (RState* state, rconstcstring input)
+rsexp r_read_from_string (RState* r, rconstcstring input)
 {
-    rsexp str    = r_string_new (state, input);
-    rsexp port   = r_open_input_string (state, str);
-    rsexp reader = r_reader_new (state, port);
+    rsexp str    = r_string_new (r, input);
+    rsexp port   = r_open_input_string (r, str);
+    rsexp reader = r_reader_new (r, port);
 
     return r_read (reader);
 }

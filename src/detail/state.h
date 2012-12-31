@@ -91,10 +91,10 @@ struct RState {
     RTypeInfo builtin_types [R_TAG_MAX];
 };
 
-void  init_builtin_type (RState* state,
+void  init_builtin_type (RState* r,
                          RTypeTag tag,
                          RTypeInfo* type);
-rsexp reserved          (RState* state,
+rsexp reserved          (RState* r,
                          RReservedWord index);
 
 R_END_DECLS

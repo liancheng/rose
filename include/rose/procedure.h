@@ -6,7 +6,7 @@
 
 R_BEGIN_DECLS
 
-rsexp r_procedure_new     (RState* state,
+rsexp r_procedure_new     (RState* r,
                            rsexp body,
                            rsexp env,
                            rsexp formals);

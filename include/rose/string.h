@@ -6,27 +6,27 @@
 
 R_BEGIN_DECLS
 
-rsexp         r_string_new            (RState* state,
+rsexp         r_string_new            (RState* r,
                                        rconstcstring str);
 rbool         r_string_p              (rsexp obj);
 rconstcstring r_string_to_cstr        (rsexp obj);
-rbool         r_string_equal_p        (RState* state,
+rbool         r_string_equal_p        (RState* r,
                                        rsexp lhs,
                                        rsexp rhs);
 rsize         r_string_length_by_byte (rsexp obj);
 rsize         r_string_length         (rsexp obj);
 
-rsexp         r_string_format         (RState* state,
+rsexp         r_string_format         (RState* r,
                                        rconstcstring format,
                                        ...);
-rsexp         r_string_vformat        (RState* state,
+rsexp         r_string_vformat        (RState* r,
                                        rconstcstring format,
                                        va_list args);
 
-rsexp         r_string_printf         (RState* state,
+rsexp         r_string_printf         (RState* r,
                                        rconstcstring format,
                                        ...);
-rsexp         r_string_vprintf        (RState* state,
+rsexp         r_string_vprintf        (RState* r,
                                        rconstcstring format,
                                        va_list args);
 

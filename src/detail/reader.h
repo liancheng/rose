@@ -10,7 +10,7 @@ R_BEGIN_DECLS
 typedef struct RDatumReader RDatumReader;
 
 struct RDatumReader {
-    RState* state;
+    RState* r;
     rsexp   input_port;
     rsexp   last_error;
     RLexer  lexer;

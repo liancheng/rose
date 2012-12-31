@@ -19,38 +19,38 @@ struct RString {
 #define string_from_sexp(obj)   (r_cast (RString*, (obj)))
 #define string_to_sexp(string)  (r_cast (rsexp, (string)))
 
-static rsexp string_write (RState* state, rsexp port, rsexp obj)
+static rsexp string_write (RState* r, rsexp port, rsexp obj)
 {
     rcstring p;
 
-    ensure (r_port_write_char (state, port, '"'));
+    ensure (r_port_write_char (r, port, '"'));
 
     for (p = string_from_sexp (obj)->data; *p; ++p)
         if ('"' == *p)
-            ensure (r_port_puts (state, port, "\\\""));
+            ensure (r_port_puts (r, port, "\\\""));
         else
-            ensure (r_port_write_char (state, port, *p));
+            ensure (r_port_write_char (r, port, *p));
 
-    ensure (r_port_write_char (state, port, '"'));
+    ensure (r_port_write_char (r, port, '"'));
 
     return R_UNSPECIFIED;
 }
 
-static rsexp string_display (RState* state, rsexp port, rsexp obj)
+static rsexp string_display (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_puts (state, port, string_from_sexp (obj)->data);
+    return r_port_puts (r, port, string_from_sexp (obj)->data);
 }
 
-static void string_finalize (RState* state, RObject* obj)
+static void string_finalize (RState* r, RObject* obj)
 {
     RString* str = r_cast (RString*, obj);
-    r_free (state, str->data);
+    r_free (r, str->data);
 }
 
-static rcstring cstring_dup (RState* state, rconstcstring str)
+static rcstring cstring_dup (RState* r, rconstcstring str)
 {
     rsize    size = strlen (str);
-    rcstring res  = r_cast (rcstring, r_new0_array (state, rchar, size + 1));
+    rcstring res  = r_cast (rcstring, r_new0_array (r, rchar, size + 1));
 
     if (res)
         memcpy (res, str, size + 1);
@@ -58,7 +58,7 @@ static rcstring cstring_dup (RState* state, rconstcstring str)
     return res;
 }
 
-void init_string_type_info (RState* state)
+void init_string_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -71,18 +71,18 @@ void init_string_type_info (RState* state)
     type.ops.mark     = NULL;
     type.ops.finalize = string_finalize;
 
-    init_builtin_type (state, R_TAG_STRING, &type);
+    init_builtin_type (r, R_TAG_STRING, &type);
 }
 
-rsexp r_string_new (RState* state, rconstcstring str)
+rsexp r_string_new (RState* r, rconstcstring str)
 {
-    RString* res = r_object_new (state, RString, R_TAG_STRING);
+    RString* res = r_object_new (r, RString, R_TAG_STRING);
 
     if (!res)
         return R_FAILURE;
 
     res->length = strlen (str);
-    res->data = cstring_dup (state, str);
+    res->data = cstring_dup (r, str);
 
     return string_to_sexp (res);
 }
@@ -97,7 +97,7 @@ rconstcstring r_string_to_cstr (rsexp obj)
     return string_from_sexp (obj)->data;
 }
 
-rbool r_string_equal_p (RState* state, rsexp lhs, rsexp rhs)
+rbool r_string_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
     RString* lhs_str;
     RString* rhs_str;
@@ -126,50 +126,50 @@ rsize r_string_length (rsexp obj)
     return string_from_sexp (obj)->length;
 }
 
-rsexp r_string_vformat (RState* state, rconstcstring format, va_list args)
+rsexp r_string_vformat (RState* r, rconstcstring format, va_list args)
 {
     rsexp port;
     rsexp res;
 
-    r_gc_scope_open (state);
+    r_gc_scope_open (r);
 
-    port = r_open_output_string (state);
-    r_port_vformat (state, port, format, args);
-    res = r_get_output_string (state, port);
+    port = r_open_output_string (r);
+    r_port_vformat (r, port, format, args);
+    res = r_get_output_string (r, port);
 
-    r_gc_scope_close_and_protect (state, res);
+    r_gc_scope_close_and_protect (r, res);
 
     return res;
 }
 
-rsexp r_string_format (RState* state, rconstcstring format, ...)
+rsexp r_string_format (RState* r, rconstcstring format, ...)
 {
     va_list args;
     rsexp   res;
 
     va_start (args, format);
-    res = r_string_vformat (state, format, args);
+    res = r_string_vformat (r, format, args);
     va_end (args);
 
     return res;
 }
 
-rsexp r_string_vprintf (RState* state, rconstcstring format, va_list args)
+rsexp r_string_vprintf (RState* r, rconstcstring format, va_list args)
 {
     rsexp port;
     rsexp res;
 
-    port = r_open_output_string (state);
+    port = r_open_output_string (r);
 
     if (r_failure_p (port))
         goto exit;
 
-    if (r_failure_p (r_port_vprintf (state, port, format, args))) {
+    if (r_failure_p (r_port_vprintf (r, port, format, args))) {
         res = R_FAILURE;
         goto clean;
     }
 
-    res = r_get_output_string (state, port);
+    res = r_get_output_string (r, port);
 
     if (r_failure_p (res))
         goto clean;
@@ -181,13 +181,13 @@ exit:
     return res;
 }
 
-rsexp r_string_printf (RState* state, rconstcstring format, ...)
+rsexp r_string_printf (RState* r, rconstcstring format, ...)
 {
     va_list args;
     rsexp   res;
 
     va_start (args, format);
-    res = r_string_vprintf (state, format, args);
+    res = r_string_vprintf (r, format, args);
     va_end (args);
 
     return res;

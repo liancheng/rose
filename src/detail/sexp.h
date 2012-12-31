@@ -31,7 +31,7 @@ struct RTypeInfo {
 };
 
 ruint      r_type_tag  (rsexp obj);
-RTypeInfo* r_type_info (RState* state,
+RTypeInfo* r_type_info (RState* r,
                         rsexp obj);
 
 #define object_from_sexp(obj)   (r_cast (RObject*, (obj)))

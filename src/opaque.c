@@ -18,13 +18,13 @@ struct ROpaque {
 #define opaque_from_sexp(obj)   (r_cast (ROpaque*, (obj)))
 #define opaque_to_sexp(obj)     (r_cast (rsexp, (obj)))
 
-static rsexp opaque_write (RState* state, rsexp port, rsexp obj)
+static rsexp opaque_write (RState* r, rsexp port, rsexp obj)
 {
     ROpaque* opaque = opaque_from_sexp (obj);
-    return r_port_printf (state, port, "#<opaque:%p>", opaque->opaque);
+    return r_port_printf (r, port, "#<opaque:%p>", opaque->opaque);
 }
 
-static rbool opaque_equal_p (RState* state, rsexp lhs, rsexp rhs)
+static rbool opaque_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
     ROpaque* lhs_obj = opaque_from_sexp (lhs);
     ROpaque* rhs_obj = opaque_from_sexp (rhs);
@@ -32,23 +32,23 @@ static rbool opaque_equal_p (RState* state, rsexp lhs, rsexp rhs)
     return lhs_obj->opaque == rhs_obj->opaque;
 }
 
-static void opaque_mark (RState* state, rsexp obj)
+static void opaque_mark (RState* r, rsexp obj)
 {
     ROpaque* opaque = opaque_from_sexp (obj);
 
     if (opaque->mark)
-        opaque->mark (state, opaque->opaque);
+        opaque->mark (r, opaque->opaque);
 }
 
-static void opaque_finalize (RState* state, RObject* obj)
+static void opaque_finalize (RState* r, RObject* obj)
 {
     ROpaque* opaque = r_cast (ROpaque*, obj);
 
     if (opaque->finalize)
-        opaque->finalize (state, opaque->opaque);
+        opaque->finalize (r, opaque->opaque);
 }
 
-void init_opaque_type_info (RState* state)
+void init_opaque_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -61,15 +61,15 @@ void init_opaque_type_info (RState* state)
     type.ops.mark     = opaque_mark;
     type.ops.finalize = opaque_finalize;
 
-    init_builtin_type (state, R_TAG_OPAQUE, &type);
+    init_builtin_type (r, R_TAG_OPAQUE, &type);
 }
 
-rsexp r_opaque_new (RState* state,
+rsexp r_opaque_new (RState* r,
                     rpointer opaque,
                     ROpaqueGcMark mark_fn,
                     ROpaqueGcFinalize finalize_fn)
 {
-    ROpaque* res = r_object_new (state, ROpaque, R_TAG_OPAQUE);
+    ROpaque* res = r_object_new (r, ROpaque, R_TAG_OPAQUE);
 
     if (!res)
         return R_FAILURE;

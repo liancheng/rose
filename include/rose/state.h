@@ -13,7 +13,7 @@ typedef rpointer (*RAllocFunc) (rpointer, rpointer, rsize);
 RState* r_state_open ();
 RState* r_state_new  (RAllocFunc alloc_fn,
                       rpointer aux);
-void    r_state_free (RState* state);
+void    r_state_free (RState* r);
 
 R_END_DECLS
 

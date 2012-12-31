@@ -11,39 +11,39 @@
 #include <assert.h>
 #include <string.h>
 
-static rsexp write_fixnum (RState* state, rsexp port, rsexp obj)
+static rsexp write_fixnum (RState* r, rsexp port, rsexp obj)
 {
     RFixnum* fixnum = fixnum_from_sexp (obj);
     FILE*    stream = port_to_stream (port);
 
     if (0 == mpq_out_str (stream, 10, fixnum->real)) {
-        r_set_last_error_x (state, R_ERROR_UNKNOWN);
+        r_set_last_error_x (r, R_ERROR_UNKNOWN);
         return R_FAILURE;
     }
 
     if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u)) {
         if (0 < mpq_cmp_ui (fixnum->imag, 0u, 1u))
-            ensure (r_port_write_char (state, port, '+'));
+            ensure (r_port_write_char (r, port, '+'));
 
         mpq_out_str (stream, 10, fixnum->imag);
-        ensure (r_port_write_char (state, port, 'i'));
+        ensure (r_port_write_char (r, port, 'i'));
     }
 
     return R_UNSPECIFIED;
 }
 
-static rsexp write_flonum (RState* state, rsexp port, rsexp obj)
+static rsexp write_flonum (RState* r, rsexp port, rsexp obj)
 {
     RFlonum* flonum = flonum_from_sexp (obj);
 
-    ensure (r_port_printf (state, port, "%f", flonum->real));
+    ensure (r_port_printf (r, port, "%f", flonum->real));
 
     if (flonum->imag != 0.) {
         if (flonum->imag > 0.)
-            ensure (r_port_write_char (state, port, '+'));
+            ensure (r_port_write_char (r, port, '+'));
 
-        ensure (r_port_printf (state, port, "%f", flonum->imag));
-        ensure (r_port_write_char (state, port, 'i'));
+        ensure (r_port_printf (r, port, "%f", flonum->imag));
+        ensure (r_port_write_char (r, port, 'i'));
     }
 
     return R_UNSPECIFIED;
@@ -76,7 +76,7 @@ static rsexp try_small_int (mpq_t real, mpq_t imag)
     return r_int_to_sexp (smi);
 }
 
-static rbool fixnum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
+static rbool fixnum_eqv_p (RState* r, rsexp lhs, rsexp rhs)
 {
     RFixnum* lhs_num = fixnum_from_sexp (lhs);
     RFixnum* rhs_num = fixnum_from_sexp (rhs);
@@ -85,7 +85,7 @@ static rbool fixnum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
         && mpq_cmp (lhs_num->imag, rhs_num->imag) == 0;
 }
 
-static rbool flonum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
+static rbool flonum_eqv_p (RState* r, rsexp lhs, rsexp rhs)
 {
     RFlonum* lhs_num = flonum_from_sexp (lhs);
     RFlonum* rhs_num = flonum_from_sexp (rhs);
@@ -94,20 +94,20 @@ static rbool flonum_eqv_p (RState* state, rsexp lhs, rsexp rhs)
         && lhs_num->imag == rhs_num->imag;
 }
 
-static void fixnum_finalize (RState* state, RObject* obj)
+static void fixnum_finalize (RState* r, RObject* obj)
 {
     RFixnum* fixnum = r_cast (RFixnum*, obj);
     mpq_clears (fixnum->real, fixnum->imag, NULL);
 }
 
-static RFixnum* fixnum_new (RState* state)
+static RFixnum* fixnum_new (RState* r)
 {
-    RFixnum* fixnum = r_object_new (state, RFixnum, R_TAG_FIXNUM);
+    RFixnum* fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     return fixnum;
 }
 
-void init_fixnum_type_info (RState* state)
+void init_fixnum_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -120,10 +120,10 @@ void init_fixnum_type_info (RState* state)
     type.ops.mark     = NULL;
     type.ops.finalize = fixnum_finalize;
 
-    init_builtin_type (state, R_TAG_FIXNUM, &type);
+    init_builtin_type (r, R_TAG_FIXNUM, &type);
 }
 
-void init_flonum_type_info (RState* state)
+void init_flonum_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -136,7 +136,7 @@ void init_flonum_type_info (RState* state)
     type.ops.mark     = NULL;
     type.ops.finalize = NULL;
 
-    init_builtin_type (state, R_TAG_FLONUM, &type);
+    init_builtin_type (r, R_TAG_FLONUM, &type);
 }
 
 rbool r_fixnum_p (rsexp obj)
@@ -149,37 +149,37 @@ rbool r_flonum_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_FLONUM;
 }
 
-rsexp r_string_to_number (RState* state, rconstcstring text)
+rsexp r_string_to_number (RState* r, rconstcstring text)
 {
     RNumberReader reader;
     rsexp         res;
 
-    r_number_reader_init (state, &reader);
+    r_number_reader_init (r, &reader);
     res = r_number_read (&reader, text);
 
     return res;
 }
 
-rsexp r_fixnum_new (RState* state, mpq_t real, mpq_t imag)
+rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
 {
     rsexp number = try_small_int (real, imag);
 
     if (!r_false_p (number))
         return number;
 
-    RFixnum* fixnum = fixnum_new (state);
+    RFixnum* fixnum = fixnum_new (r);
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
 
     return fixnum_to_sexp (fixnum);
 }
 
-rsexp r_fixreal_new (RState* state, mpq_t real)
+rsexp r_fixreal_new (RState* r, mpq_t real)
 {
-    RFixnum* fixnum = fixnum_new (state);
+    RFixnum* fixnum = fixnum_new (r);
 
     if (!fixnum)
-        return r_last_error (state);
+        return r_last_error (r);
 
     mpq_set (fixnum->real, real);
     return fixnum_to_sexp (fixnum);
@@ -195,9 +195,9 @@ rsexp r_fixnum_normalize (rsexp obj)
     return r_false_p (smi) ? obj : smi;
 }
 
-rsexp r_flonum_new (RState* state, double real, double imag)
+rsexp r_flonum_new (RState* r, double real, double imag)
 {
-    RFlonum* flonum = r_object_new (state, RFlonum, R_TAG_FLONUM);
+    RFlonum* flonum = r_object_new (r, RFlonum, R_TAG_FLONUM);
 
     if (!flonum)
         return R_FAILURE;

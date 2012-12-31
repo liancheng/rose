@@ -22,20 +22,20 @@ struct RGcState {
     RObject*  chrono_list;
 };
 
-#define r_object_new(state, type, tag)\
-        (r_cast (type*, r_object_alloc (state, tag)))
+#define r_object_new(r, type, tag)\
+        (r_cast (type*, r_object_alloc (r, tag)))
 
-RObject* r_object_alloc    (RState* state,
+RObject* r_object_alloc    (RState* r,
                             RTypeTag type_tag);
-void     r_object_free     (RState* state,
+void     r_object_free     (RState* r,
                             RObject* obj);
 
 rpointer default_alloc_fn  (rpointer aux,
                             rpointer ptr,
                             rsize size);
-void     gc_scope_reset    (RState* state);
-void     gc_init           (RState* state);
-void     gc_finish         (RState* state);
+void     gc_scope_reset    (RState* r);
+void     gc_init           (RState* r);
+void     gc_finish         (RState* r);
 
 R_END_DECLS
 

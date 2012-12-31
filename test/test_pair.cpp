@@ -10,23 +10,23 @@ class test_pair : public fixture_base {};
 TEST_F (test_pair, r_reverse_null)
 {
     rsexp expected = R_NULL;
-    rsexp actual   = r_reverse_x (state, R_NULL);
+    rsexp actual   = r_reverse_x (r, R_NULL);
 
     EXPECT_EQ (expected, actual);
 }
 
 TEST_F (test_pair, r_reverse_single_element)
 {
-    rsexp expected = r_list (state, 1, R_TRUE);
-    rsexp actual   = r_reverse_x (state, r_list (state, 1, R_TRUE));
+    rsexp expected = r_list (r, 1, R_TRUE);
+    rsexp actual   = r_reverse_x (r, r_list (r, 1, R_TRUE));
 
-    EXPECT_TRUE (r_equal_p (state, expected, actual));
+    EXPECT_TRUE (r_equal_p (r, expected, actual));
 }
 
 TEST_F (test_pair, r_reverse_multiple_elements)
 {
-    rsexp expected = r_list (state, 2, R_FALSE, R_TRUE);
-    rsexp actual   = r_reverse_x (state, r_list (state, 2, R_TRUE, R_FALSE));
+    rsexp expected = r_list (r, 2, R_FALSE, R_TRUE);
+    rsexp actual   = r_reverse_x (r, r_list (r, 2, R_TRUE, R_FALSE));
 
-    EXPECT_TRUE (r_equal_p (state, expected, actual));
+    EXPECT_TRUE (r_equal_p (r, expected, actual));
 }

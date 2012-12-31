@@ -22,49 +22,49 @@ struct RBytevector {
 #define bytevector_from_sexp(obj)   (r_cast (RBytevector*, (obj)))
 #define bytevector_to_sexp(bytevec) (r_cast (rsexp, (bytevec)))
 
-static rsexp bytevector_write (RState* state, rsexp port, rsexp obj)
+static rsexp bytevector_write (RState* r, rsexp port, rsexp obj)
 {
     rsize length;
     rsize i;
     rsexp value;
 
     length = r_uint_from_sexp (r_bytevector_length (obj));
-    ensure (r_port_puts (state, port, "#u8("));
+    ensure (r_port_puts (r, port, "#u8("));
 
     if (length > 0u) {
-        value = r_bytevector_u8_ref (state, obj, 0u);
-        ensure (r_port_write (state, port, value));
+        value = r_bytevector_u8_ref (r, obj, 0u);
+        ensure (r_port_write (r, port, value));
 
         for (i = 1; i < length; ++i) {
-            value = r_bytevector_u8_ref (state, obj, i);
-            ensure (r_port_write_char (state, port, ' '));
-            ensure (r_port_write (state, port, value));
+            value = r_bytevector_u8_ref (r, obj, i);
+            ensure (r_port_write_char (r, port, ' '));
+            ensure (r_port_write (r, port, value));
         }
     }
 
-    ensure (r_port_write_char (state, port, ')'));
+    ensure (r_port_write_char (r, port, ')'));
 
     return R_UNSPECIFIED;
 }
 
-static void bytevector_finalize (RState* state, RObject* obj)
+static void bytevector_finalize (RState* r, RObject* obj)
 {
-    r_free (state, r_cast (RBytevector*, obj)->data);
+    r_free (r, r_cast (RBytevector*, obj)->data);
 }
 
-static rbool check_index_overflow (RState* state, rsexp bv, rsize k)
+static rbool check_index_overflow (RState* r, rsexp bv, rsize k)
 {
     rsize length = r_uint_from_sexp (r_bytevector_length (bv));
 
     if (k >= length) {
-        r_error_code (state, R_ERR_INDEX_OVERFLOW);
+        r_error_code (r, R_ERR_INDEX_OVERFLOW);
         return FALSE;
     }
 
     return TRUE;
 }
 
-static rbool bytevector_equal_p (RState* state, rsexp lhs, rsexp rhs)
+static rbool bytevector_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
     rsize lhs_len;
     rsize rhs_len;
@@ -81,7 +81,7 @@ static rbool bytevector_equal_p (RState* state, rsexp lhs, rsexp rhs)
                         lhs_len * sizeof (rbyte));
 }
 
-void init_bytevector_type_info (RState* state)
+void init_bytevector_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -94,18 +94,18 @@ void init_bytevector_type_info (RState* state)
     type.ops.mark     = NULL;
     type.ops.finalize = bytevector_finalize;
 
-    init_builtin_type (state, R_TAG_BYTEVECTOR, &type);
+    init_builtin_type (r, R_TAG_BYTEVECTOR, &type);
 }
 
-rsexp r_bytevector_new (RState* state, rsize k, rbyte fill)
+rsexp r_bytevector_new (RState* r, rsize k, rbyte fill)
 {
-    RBytevector* res = r_object_new (state, RBytevector, R_TAG_BYTEVECTOR);
+    RBytevector* res = r_object_new (r, RBytevector, R_TAG_BYTEVECTOR);
 
     if (!res)
         return R_FAILURE;
 
     res->length = k;
-    res->data = k ? r_new_array (state, rbyte, k) : NULL;
+    res->data = k ? r_new_array (r, rbyte, k) : NULL;
 
     while (k--)
         res->data [k] = fill;
@@ -123,16 +123,16 @@ rsexp r_bytevector_length (rsexp obj)
     return r_uint_to_sexp (bytevector_from_sexp (obj)->length);
 }
 
-rsexp r_bytevector_u8_ref (RState* state, rsexp obj, rsize k)
+rsexp r_bytevector_u8_ref (RState* r, rsexp obj, rsize k)
 {
-    return check_index_overflow (state, obj, k)
+    return check_index_overflow (r, obj, k)
            ? r_uint_to_sexp (bytevector_from_sexp (obj)->data [k])
-           : r_last_error (state);
+           : r_last_error (r);
 }
 
-rsexp r_bytevector_u8_set_x (RState* state, rsexp obj, rsize k, rbyte byte)
+rsexp r_bytevector_u8_set_x (RState* r, rsexp obj, rsize k, rbyte byte)
 {
-    if (!check_index_overflow (state, obj, k))
+    if (!check_index_overflow (r, obj, k))
         return R_FAILURE;
 
     bytevector_from_sexp (obj)->data [k] = byte;
@@ -140,43 +140,43 @@ rsexp r_bytevector_u8_set_x (RState* state, rsexp obj, rsize k, rbyte byte)
     return R_UNSPECIFIED;
 }
 
-rsexp r_list_to_bytevector (RState* state, rsexp list)
+rsexp r_list_to_bytevector (RState* r, rsexp list)
 {
     rbyte byte;
     rsize k;
     rsize length;
     rsexp res;
 
-    res = r_length (state, list);
+    res = r_length (r, list);
 
     /* If `list' is not a proper list... */
     if (r_failure_p (res)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
         goto exit;
     }
 
-    r_gc_scope_open (state);
+    r_gc_scope_open (r);
 
     length = r_uint_from_sexp (res);
-    res = r_bytevector_new (state, length, R_UNDEFINED);
+    res = r_bytevector_new (r, length, R_UNDEFINED);
 
     if (r_failure_p (res))
         goto clean;
 
     for (k = 0; k < length; ++k) {
         if (!r_byte_p (r_car (list))) {
-            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
             res = R_FAILURE;
             goto clean;
         }
 
         byte = r_cast (rbyte, r_uint_from_sexp (r_car (list)));
-        r_bytevector_u8_set_x (state, res, k, byte);
+        r_bytevector_u8_set_x (r, res, k, byte);
         list = r_cdr (list);
     }
 
 clean:
-    r_gc_scope_close_and_protect (state, res);
+    r_gc_scope_close_and_protect (r, res);
 
 exit:
     return res;

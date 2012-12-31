@@ -33,28 +33,28 @@ R_BEGIN_DECLS
 #define R_ERR_INDEX_OVERFLOW    (R_ERR_RUNTIME + 6)
 #define R_ERR_RUNTIME_MAX       30000
 
-rsexp r_error_new              (RState* state,
+rsexp r_error_new              (RState* r,
                                 rsexp message,
                                 rsexp irritants);
 rbool r_error_p                (rsexp obj);
 rsexp r_error_object_message   (rsexp error);
 rsexp r_error_object_irritants (rsexp error);
-rsexp r_error_printf           (RState* state,
+rsexp r_error_printf           (RState* r,
                                 rconstcstring format,
                                 ...);
-rsexp r_error_format           (RState* state,
+rsexp r_error_format           (RState* r,
                                 rconstcstring format,
                                 ...);
-rsexp r_error                  (RState* state,
+rsexp r_error                  (RState* r,
                                 rconstcstring message);
-rsexp r_error_code             (RState* state,
+rsexp r_error_code             (RState* r,
                                 rint error_code,
                                 ...);
-rsexp r_last_error             (RState* state);
-rsexp r_set_last_error_x       (RState* state,
+rsexp r_last_error             (RState* r);
+rsexp r_set_last_error_x       (RState* r,
                                 rsexp error);
-rsexp r_clear_last_error_x     (RState* state);
-rsexp r_inherit_errno_x        (RState* state,
+rsexp r_clear_last_error_x     (RState* r);
+rsexp r_inherit_errno_x        (RState* r,
                                 rint errnum);
 
 typedef struct RNestedJump RNestedJump;
@@ -64,7 +64,7 @@ struct RNestedJump {
     jmp_buf      buf;
 };
 
-void r_raise (RState* state);
+void r_raise (RState* r);
 
 #define ensure(stmt)\
         do {\

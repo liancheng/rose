@@ -6,9 +6,9 @@
 
 R_BEGIN_DECLS
 
-rsexp r_compile           (RState* state,
+rsexp r_compile           (RState* r,
                            rsexp program);
-rsexp r_compile_from_port (RState* state,
+rsexp r_compile_from_port (RState* r,
                            rsexp port);
 
 R_END_DECLS

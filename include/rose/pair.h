@@ -8,7 +8,7 @@
 R_BEGIN_DECLS
 
 rbool r_pair_p       (rsexp obj);
-rsexp r_cons         (RState* state,
+rsexp r_cons         (RState* r,
                       rsexp car,
                       rsexp cdr);
 rsexp r_car          (rsexp obj);
@@ -17,26 +17,26 @@ void  r_set_car_x    (rsexp pair,
                       rsexp obj);
 void  r_set_cdr_x    (rsexp pair,
                       rsexp obj);
-rbool r_pair_equal_p (RState* state,
+rbool r_pair_equal_p (RState* r,
                       rsexp lhs,
                       rsexp rhs);
-rsexp r_reverse      (RState* state,
+rsexp r_reverse      (RState* r,
                       rsexp list);
-rsexp r_reverse_x    (RState* state,
+rsexp r_reverse_x    (RState* r,
                       rsexp list);
-rsexp r_append_x     (RState* state,
+rsexp r_append_x     (RState* r,
                       rsexp list,
                       rsexp value);
 rbool r_list_p       (rsexp obj);
-rsexp r_vlist        (RState* state,
+rsexp r_vlist        (RState* r,
                       rsize k,
                       va_list args);
-rsexp r_list         (RState* state,
+rsexp r_list         (RState* r,
                       rsize k,
                       ...);
-rsexp r_length       (RState* state,
+rsexp r_length       (RState* r,
                       rsexp list);
-rsexp r_list_ref     (RState* state,
+rsexp r_list_ref     (RState* r,
                       rsexp list,
                       rsize k);
 

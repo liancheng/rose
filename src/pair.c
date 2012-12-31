@@ -28,64 +28,64 @@ struct RPair {
 #define pair_from_sexp(obj)     (r_cast (RPair*, (obj)))
 #define pair_to_sexp(pair)      (r_cast (rsexp, (pair)))
 
-typedef rsexp (*ROutputFunc) (RState* state, rsexp, rsexp);
+typedef rsexp (*ROutputFunc) (RState* r, rsexp, rsexp);
 
-static rsexp output_cdr (RState* state,
+static rsexp output_cdr (RState* r,
                          rsexp port,
                          rsexp obj,
                          ROutputFunc output_fn)
 {
     if (r_pair_p (obj)) {
-        r_port_write_char (state, port, ' ');
-        ensure (output_fn (state, port, r_car (obj)));
-        ensure (output_cdr (state, port, r_cdr (obj), output_fn));
+        r_port_write_char (r, port, ' ');
+        ensure (output_fn (r, port, r_car (obj)));
+        ensure (output_cdr (r, port, r_cdr (obj), output_fn));
     }
     else if (!r_null_p (obj)) {
-        ensure (r_port_puts (state, port, " . "));
-        ensure (output_fn (state, port, obj));
+        ensure (r_port_puts (r, port, " . "));
+        ensure (output_fn (r, port, obj));
     }
 
     return R_UNSPECIFIED;
 }
 
-static rsexp pair_output (RState* state,
+static rsexp pair_output (RState* r,
                           rsexp port,
                           rsexp obj,
                           ROutputFunc output_fn)
 {
-    ensure (r_port_puts (state, port, "("));
-    ensure (output_fn (state, port, r_car (obj)));
-    ensure (output_cdr (state, port, r_cdr (obj), output_fn));
-    ensure (r_port_puts (state, port, ")"));
+    ensure (r_port_puts (r, port, "("));
+    ensure (output_fn (r, port, r_car (obj)));
+    ensure (output_cdr (r, port, r_cdr (obj), output_fn));
+    ensure (r_port_puts (r, port, ")"));
 
     return R_UNSPECIFIED;
 }
 
-static rsexp pair_write (RState* state, rsexp port, rsexp obj)
+static rsexp pair_write (RState* r, rsexp port, rsexp obj)
 {
-    return pair_output (state, port, obj, r_port_write);
+    return pair_output (r, port, obj, r_port_write);
 }
 
-static rsexp pair_display (RState* state, rsexp port, rsexp obj)
+static rsexp pair_display (RState* r, rsexp port, rsexp obj)
 {
-    return pair_output (state, port, obj, r_port_display);
+    return pair_output (r, port, obj, r_port_display);
 }
 
-static void pair_mark (RState* state, rsexp obj)
+static void pair_mark (RState* r, rsexp obj)
 {
-    r_gc_mark (state, pair_from_sexp (obj)->car);
-    r_gc_mark (state, pair_from_sexp (obj)->cdr);
+    r_gc_mark (r, pair_from_sexp (obj)->car);
+    r_gc_mark (r, pair_from_sexp (obj)->cdr);
 }
 
-static rbool pair_equal_p (RState* state, rsexp lhs, rsexp rhs)
+static rbool pair_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
     return r_pair_p (lhs) &&
            r_pair_p (rhs) &&
-           r_equal_p (state, r_car (lhs), r_car (rhs)) &&
-           r_equal_p (state, r_cdr (lhs), r_cdr (rhs));
+           r_equal_p (r, r_car (lhs), r_car (rhs)) &&
+           r_equal_p (r, r_cdr (lhs), r_cdr (rhs));
 }
 
-void init_pair_type_info (RState* state)
+void init_pair_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -98,7 +98,7 @@ void init_pair_type_info (RState* state)
     type.ops.mark     = pair_mark;
     type.ops.finalize = NULL;
 
-    init_builtin_type (state, R_TAG_PAIR, &type);
+    init_builtin_type (r, R_TAG_PAIR, &type);
 }
 
 
@@ -107,9 +107,9 @@ rbool r_pair_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_PAIR;
 }
 
-rsexp r_cons (RState* state, rsexp car, rsexp cdr)
+rsexp r_cons (RState* r, rsexp car, rsexp cdr)
 {
-    RPair* pair = r_object_new (state, RPair, R_TAG_PAIR);
+    RPair* pair = r_object_new (r, RPair, R_TAG_PAIR);
 
     if (!pair)
         return R_FAILURE;
@@ -140,18 +140,18 @@ void r_set_cdr_x (rsexp pair, rsexp obj)
     pair_from_sexp (pair)->cdr = obj;
 }
 
-rsexp r_reverse (RState* state, rsexp list)
+rsexp r_reverse (RState* r, rsexp list)
 {
     rsexp res = R_NULL;
 
     while (!r_null_p (list)) {
         if (!r_pair_p (list)) {
-            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
             res = R_FAILURE;
             goto exit;
         }
 
-        res = r_cons (state, r_car (list), res);
+        res = r_cons (r, r_car (list), res);
         list = r_cdr (list);
     }
 
@@ -159,7 +159,7 @@ exit:
     return res;
 }
 
-rsexp r_reverse_x (RState* state, rsexp list)
+rsexp r_reverse_x (RState* r, rsexp list)
 {
     rsexp node;
     rsexp next;
@@ -172,7 +172,7 @@ rsexp r_reverse_x (RState* state, rsexp list)
     while (!r_null_p (node)) {
         if (!r_pair_p (node)) {
             res = R_FAILURE;
-            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
             goto exit;
         }
 
@@ -188,7 +188,7 @@ exit:
     return res;
 }
 
-rsexp r_append_x (RState* state, rsexp list, rsexp obj)
+rsexp r_append_x (RState* r, rsexp list, rsexp obj)
 {
     rsexp tail;
 
@@ -196,7 +196,7 @@ rsexp r_append_x (RState* state, rsexp list, rsexp obj)
         return obj;
 
     if (!r_pair_p (list)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
         return R_FAILURE;
     }
 
@@ -229,15 +229,15 @@ rbool r_list_p (rsexp obj)
     return res;
 }
 
-rsexp r_vlist (RState* state, rsize k, va_list args)
+rsexp r_vlist (RState* r, rsize k, va_list args)
 {
     rsize i;
     rsexp res = R_NULL;
 
-    r_gc_scope_open (state);
+    r_gc_scope_open (r);
 
     for (i = 0; i < k; ++i) {
-        res = r_cons (state, va_arg (args, rsexp), res);
+        res = r_cons (r, va_arg (args, rsexp), res);
 
         if (r_failure_p (res)) {
             res = R_FAILURE;
@@ -245,40 +245,40 @@ rsexp r_vlist (RState* state, rsize k, va_list args)
         }
     }
 
-    res = r_reverse_x (state, res);
+    res = r_reverse_x (r, res);
 
 exit:
-    r_gc_scope_close_and_protect (state, res);
+    r_gc_scope_close_and_protect (r, res);
 
     return res;
 }
 
-rsexp r_list (RState* state, rsize k, ...)
+rsexp r_list (RState* r, rsize k, ...)
 {
     va_list args;
     rsexp   res;
 
     va_start (args, k);
-    res = r_vlist (state, k, args);
+    res = r_vlist (r, k, args);
     va_end (args);
 
     return res;
 }
 
-rsexp r_length (RState* state, rsexp list)
+rsexp r_length (RState* r, rsexp list)
 {
     rsize n;
 
     for (n = 0u; !r_null_p (list); list = r_cdr (list), ++n)
         if (!r_pair_p (list)) {
-            r_error_code (state, R_ERR_WRONG_TYPE_ARG, list);
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
             return R_FAILURE;
         }
 
     return r_uint_to_sexp (n);
 }
 
-rsexp r_list_ref (RState* state, rsexp seq, rsize k)
+rsexp r_list_ref (RState* r, rsexp seq, rsize k)
 {
     rsize i;
     rsexp res;
@@ -288,7 +288,7 @@ rsexp r_list_ref (RState* state, rsexp seq, rsize k)
             break;
 
         if (!r_pair_p (seq)) {
-            r_error_code (state, R_ERR_WRONG_TYPE_ARG, seq);
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, seq);
             return R_FAILURE;
         }
 
@@ -297,61 +297,61 @@ rsexp r_list_ref (RState* state, rsexp seq, rsize k)
     }
 
     if (i <= k) {
-        r_error_code (state, R_ERR_INDEX_OVERFLOW);
+        r_error_code (r, R_ERR_INDEX_OVERFLOW);
         return R_FAILURE;
     }
 
     return res;
 }
 
-rsexp np_cons (RState* state, rsexp args)
+rsexp np_cons (RState* r, rsexp args)
 {
     rsexp car, cdr;
-    r_match_args (state, args, 2, 0, FALSE, &car, &cdr);
-    return r_cons (state, car, cdr);
+    r_match_args (r, args, 2, 0, FALSE, &car, &cdr);
+    return r_cons (r, car, cdr);
 }
 
-rsexp np_pair_p (RState* state, rsexp args)
+rsexp np_pair_p (RState* r, rsexp args)
 {
     return r_bool_to_sexp (r_pair_p (r_car (args)));
 }
 
-rsexp np_null_p (RState* state, rsexp args)
+rsexp np_null_p (RState* r, rsexp args)
 {
     return r_bool_to_sexp (r_null_p (r_car (args)));
 }
 
-rsexp np_car (RState* state, rsexp args)
+rsexp np_car (RState* r, rsexp args)
 {
     rsexp pair = r_car (args);
 
     if (!r_pair_p (pair)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, pair);
         return R_FAILURE;
     }
 
     return r_car (pair);
 }
 
-rsexp np_cdr (RState* state, rsexp args)
+rsexp np_cdr (RState* r, rsexp args)
 {
     rsexp pair = r_car (args);
 
     if (!r_pair_p (pair)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, pair);
         return R_FAILURE;
     }
 
     return r_cdr (pair);
 }
 
-rsexp np_set_car_x (RState* state, rsexp args)
+rsexp np_set_car_x (RState* r, rsexp args)
 {
     rsexp pair = r_car (args);
     rsexp car = r_cadr (args);
 
     if (!r_pair_p (pair)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, pair);
         return R_FAILURE;
     }
 
@@ -360,13 +360,13 @@ rsexp np_set_car_x (RState* state, rsexp args)
     return R_UNSPECIFIED;
 }
 
-rsexp np_set_cdr_x (RState* state, rsexp args)
+rsexp np_set_cdr_x (RState* r, rsexp args)
 {
     rsexp pair = r_car (args);
     rsexp cdr = r_cadr (args);
 
     if (!r_pair_p (pair)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, pair);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, pair);
         return R_FAILURE;
     }
 
@@ -375,27 +375,27 @@ rsexp np_set_cdr_x (RState* state, rsexp args)
     return R_UNDEFINED;
 }
 
-rsexp np_list (RState* state, rsexp args)
+rsexp np_list (RState* r, rsexp args)
 {
     return args;
 }
 
-rsexp np_reverse (RState* state, rsexp args)
+rsexp np_reverse (RState* r, rsexp args)
 {
-    return r_reverse (state, r_car (args));
+    return r_reverse (r, r_car (args));
 }
 
-rsexp np_reverse_x (RState* state, rsexp args)
+rsexp np_reverse_x (RState* r, rsexp args)
 {
-    return r_reverse_x (state, r_car (args));
+    return r_reverse_x (r, r_car (args));
 }
 
-rsexp np_append_x (RState* state, rsexp args)
+rsexp np_append_x (RState* r, rsexp args)
 {
-    return r_append_x (state, r_car (args), r_cadr (args));
+    return r_append_x (r, r_car (args), r_cadr (args));
 }
 
-rsexp np_list_ref (RState* state, rsexp args)
+rsexp np_list_ref (RState* r, rsexp args)
 {
     rsexp list, k;
 
@@ -403,25 +403,25 @@ rsexp np_list_ref (RState* state, rsexp args)
     k = r_cadr (args);
 
     if (!r_small_int_p (k)) {
-        r_error_code (state, R_ERR_WRONG_TYPE_ARG, k);
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, k);
         return R_FAILURE;
     }
 
-    return r_list_ref (state, list, r_uint_from_sexp (k));
+    return r_list_ref (r, list, r_uint_from_sexp (k));
 }
 
-void pair_init_primitives (RState* state, rsexp* env)
+void pair_init_primitives (RState* r, rsexp* env)
 {
-    bind_primitive_x (state, env, "cons",     np_cons,      2, 0, FALSE);
-    bind_primitive_x (state, env, "pair?",    np_pair_p,    1, 0, FALSE);
-    bind_primitive_x (state, env, "null?",    np_null_p,    1, 0, FALSE);
-    bind_primitive_x (state, env, "car",      np_car,       1, 0, FALSE);
-    bind_primitive_x (state, env, "cdr",      np_cdr,       1, 0, FALSE);
-    bind_primitive_x (state, env, "set-car!", np_set_car_x, 2, 0, FALSE);
-    bind_primitive_x (state, env, "set-cdr!", np_set_cdr_x, 2, 0, FALSE);
-    bind_primitive_x (state, env, "list",     np_list,      0, 0, TRUE);
-    bind_primitive_x (state, env, "reverse",  np_reverse,   1, 0, FALSE);
-    bind_primitive_x (state, env, "reverse!", np_reverse_x, 1, 0, FALSE);
-    bind_primitive_x (state, env, "append!",  np_append_x,  2, 0, FALSE);
-    bind_primitive_x (state, env, "list-ref", np_list_ref,  2, 0, FALSE);
+    bind_primitive_x (r, env, "cons",     np_cons,      2, 0, FALSE);
+    bind_primitive_x (r, env, "pair?",    np_pair_p,    1, 0, FALSE);
+    bind_primitive_x (r, env, "null?",    np_null_p,    1, 0, FALSE);
+    bind_primitive_x (r, env, "car",      np_car,       1, 0, FALSE);
+    bind_primitive_x (r, env, "cdr",      np_cdr,       1, 0, FALSE);
+    bind_primitive_x (r, env, "set-car!", np_set_car_x, 2, 0, FALSE);
+    bind_primitive_x (r, env, "set-cdr!", np_set_cdr_x, 2, 0, FALSE);
+    bind_primitive_x (r, env, "list",     np_list,      0, 0, TRUE);
+    bind_primitive_x (r, env, "reverse",  np_reverse,   1, 0, FALSE);
+    bind_primitive_x (r, env, "reverse!", np_reverse_x, 1, 0, FALSE);
+    bind_primitive_x (r, env, "append!",  np_append_x,  2, 0, FALSE);
+    bind_primitive_x (r, env, "list-ref", np_list_ref,  2, 0, FALSE);
 }

@@ -10,7 +10,7 @@ R_BEGIN_DECLS
 typedef struct RNumberReader RNumberReader;
 
 struct RNumberReader {
-    RState*       state;
+    RState*       r;
 
     rconstcstring begin;
     rconstcstring end;
@@ -21,7 +21,7 @@ struct RNumberReader {
     ruint         radix;
 };
 
-void  r_number_reader_init (RState* state,
+void  r_number_reader_init (RState* r,
                             RNumberReader* reader);
 rsexp r_number_read        (RNumberReader* reader,
                             rconstcstring text);

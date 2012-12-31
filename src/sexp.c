@@ -7,32 +7,32 @@
 
 #include <gc/gc.h>
 
-static rsexp write_special_const (RState* state, rsexp port, rsexp obj)
+static rsexp write_special_const (RState* r, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
         "#f", "#t", "()", "#<eof>", "#<unspecified>",
         "#<undefined>", "#<failure>"
     };
 
-    return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
+    return r_port_puts (r, port, str [obj >> R_TAG_BITS]);
 }
 
-static rsexp display_special_const (RState* state, rsexp port, rsexp obj)
+static rsexp display_special_const (RState* r, rsexp port, rsexp obj)
 {
 
     static rconstcstring str[] = {
         "#f", "#t", "()", "", "", "", ""
     };
 
-    return r_port_puts (state, port, str [obj >> R_TAG_BITS]);
+    return r_port_puts (r, port, str [obj >> R_TAG_BITS]);
 }
 
-static rsexp write_smi (RState* state, rsexp port, rsexp obj)
+static rsexp write_smi (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_printf (state, port, "%d", r_int_from_sexp (obj));
+    return r_port_printf (r, port, "%d", r_int_from_sexp (obj));
 }
 
-static rsexp write_char (RState* state, rsexp port, rsexp obj)
+static rsexp write_char (RState* r, rsexp port, rsexp obj)
 {
     char ch = r_char_from_sexp (obj);
     rcstring name = NULL;
@@ -49,22 +49,22 @@ static rsexp write_char (RState* state, rsexp port, rsexp obj)
         case '\x7f': name = "delete";    break;
     }
 
-    ensure (r_port_puts (state, port, "#\\"));
+    ensure (r_port_puts (r, port, "#\\"));
 
     if (name)
-        ensure (r_port_puts (state, port, name));
+        ensure (r_port_puts (r, port, name));
     else
-        ensure (r_port_write_char (state, port, ch));
+        ensure (r_port_write_char (r, port, ch));
 
     return R_UNSPECIFIED;
 }
 
-static rsexp display_char (RState* state, rsexp port, rsexp obj)
+static rsexp display_char (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_write_char (state, port, r_char_from_sexp (obj));
+    return r_port_write_char (r, port, r_char_from_sexp (obj));
 }
 
-void init_char_type_info (RState* state)
+void init_char_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -73,10 +73,10 @@ void init_char_type_info (RState* state)
     type.ops.write    = write_char;
     type.ops.display  = display_char;
 
-    init_builtin_type (state, R_TAG_CHAR, &type);
+    init_builtin_type (r, R_TAG_CHAR, &type);
 }
 
-void init_smi_type_info (RState* state)
+void init_smi_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -85,11 +85,11 @@ void init_smi_type_info (RState* state)
     type.ops.write    = write_smi;
     type.ops.display  = write_smi;
 
-    init_builtin_type (state, R_TAG_SMI_EVEN, &type);
-    init_builtin_type (state, R_TAG_SMI_ODD,  &type);
+    init_builtin_type (r, R_TAG_SMI_EVEN, &type);
+    init_builtin_type (r, R_TAG_SMI_ODD,  &type);
 }
 
-void init_special_const_type_info (RState* state)
+void init_special_const_type_info (RState* r)
 {
     RTypeInfo type = { 0 };
 
@@ -98,7 +98,7 @@ void init_special_const_type_info (RState* state)
     type.ops.write    = write_special_const;
     type.ops.display  = display_special_const;
 
-    init_builtin_type (state, R_TAG_SPECIAL_CONST, &type);
+    init_builtin_type (r, R_TAG_SPECIAL_CONST, &type);
 }
 
 ruint r_type_tag (rsexp obj)
@@ -108,7 +108,7 @@ ruint r_type_tag (rsexp obj)
            : r_get_tag (obj);
 }
 
-RTypeInfo* r_type_info (RState* state, rsexp obj)
+RTypeInfo* r_type_info (RState* r, rsexp obj)
 {
-    return &state->builtin_types [r_type_tag (obj)];
+    return &r->builtin_types [r_type_tag (obj)];
 }
