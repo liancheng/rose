@@ -6,6 +6,13 @@
 
 R_BEGIN_DECLS
 
+typedef enum {
+    R_GC_COLOR_WHITE,
+    R_GC_COLOR_GRAY,
+    R_GC_COLOR_BLACK
+}
+RGcColor;
+
 typedef struct RGcState RGcState;
 
 struct RGcState {
@@ -30,9 +37,6 @@ RObject* r_object_alloc    (RState* r,
 void     r_object_free     (RState* r,
                             RObject* obj);
 
-rpointer default_alloc_fn  (rpointer aux,
-                            rpointer ptr,
-                            rsize size);
 void     gc_scope_reset    (RState* r);
 void     gc_init           (RState* r);
 void     gc_finish         (RState* r);

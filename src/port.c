@@ -43,8 +43,8 @@ static rsexp make_port (RState* r,
                         RPortClearCookie clear_fn,
                         RPortMarkCookie mark_fn)
 {
-    rsexp  name_str;
-    rsexp  res;
+    rsexp name_str;
+    rsexp res;
     RPort* port;
 
     r_gc_scope_open (r);
@@ -64,7 +64,7 @@ static rsexp make_port (RState* r,
     }
 
     port->name         = name_str;
-    port->r        = r;
+    port->r            = r;
     port->stream       = stream;
     port->mode         = mode;
     port->cookie       = cookie;
@@ -101,16 +101,16 @@ static void input_string_port_mark (RState* r, rpointer cookie)
 
 typedef struct {
     rcstring buffer;
-    rsize    size;
+    rsize size;
 }
-ROStrCookie;
+OStrCookie;
 
 static void output_string_port_clear (RState* r, rpointer cookie)
 {
-    ROStrCookie* c;
+    OStrCookie* c;
 
     if (cookie) {
-        c = r_cast (ROStrCookie*, cookie);
+        c = r_cast (OStrCookie*, cookie);
         free (c->buffer);
         r_free (r, c);
     }
@@ -129,22 +129,6 @@ static void port_mark (RState* r, rsexp obj)
 
     if (port->cookie_mark)
         port->cookie_mark (r, port->cookie);
-}
-
-void init_port_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RPort);
-    type.name         = "port";
-    type.ops.write    = port_write;
-    type.ops.display  = port_write;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = NULL;
-    type.ops.mark     = port_mark;
-    type.ops.finalize = port_finalize;
-
-    init_builtin_type (r, R_TAG_PORT, &type);
 }
 
 FILE* port_to_stream (rsexp port)
@@ -198,13 +182,13 @@ exit:
 
 rsexp r_open_input_string (RState* r, rsexp string)
 {
-    rsexp    res;
+    rsexp res;
     rpointer input;
-    rsize    size;
-    FILE*    stream;
+    rsize size;
+    FILE* stream;
 
     input = r_cast (rpointer, r_string_to_cstr (string));
-    size  = r_string_length_by_byte (string);
+    size = r_string_length_by_byte (string);
 
     if (size == 0)
         stream = fopen ("/dev/null", "r");
@@ -230,12 +214,12 @@ exit:
 
 rsexp r_open_output_string (RState* r)
 {
-    ROStrCookie* cookie;
-    FILE*        stream;
-    rint         errnum;
-    rsexp        res;
+    OStrCookie* cookie;
+    FILE* stream;
+    rint errnum;
+    rsexp res;
 
-    cookie = r_new0 (r, ROStrCookie);
+    cookie = r_new0 (r, OStrCookie);
 
     if (!cookie) {
         res = R_FAILURE;
@@ -272,9 +256,9 @@ exit:
 
 rsexp r_get_output_string (RState* r, rsexp port)
 {
-    ROStrCookie* cookie;
-    RPort*       port_ptr;
-    rsexp        res;
+    OStrCookie* cookie;
+    RPort* port_ptr;
+    rsexp res;
 
     if (!output_string_port_p (port)) {
         res = R_FAILURE;
@@ -289,7 +273,7 @@ rsexp r_get_output_string (RState* r, rsexp port)
     }
 
     port_ptr = port_from_sexp (port);
-    cookie   = r_cast (ROStrCookie*, port_ptr->cookie);
+    cookie   = r_cast (OStrCookie*, port_ptr->cookie);
 
     res = cookie->buffer
           ? r_string_new (r, cookie->buffer)
@@ -362,10 +346,10 @@ rbool r_output_port_p (rsexp obj)
         && mode_set_p (port_from_sexp (obj), MODE_OUTPUT);
 }
 
-rsexp r_port_vprintf (RState*       r,
-                      rsexp         port,
+rsexp r_port_vprintf (RState* r,
+                      rsexp port,
                       rconstcstring format,
-                      va_list       args)
+                      va_list args)
 {
     rsexp res = R_UNSPECIFIED;
 
@@ -452,10 +436,10 @@ rsexp r_write_char (RState* r, rchar ch)
     return r_port_write_char (r, r_current_input_port (r), ch);
 }
 
-rsexp r_port_vformat (RState*       r,
-                      rsexp         port,
+rsexp r_port_vformat (RState* r,
+                      rsexp port,
                       rconstcstring format,
-                      va_list       args)
+                      va_list args)
 {
     rconstcstring pos;
 
@@ -728,6 +712,17 @@ rsexp np_close_port (RState* r, rsexp args)
 
     return R_UNSPECIFIED;
 }
+
+RTypeInfo port_type = {
+    .size = sizeof (RPort),
+    .name = "port",
+    .ops = {
+        .write = port_write,
+        .display = port_write,
+        .mark = port_mark,
+        .finalize = port_finalize
+    }
+};
 
 void port_init_primitives (RState* r, rsexp* env)
 {

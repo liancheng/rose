@@ -48,22 +48,6 @@ static void opaque_finalize (RState* r, RObject* obj)
         opaque->finalize (r, opaque->opaque);
 }
 
-void init_opaque_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (ROpaque);
-    type.name         = "opaque";
-    type.ops.write    = opaque_write;
-    type.ops.display  = opaque_write;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = opaque_equal_p;
-    type.ops.mark     = opaque_mark;
-    type.ops.finalize = opaque_finalize;
-
-    init_builtin_type (r, R_TAG_OPAQUE, &type);
-}
-
 rsexp r_opaque_new (RState* r,
                     rpointer opaque,
                     ROpaqueGcMark mark_fn,
@@ -91,3 +75,15 @@ rpointer r_opaque_get (rsexp obj)
     assert (r_opaque_p (obj));
     return opaque_from_sexp (obj)->opaque;
 }
+
+RTypeInfo opaque_type = {
+    .size = sizeof (ROpaque),
+    .name = "opaque",
+    .ops = {
+        .write    = opaque_write,
+        .display  = opaque_write,
+        .equal_p  = opaque_equal_p,
+        .mark     = opaque_mark,
+        .finalize = opaque_finalize
+    }
+};

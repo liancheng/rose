@@ -81,22 +81,6 @@ static rbool bytevector_equal_p (RState* r, rsexp lhs, rsexp rhs)
                         lhs_len * sizeof (rbyte));
 }
 
-void init_bytevector_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RBytevector);
-    type.name         = "bytevector";
-    type.ops.write    = bytevector_write;
-    type.ops.display  = bytevector_write;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = bytevector_equal_p;
-    type.ops.mark     = NULL;
-    type.ops.finalize = bytevector_finalize;
-
-    init_builtin_type (r, R_TAG_BYTEVECTOR, &type);
-}
-
 rsexp r_bytevector_new (RState* r, rsize k, rbyte fill)
 {
     RBytevector* res = r_object_new (r, RBytevector, R_TAG_BYTEVECTOR);
@@ -181,3 +165,16 @@ clean:
 exit:
     return res;
 }
+
+RTypeInfo bytevector_type = {
+    .size = sizeof (RBytevector),
+    .name = "bytevector",
+    .ops = {
+        .write = bytevector_write,
+        .display = bytevector_write,
+        .eqv_p = NULL,
+        .equal_p = bytevector_equal_p,
+        .mark = NULL,
+        .finalize = bytevector_finalize
+    }
+};

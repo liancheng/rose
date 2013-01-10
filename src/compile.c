@@ -14,14 +14,14 @@ static rsexp compile (RState* r, rsexp expr, rsexp next);
 
 static rsexp compile_sequence (RState* r, rsexp seq, rsexp next);
 
-static rbool form_eq_p (RState* r, RReservedWord name, rsexp expr)
+static rbool form_eq_p (RState* r, rsexp name, rsexp expr)
 {
-    return r_eq_p (r, reserved (r, name), r_car (expr));
+    return r_eq_p (r, name, r_car (expr));
 }
 
 static rbool tail_p (RState* r, rsexp next)
 {
-    return r_eq_p (r, reserved (r, INS_RETURN), r_car (next));
+    return r_eq_p (r, r->i.return_, r_car (next));
 }
 
 static rbool validate_quotation (RState* r, rsexp expr)
@@ -43,7 +43,7 @@ static rsexp compile_quotation (RState* r, rsexp expr, rsexp next)
 
     r_gc_scope_open (r);
 
-    ensure_or_goto (code = emit_const (r, r_cadr (expr), next), exit);
+    ensure_or_goto (code = emit_constant (r, r_cadr (expr), next), exit);
 
 exit:
     r_gc_scope_close_and_protect (r, code);
@@ -421,36 +421,36 @@ static rsexp compile (RState* r, rsexp expr, rsexp next)
     }
 
     if (!r_pair_p (expr)) {
-        code = emit_const (r, expr, next);
+        code = emit_constant (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_QUOTE, expr)) {
+    if (form_eq_p (r, r->kw.quote, expr)) {
         code = compile_quotation (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_DEFINE, expr)) {
+    if (form_eq_p (r, r->kw.define, expr)) {
         code = compile_definition (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_SET_X, expr)) {
+    if (form_eq_p (r, r->kw.set_x, expr)) {
         code = compile_assignment (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_IF, expr)) {
+    if (form_eq_p (r, r->kw.if_, expr)) {
         code = compile_conditional (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_LAMBDA, expr)) {
+    if (form_eq_p (r, r->kw.lambda, expr)) {
         code = compile_lambda (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, KW_CALL_CC, expr)) {
+    if (form_eq_p (r, r->kw.call_cc, expr)) {
         code = compile_call_cc (r, expr, next);
         goto exit;
     }
@@ -513,7 +513,7 @@ rsexp r_compile_from_port (RState* r, rsexp port)
         if (r_eof_object_p (datum))
             break;
 
-        program = r_cons (r, datum, program);
+        ensure (program = r_cons (r, datum, program));
     }
 
     return r_compile (r, program);

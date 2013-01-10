@@ -12,54 +12,6 @@
 
 R_BEGIN_DECLS
 
-typedef enum {
-    KW_QUOTE,
-    KW_LAMBDA,
-    KW_IF,
-    KW_SET_X,
-    KW_BEGIN,
-    KW_COND,
-    KW_AND,
-    KW_OR,
-    KW_CASE,
-    KW_LET,
-    KW_LET_S,
-    KW_LETREC,
-    KW_DO,
-    KW_DELAY,
-    KW_QUASIQUOTE,
-    KW_ELSE,
-    KW_ARROW,
-    KW_DEFINE,
-    KW_UNQUOTE,
-    KW_UNQUOTE_SPLICING,
-    KW_CALL_CC,
-
-    INS_APPLY,
-    INS_ARG,
-    INS_ASSIGN,
-    INS_BRANCH,
-    INS_CAPTURE_CC,
-    INS_CLOSE,
-    INS_CONST,
-    INS_BIND,
-    INS_FRAME,
-    INS_HALT,
-    INS_REFER,
-    INS_RESTORE_CC,
-    INS_RETURN,
-
-    RESERVED_WORD_COUNT
-}
-RReservedWord;
-
-typedef struct RSymbolState {
-    GHashTable* index_to_symbol;
-    rsize symbol_index;
-    rconstcstring* symbols;
-}
-RSymbolState;
-
 /* Records various execution state of the ROSE interpreter. */
 struct RState {
     /* State of the garbage collector */
@@ -67,9 +19,6 @@ struct RState {
 
     /* State of the virtual machine */
     RVm vm;
-
-    /* State for symbol internalization */
-    RSymbolState symbol_state;
 
     /* Error handling */
     rsexp last_error;
@@ -84,8 +33,37 @@ struct RState {
     rsexp current_output_port;
     rsexp current_error_port;
 
-    /* Reserved words */
-    rsexp reserved [RESERVED_WORD_COUNT];
+    /* Interned keyword symbols */
+    struct {
+        rsexp quote;
+        rsexp lambda;
+        rsexp if_;
+        rsexp set_x;
+        rsexp quasiquote;
+        rsexp define;
+        rsexp unquote;
+        rsexp unquote_splicing;
+        rsexp call_cc;
+    }
+    kw;
+
+    /* Interned instruction name symbols */
+    struct {
+        rsexp apply;
+        rsexp arg;
+        rsexp assign;
+        rsexp branch;
+        rsexp capture_cc;
+        rsexp close;
+        rsexp constant;
+        rsexp bind;
+        rsexp frame;
+        rsexp halt;
+        rsexp refer;
+        rsexp restore_cc;
+        rsexp return_;
+    }
+    i;
 
     /* Type information for builtin types */
     RTypeInfo builtin_types [R_TAG_MAX];
@@ -94,8 +72,6 @@ struct RState {
 void  init_builtin_type (RState* r,
                          RTypeTag tag,
                          RTypeInfo* type);
-rsexp reserved          (RState* r,
-                         RReservedWord index);
 
 R_END_DECLS
 

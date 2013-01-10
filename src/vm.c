@@ -22,7 +22,7 @@ static rsexp pop (RVm* vm)
 
 static rsexp continuation (RState* r, rsexp stack)
 {
-    rsexp var = r_symbol_new_static (r, "v");
+    rsexp var = r_intern_static (r, "v");
     rsexp code = emit_restore_cc (r, stack, var);
     return r_procedure_new (r, code, R_NULL, r_list (r, 1, var));
 }
@@ -55,7 +55,7 @@ static rsexp apply (RState* r, RVm* vm)
     env = r_procedure_env (proc);
     formals = r_procedure_formals (proc);
 
-    vm->next = r_procedure_body (proc);
+    vm->next = body;
     vm->env = env_extend (r, env, formals, vm->args);
     vm->args = R_NULL;
 
@@ -87,7 +87,11 @@ exit:
 
 static rsexp exec_arg (RState* r, RVm* vm)
 {
-    vm->args = r_cons (r, vm->value, vm->args);
+    rsexp args;
+    
+    ensure (args = r_cons (r, vm->value, vm->args));
+
+    vm->args = args;
     vm->next = r_cadr (vm->next);
 
     return vm->value;
@@ -222,11 +226,11 @@ static rsexp single_step (RState* r)
 
 static void install_instruction_executor (RState* r,
                                           RVm* vm,
-                                          RReservedWord ins,
+                                          rsexp ins,
                                           RInstructionExecutor exec)
 {
     g_hash_table_insert (vm->executors,
-                         r_cast (rpointer, reserved (r, ins)),
+                         r_cast (rpointer, ins),
                          r_cast (rpointer, exec));
 }
 
@@ -255,19 +259,19 @@ void vm_init (RState* r)
 
     vm->executors = g_hash_table_new (g_direct_hash, g_direct_equal);
 
-    install_instruction_executor (r, vm, INS_APPLY,      exec_apply);
-    install_instruction_executor (r, vm, INS_ARG,        exec_arg);
-    install_instruction_executor (r, vm, INS_ASSIGN,     exec_assign);
-    install_instruction_executor (r, vm, INS_CAPTURE_CC, exec_capture_cc);
-    install_instruction_executor (r, vm, INS_CONST,      exec_const);
-    install_instruction_executor (r, vm, INS_CLOSE,      exec_close);
-    install_instruction_executor (r, vm, INS_BIND,       exec_bind);
-    install_instruction_executor (r, vm, INS_BRANCH,     exec_branch);
-    install_instruction_executor (r, vm, INS_FRAME,      exec_frame);
-    install_instruction_executor (r, vm, INS_HALT,       exec_halt);
-    install_instruction_executor (r, vm, INS_REFER,      exec_refer);
-    install_instruction_executor (r, vm, INS_RESTORE_CC, exec_restore_cc);
-    install_instruction_executor (r, vm, INS_RETURN,     exec_return);
+    install_instruction_executor (r, vm, r->i.apply,      exec_apply);
+    install_instruction_executor (r, vm, r->i.arg,        exec_arg);
+    install_instruction_executor (r, vm, r->i.assign,     exec_assign);
+    install_instruction_executor (r, vm, r->i.capture_cc, exec_capture_cc);
+    install_instruction_executor (r, vm, r->i.constant,   exec_const);
+    install_instruction_executor (r, vm, r->i.close,      exec_close);
+    install_instruction_executor (r, vm, r->i.bind,       exec_bind);
+    install_instruction_executor (r, vm, r->i.branch,     exec_branch);
+    install_instruction_executor (r, vm, r->i.frame,      exec_frame);
+    install_instruction_executor (r, vm, r->i.halt,       exec_halt);
+    install_instruction_executor (r, vm, r->i.refer,      exec_refer);
+    install_instruction_executor (r, vm, r->i.restore_cc, exec_restore_cc);
+    install_instruction_executor (r, vm, r->i.return_,    exec_return);
 }
 
 void vm_finish (RState* r)
@@ -275,7 +279,7 @@ void vm_finish (RState* r)
     g_hash_table_destroy (r->vm.executors);
 }
 
-rsexp r_run (RState* r, rsexp code)
+rsexp r_eval (RState* r, rsexp code)
 {
     RVm* vm = &r->vm;
 
@@ -287,4 +291,11 @@ rsexp r_run (RState* r, rsexp code)
             return R_FAILURE;
 
     return vm->value;
+}
+
+rsexp r_eval_from_port (RState* r, rsexp port)
+{
+    rsexp code;
+    ensure (code = r_compile_from_port (r, port));
+    return r_eval (r, code);
 }

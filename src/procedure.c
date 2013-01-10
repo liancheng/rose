@@ -24,22 +24,6 @@ static void procedure_mark (RState* r, rsexp obj)
     r_gc_mark (r, procedure->formals);
 }
 
-void init_procedure_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.name         = "procedure";
-    type.size         = sizeof (RProcedure);
-    type.ops.display  = NULL;
-    type.ops.write    = NULL;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = NULL;
-    type.ops.finalize = NULL;
-    type.ops.mark     = procedure_mark;
-
-    init_builtin_type (r, R_TAG_PROCEDURE, &type);
-}
-
 rbool r_procedure_p (rsexp obj)
 {
     return r_type_tag (obj) == R_TAG_PROCEDURE;
@@ -73,3 +57,11 @@ rsexp r_procedure_formals (rsexp obj)
 {
     return procedure_from_sexp (obj)->formals;
 }
+
+RTypeInfo procedure_type = {
+    .name = "procedure",
+    .size = sizeof (RProcedure),
+    .ops = {
+        .mark = procedure_mark
+    }
+};

@@ -14,9 +14,9 @@
 #include <alloca.h>
 #include <assert.h>
 
-static rsexp read_datum (RDatumReader* reader);
+static rsexp read_datum (Reader* reader);
 
-static rint feed_lexer (RDatumReader* reader)
+static rint feed_lexer (Reader* reader)
 {
     QUEX_NAME (buffer_fill_region_prepare) (&reader->lexer);
 
@@ -34,7 +34,7 @@ static rint feed_lexer (RDatumReader* reader)
     return len;
 }
 
-static RToken* next_token (RDatumReader* reader)
+static RToken* next_token (Reader* reader)
 {
     rtokenid id;
     RToken*  token;
@@ -50,13 +50,13 @@ static RToken* next_token (RDatumReader* reader)
     return token;
 }
 
-static void consume (RDatumReader* reader)
+static void consume (Reader* reader)
 {
     if (reader->lookahead)
         reader->lookahead = NULL;
 }
 
-static RToken* lookahead (RDatumReader* reader)
+static RToken* lookahead (Reader* reader)
 {
     if (!reader->lookahead)
         reader->lookahead = next_token (reader);
@@ -64,7 +64,7 @@ static RToken* lookahead (RDatumReader* reader)
     return reader->lookahead;
 }
 
-static rbool match (RDatumReader* reader, rtokenid id)
+static rbool match (Reader* reader, rtokenid id)
 {
     if (id == lookahead (reader)->_id) {
         consume (reader);
@@ -93,8 +93,7 @@ static rsexp lexeme_to_char (char const* text)
     return r_char_to_sexp (res);
 }
 
-static void syntax_error (RDatumReader* reader,
-                          char const*   message)
+static void syntax_error (Reader* reader, char const* message)
 {
     rsexp error;
 
@@ -110,7 +109,7 @@ static void syntax_error (RDatumReader* reader,
     r_gc_scope_close_and_protect (reader->r, error);
 }
 
-static rsexp read_vector (RDatumReader* reader)
+static rsexp read_vector (Reader* reader)
 {
     rsexp datum;
     rsexp list;
@@ -138,7 +137,7 @@ static rsexp read_vector (RDatumReader* reader)
             goto clean;
         }
 
-        list = r_cons (reader->r, datum, list);
+        ensure_or_goto (list = r_cons (reader->r, datum, list), clean);
     }
 
     consume (reader);
@@ -152,7 +151,7 @@ exit:
     return res;
 }
 
-static rsexp read_full_list (RDatumReader* reader)
+static rsexp read_full_list (Reader* reader)
 {
     rsexp res;
     rsexp datum;
@@ -175,7 +174,7 @@ static rsexp read_full_list (RDatumReader* reader)
 
     r_gc_scope_open (reader->r);
 
-    res = r_cons (reader->r, datum, R_NULL);
+    ensure_or_goto (res = r_cons (reader->r, datum, R_NULL), clean);
 
     while (TRUE) {
         rtokenid id = lookahead (reader)->_id;
@@ -191,7 +190,7 @@ static rsexp read_full_list (RDatumReader* reader)
             goto clean;
         }
 
-        res = r_cons (reader->r, datum, res);
+        ensure_or_goto (res = r_cons (reader->r, datum, res), clean);
     }
 
     res = r_reverse_x (reader->r, res);
@@ -220,27 +219,31 @@ exit:
     return res;
 }
 
-static rsexp read_abbreviation (RDatumReader* reader)
+static rsexp read_abbreviation (Reader* reader)
 {
+    RState* r;
     rsexp prefix;
     rsexp datum;
-    rsexp res = R_FAILURE;
+    rsexp res;
+
+    r = reader->r;
+    res = R_FAILURE;
 
     switch (lookahead (reader)->_id) {
         case TKN_QUOTE:
-            prefix = reserved (reader->r, KW_QUOTE);
+            prefix = r->kw.quote;
             break;
 
         case TKN_BACKTICK:
-            prefix = reserved (reader->r, KW_QUASIQUOTE);
+            prefix = r->kw.quasiquote;
             break;
 
         case TKN_COMMA:
-            prefix = reserved (reader->r, KW_UNQUOTE);
+            prefix = r->kw.unquote;
             break;
 
         case TKN_COMMA_AT:
-            prefix = reserved (reader->r, KW_UNQUOTE_SPLICING);
+            prefix = r->kw.unquote_splicing;
             break;
 
         default:
@@ -255,27 +258,27 @@ static rsexp read_abbreviation (RDatumReader* reader)
         goto exit;
     }
 
-    res = r_list (reader->r, 2, prefix, datum);
+    res = r_list (r, 2, prefix, datum);
 
 exit:
     return res;
 }
 
-static rsexp read_list (RDatumReader* reader)
+static rsexp read_list (Reader* reader)
 {
     return TKN_LP == lookahead (reader)->_id
            ? read_full_list (reader)
            : read_abbreviation (reader);
 }
 
-static rsexp read_compound_datum (RDatumReader* reader)
+static rsexp read_compound_datum (Reader* reader)
 {
     return TKN_HASH_LP == lookahead (reader)->_id
            ? read_vector (reader)
            : read_list (reader);
 }
 
-static rsexp read_bytevector (RDatumReader* reader)
+static rsexp read_bytevector (Reader* reader)
 {
     rsexp bytes;
     rsexp datum;
@@ -294,7 +297,7 @@ static rsexp read_bytevector (RDatumReader* reader)
             goto exit;
         }
 
-        bytes = r_cons (reader->r, datum, bytes);
+        ensure_or_goto (bytes = r_cons (reader->r, datum, bytes), exit);
     }
 
     if (!match (reader, TKN_RP))
@@ -307,7 +310,7 @@ exit:
     return res;
 }
 
-static rsexp read_simple_datum (RDatumReader* reader)
+static rsexp read_simple_datum (Reader* reader)
 {
     RToken*  token;
     rsexp    datum;
@@ -342,7 +345,7 @@ static rsexp read_simple_datum (RDatumReader* reader)
             break;
 
         case TKN_IDENTIFIER:
-            datum = r_symbol_new (reader->r, text);
+            datum = r_intern (reader->r, text);
             break;
 
         case TKN_HASH_U8_LP:
@@ -360,7 +363,7 @@ exit:
     return datum;
 }
 
-static rsexp read_datum (RDatumReader* reader)
+static rsexp read_datum (Reader* reader)
 {
     rsexp datum;
 
@@ -375,7 +378,7 @@ static rsexp read_datum (RDatumReader* reader)
 
 static void reader_finalize (RState* r, rpointer obj)
 {
-    RDatumReader* reader = r_cast (RDatumReader*, obj);
+    Reader* reader = r_cast (Reader*, obj);
 
     assert (r == reader->r);
 
@@ -387,10 +390,10 @@ static void reader_finalize (RState* r, rpointer obj)
 
 rsexp r_reader_new (RState* r, rsexp port)
 {
-    RDatumReader* reader;
-    rsexp         res = R_FAILURE;
+    Reader* reader;
+    rsexp res = R_FAILURE;
 
-    reader = r_new0 (r, RDatumReader);
+    reader = r_new0 (r, Reader);
 
     if (!reader)
         goto exit;
@@ -416,7 +419,7 @@ exit:
 
 rsexp r_read (rsexp reader)
 {
-    RDatumReader* r = r_cast (RDatumReader*, r_opaque_get (reader));
+    Reader* r = r_cast (Reader*, r_opaque_get (reader));
     return lookahead (r)->_id == TKN_TERMINATION ? R_EOF : read_datum (r);
 }
 

@@ -6,8 +6,10 @@
 
 R_BEGIN_DECLS
 
-rsexp r_run (RState* r,
-             rsexp code);
+rsexp r_eval           (RState* r,
+                        rsexp code);
+rsexp r_eval_from_port (RState* r,
+                        rsexp port);
 
 R_END_DECLS
 

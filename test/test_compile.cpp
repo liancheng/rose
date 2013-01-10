@@ -20,13 +20,13 @@ TEST_F (test_compile, reference)
 
 TEST_F (test_compile, constant)
 {
-    EXPECT_STREQ ("(const 1 (halt))", from ("1 "));
+    EXPECT_STREQ ("(constant 1 (halt))", from ("1 "));
 }
 
 TEST_F (test_compile, quotation)
 {
-    EXPECT_STREQ ("(const x (halt))", from ("'x "));
-    EXPECT_STREQ ("(const x (halt))", from ("(quote x)"));
+    EXPECT_STREQ ("(constant x (halt))", from ("'x "));
+    EXPECT_STREQ ("(constant x (halt))", from ("(quote x)"));
 }
 
 TEST_F (test_compile, sequence)
@@ -36,26 +36,26 @@ TEST_F (test_compile, sequence)
 
 TEST_F (test_compile, assignment)
 {
-    EXPECT_STREQ ("(const 1 (assign x (halt)))", from ("(set! x 1)"));
+    EXPECT_STREQ ("(constant 1 (assign x (halt)))", from ("(set! x 1)"));
 }
 
 TEST_F (test_compile, variable_definition)
 {
-    EXPECT_STREQ ("(const 1 (bind x (halt)))", from ("(define x 1)"));
+    EXPECT_STREQ ("(constant 1 (bind x (halt)))", from ("(define x 1)"));
 }
 
 TEST_F (test_compile, procedure_definition)
 {
-    EXPECT_STREQ ("(close () (const 1 (return)) (bind f (halt)))",
+    EXPECT_STREQ ("(close () (constant 1 (return)) (bind f (halt)))",
                   from ("(define (f) 1)"));
 
-    EXPECT_STREQ ("(close x (const 1 (return)) (bind f (halt)))",
+    EXPECT_STREQ ("(close x (constant 1 (return)) (bind f (halt)))",
                   from ("(define (f . x) 1)"));
 
-    EXPECT_STREQ ("(close (x . y) (const 1 (return)) (bind f (halt)))",
+    EXPECT_STREQ ("(close (x . y) (constant 1 (return)) (bind f (halt)))",
                   from ("(define (f x . y) 1)"));
 
-    EXPECT_STREQ ("(close (x y) (const 1 (return)) (bind f (halt)))",
+    EXPECT_STREQ ("(close (x y) (constant 1 (return)) (bind f (halt)))",
                   from ("(define (f x y) 1)"));
 }
 
@@ -68,10 +68,10 @@ TEST_F (test_compile, conditional)
 
     rsexp halt = emit_halt (r);
     rsexp expected =
-        emit_const (r, R_FALSE,
+        emit_constant (r, R_FALSE,
                 emit_branch (r,
-                    emit_const (r, R_TRUE, halt),
-                    emit_const (r, R_UNSPECIFIED, halt)));
+                    emit_constant (r, R_TRUE, halt),
+                    emit_constant (r, R_UNSPECIFIED, halt)));
 
     EXPECT_STREQ (to_cstr (expected), from ("(if #f #t)"));
 }

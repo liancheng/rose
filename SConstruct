@@ -2,10 +2,10 @@ from os import environ
 
 env = Environment(tools=['default', 'quex'],
                   ENV=environ,
-                  CC=ARGUMENTS.get('CC', 'clang'),
-                  CXX=ARGUMENTS.get('CXX', 'clang++'),
+                  CC=ARGUMENTS.get('CC', 'gcc'),
+                  CXX=ARGUMENTS.get('CXX', 'g++'),
                   LIBS=['gmp', 'm'],
-                  CPPFLAGS='-ggdb -Wall',
+                  CPPFLAGS='-ggdb -Wall -Werror',
                   CPPDEFINES='_GNU_SOURCE',
                   CPPPATH=['#include/',
                            '#build/src/',

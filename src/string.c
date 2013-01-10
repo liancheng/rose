@@ -1,23 +1,12 @@
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "detail/string.h"
 #include "rose/gc.h"
 #include "rose/port.h"
-#include "rose/string.h"
 
 #include <assert.h>
 #include <stdarg.h>
 #include <string.h>
-
-typedef struct RString RString;
-
-struct RString {
-    R_OBJECT_HEADER
-    rsize    length;
-    rcstring data;
-};
-
-#define string_from_sexp(obj)   (r_cast (RString*, (obj)))
-#define string_to_sexp(string)  (r_cast (rsexp, (string)))
 
 static rsexp string_write (RState* r, rsexp port, rsexp obj)
 {
@@ -56,22 +45,6 @@ static rcstring cstring_dup (RState* r, rconstcstring str)
         memcpy (res, str, size + 1);
 
     return res;
-}
-
-void init_string_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RString);
-    type.name         = "string";
-    type.ops.write    = string_write;
-    type.ops.display  = string_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = r_string_equal_p;
-    type.ops.mark     = NULL;
-    type.ops.finalize = string_finalize;
-
-    init_builtin_type (r, R_TAG_STRING, &type);
 }
 
 rsexp r_string_new (RState* r, rconstcstring str)
@@ -192,3 +165,14 @@ rsexp r_string_printf (RState* r, rconstcstring format, ...)
 
     return res;
 }
+
+RTypeInfo string_type = {
+    .size = sizeof (RString),
+    .name = "string",
+    .ops = {
+        .write = string_write,
+        .display = string_display,
+        .equal_p = r_string_equal_p,
+        .finalize = string_finalize
+    }
+};

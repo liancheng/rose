@@ -9,29 +9,27 @@
 
 R_BEGIN_DECLS
 
-#define r_inline_error_p(obj)   (r_get_tag (obj) == R_TAG_INLINE_ERROR)
+typedef enum {
+    R_ERR_GRP_COMPILE,
+    R_ERR_GRP_RUNTIME,
+    R_ERR_GRP_MISC
+}
+RErrorGroup;
 
-#define MAKE_INLINE_ERROR(n)    (((n) << R_TAG_BITS) | R_TAG_INLINE_ERROR)
-#define R_ERROR_INTERNAL        0
-#define R_ERROR_API             1024
-#define R_ERROR_USER            4096
-#define R_ERROR_UNKNOWN         (MAKE_INLINE_ERROR (R_ERROR_API + 0))
-#define R_ERROR_OOM             (MAKE_INLINE_ERROR (R_ERROR_API + 1))
+typedef enum {
+#define ERROR_DESC(group, enum_name, desc) enum_name,
+#include "rose/error_desc.inc"
+#undef ERROR_DESC
+}
+RErrorCode;
 
-#define R_ERR_COMPILE           10000
-#define R_ERR_BAD_SYNTAX        (R_ERR_COMPILE + 1)
-#define R_ERR_BAD_VARIABLE      (R_ERR_COMPILE + 2)
-#define R_ERR_BAD_FORMALS       (R_ERR_COMPILE + 3)
-#define R_ERR_COMPILE_MAX       20000
+typedef struct RErrorDesc RErrorDesc;
 
-#define R_ERR_RUNTIME           20000
-#define R_ERR_WRONG_TYPE_ARG    (R_ERR_RUNTIME + 1)
-#define R_ERR_UNKNOWN_INSTR     (R_ERR_RUNTIME + 2)
-#define R_ERR_UNBOUND_VAR       (R_ERR_RUNTIME + 3)
-#define R_ERR_WRONG_APPLY       (R_ERR_RUNTIME + 4)
-#define R_ERR_WRONG_ARG_NUM     (R_ERR_RUNTIME + 5)
-#define R_ERR_INDEX_OVERFLOW    (R_ERR_RUNTIME + 6)
-#define R_ERR_RUNTIME_MAX       30000
+struct RErrorDesc {
+    RErrorGroup group;
+    RErrorCode code;
+    rconstcstring desc;
+};
 
 rsexp r_error_new              (RState* r,
                                 rsexp message,
@@ -48,7 +46,7 @@ rsexp r_error_format           (RState* r,
 rsexp r_error                  (RState* r,
                                 rconstcstring message);
 rsexp r_error_code             (RState* r,
-                                rint error_code,
+                                RErrorCode error_code,
                                 ...);
 rsexp r_last_error             (RState* r);
 rsexp r_set_last_error_x       (RState* r,
@@ -56,6 +54,7 @@ rsexp r_set_last_error_x       (RState* r,
 rsexp r_clear_last_error_x     (RState* r);
 rsexp r_inherit_errno_x        (RState* r,
                                 rint errnum);
+void r_error_no_memory         (RState* r);
 
 typedef struct RNestedJump RNestedJump;
 

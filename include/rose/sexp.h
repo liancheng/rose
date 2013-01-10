@@ -37,7 +37,6 @@ typedef rword rsexp;
  *
  * Immediate types:
  *
- * - \c #b001: inline error
  * - \c #b010: character (see below)
  * - \c #b011: even small integer (SMI)
  * - \c #b101: special constant (see below)
@@ -53,7 +52,6 @@ typedef enum {
     R_TAG_SMI_EVEN      = 0x03,     /* #b011 */
     R_TAG_SPECIAL_CONST = 0x04,     /* #b100 */
     R_TAG_SYMBOL        = 0x05,     /* #b101 */
-    R_TAG_INLINE_ERROR  = 0x06,     /* #b110 */
     R_TAG_SMI_ODD       = 0x07,     /* #b111 */
 
     /* Boxed types */
@@ -94,16 +92,17 @@ struct RObject {
 #define R_SMI_BITS              2
 #define R_SMI_MASK              0x03    /* #b011 */
 
-#define MAKE_SPECIAL_CONST(n)   (((n) << R_TAG_BITS) | R_TAG_SPECIAL_CONST)
-#define R_FALSE                 (MAKE_SPECIAL_CONST (0))
-#define R_TRUE                  (MAKE_SPECIAL_CONST (1))
-#define R_NULL                  (MAKE_SPECIAL_CONST (2))
-#define R_EOF                   (MAKE_SPECIAL_CONST (3))
-#define R_UNSPECIFIED           (MAKE_SPECIAL_CONST (4))
-#define R_UNDEFINED             (MAKE_SPECIAL_CONST (5))
-#define R_FAILURE               (MAKE_SPECIAL_CONST (6))
-
+#define r_set_tag_x(obj, tag)   (((obj) << R_TAG_BITS) | (tag))
 #define r_get_tag(obj)          ((obj) & R_TAG_MASK)
+
+#define make_special_const(n)   (r_set_tag_x ((n), R_TAG_SPECIAL_CONST))
+#define R_FALSE                 (make_special_const (0u))
+#define R_TRUE                  (make_special_const (1u))
+#define R_NULL                  (make_special_const (2u))
+#define R_EOF                   (make_special_const (3u))
+#define R_UNSPECIFIED           (make_special_const (4u))
+#define R_UNDEFINED             (make_special_const (5u))
+#define R_FAILURE               (make_special_const (6u))
 
 #define r_boxed_p(obj)          (r_get_tag (obj) == R_TAG_BOXED)
 #define r_immediate_p(obj)      (!(r_boxed_p (obj)))
@@ -121,8 +120,8 @@ struct RObject {
 
 #define r_bool_to_sexp(b)       ((b) ? R_TRUE : R_FALSE)
 #define r_bool_from_sexp(obj)   (r_false_p(obj) ? FALSE : TRUE)
-#define r_char_to_sexp(c)       (((c) << R_TAG_BITS) | R_TAG_CHAR)
-#define r_char_from_sexp(obj)   ((obj) >> R_TAG_BITS)
+#define r_char_to_sexp(c)       (r_cast (rsexp, r_set_tag_x ((c), R_TAG_CHAR)))
+#define r_char_from_sexp(obj)   (r_cast (rchar, ((obj) >> R_TAG_BITS)))
 
 #define r_failure_p(obj)        ((obj) == R_FAILURE)
 

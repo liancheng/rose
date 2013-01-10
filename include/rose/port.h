@@ -30,7 +30,7 @@ rsexp    r_port_vprintf              (RState* r,
                                       rsexp port,
                                       rconstcstring format,
                                       va_list args);
-rsexp    r_port_printf               (RState*       r,
+rsexp    r_port_printf               (RState* r,
                                       rsexp port,
                                       rconstcstring format,
                                       ...);

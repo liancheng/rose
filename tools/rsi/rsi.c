@@ -5,11 +5,9 @@
 int main (int argc, char* argv[])
 {
     RState* r;
-    rsexp   code;
-    rsexp   result;
-    rint    exit_code;
+    rsexp result;
+    int exit_code;
 
-    exit_code = EXIT_FAILURE;
     r = r_state_open ();
 
     if (!r) {
@@ -17,31 +15,19 @@ int main (int argc, char* argv[])
         goto exit;
     }
 
-    if (argc > 1) {
-        rsexp source = r_open_input_file (r, argv [1]);
-        r_set_current_input_port_x (r, source);
-    }
+    if (argc > 1)
+        r_set_current_input_port_x
+            (r, r_open_input_file (r, argv [1]));
 
-    code = r_compile_from_port (r, r_current_input_port (r));
-
-    if (r_failure_p (code)) {
-        rsexp error = r_last_error (r);
-        rsexp error_code = r_car (r_error_object_irritants (error));
-        rsexp message = r_error_object_message (error);
-        r_format (r, "error (~a): ~a~%", error_code, message);
-        goto clean;
-    }
-
-    r_format (r, "compiled code: ~s~%", code);
-
-    result = r_run (r, code);
-    r_format (r, "result: ~s~%", result);
+    result = r_eval_from_port (r, r_current_input_port (r));
 
     if (r_failure_p (result)) {
-        r_format (r, "runtime error: ~a~%", r_last_error (r));
+        r_format (r, "Error: ~a~%", r_last_error (r));
+        exit_code = EXIT_FAILURE;
         goto clean;
     }
 
+    r_format (r, "~s~%", result);
     exit_code = EXIT_SUCCESS;
 
 clean:

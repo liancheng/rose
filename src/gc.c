@@ -13,13 +13,6 @@
 #define GC_ARENA_CHUNK_SIZE     256
 #define GC_DEFAULT_THRESHOLD    128
 
-typedef enum {
-    R_GC_COLOR_WHITE,
-    R_GC_COLOR_GRAY,
-    R_GC_COLOR_BLACK
-}
-RGcColor;
-
 #define gc_white_p(obj)     ((obj)->gc_color == R_GC_COLOR_WHITE)
 #define gc_gray_p(obj)      ((obj)->gc_color == R_GC_COLOR_GRAY)
 #define gc_black_p(obj)     ((obj)->gc_color == R_GC_COLOR_BLACK)
@@ -126,16 +119,17 @@ static void gc_mark_phase (RState* r)
 
 static void gc_sweep_phase (RState* r)
 {
-    RObject   dummy = { 0 };
-    RGcState* gc    = &r->gc;
-    RObject*  obj   = gc->chrono_list;
-    RObject*  prev  = &dummy;
+    RObject dummy = { 0 };
+    RGcState* gc = &r->gc;
+    RObject* obj = gc->chrono_list;
+    RObject* prev = &dummy;
 
     prev->chrono_next = obj;
     gc->n_live_after_mark = 0u;
 
     while (obj) {
-        assert (!gc_gray_p (obj));
+        assert (!gc_gray_p (obj) &&
+                "no gray object during sweep phase");
 
         if (gc_black_p (obj)) {
             gc_paint_white (obj);
@@ -215,25 +209,12 @@ void r_full_gc (RState* r)
     gc_sweep_phase (r);
 }
 
-rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
-{
-    if (0 == size) {
-        free (ptr);
-        return NULL;
-    }
-
-    if (NULL == ptr)
-        return malloc (size);
-
-    return realloc (ptr, size);
-}
-
 rpointer r_realloc (RState* r, rpointer ptr, rsize size)
 {
     rpointer res = r->alloc_fn (r->alloc_aux, ptr, size);
 
     if (!res) {
-        r_set_last_error_x (r, R_ERROR_OOM);
+        r_error_no_memory (r);
         res = NULL;
     }
 
@@ -262,21 +243,29 @@ void r_free (RState* r, rpointer ptr)
 
 RObject* r_object_alloc (RState* r, RTypeTag type_tag)
 {
-    RGcState*  gc;
+    RGcState* gc;
     RTypeInfo* type;
-    RObject*   obj;
+    RObject* obj;
 
     gc = &r->gc;
 
+    /* Allocated a lot objects, perform GC */
     if (gc->n_live - gc->n_live_after_mark > gc->threshold)
         r_full_gc (r);
 
     type = &r->builtin_types [type_tag];
-    obj  = r_alloc (r, type->size);
+    obj = r_alloc (r, type->size);
 
+    /* If out of memory... */
     if (obj == NULL) {
-        r_set_last_error_x (r, R_ERROR_OOM);
-        return NULL;
+        /* then perform GC and retry */
+        r_full_gc (r);
+        obj = r_alloc (r, type->size);
+
+        if (obj == NULL) {
+            r_error_no_memory (r);
+            return NULL;
+        }
     }
 
     memset (r_cast (rpointer, obj), 0, type->size);
@@ -294,7 +283,7 @@ RObject* r_object_alloc (RState* r, RTypeTag type_tag)
 
 void r_object_free (RState* r, RObject* obj)
 {
-    RTypeInfo*  type;
+    RTypeInfo* type;
     RGcFinalize finalize;
 
     type = r_type_info (r, object_to_sexp (obj));

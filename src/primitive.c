@@ -8,13 +8,16 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#define PRIMITIVE_FIELDS\
+        rsexp name;\
+        RPrimitiveFunc func;\
+        rsize required;\
+        rsize optional;\
+        rbool rest_p;
+
 struct RPrimitive {
     R_OBJECT_HEADER
-    rsexp name;
-    RPrimitiveFunc func;
-    rsize required;
-    rsize optional;
-    rbool rest_p;
+    PRIMITIVE_FIELDS
 };
 
 #define primitive_to_sexp(obj)   (r_cast (rsexp, (obj)))
@@ -69,7 +72,7 @@ rsexp r_primitive_new (RState* r,
 {
     RPrimitive* prim = r_object_new (r, RPrimitive, R_TAG_PRIMITIVE);
 
-    prim->name     = r_symbol_new (r, name);
+    prim->name     = r_intern (r, name);
     prim->func     = func;
     prim->required = required;
     prim->optional = optional;
@@ -92,22 +95,6 @@ static rsexp primitive_display (RState* r, rsexp port, rsexp obj)
 {
     return r_port_format (r, port, "#<primitive:~s>",
                           primitive_from_sexp (obj)->name);
-}
-
-void init_primitive_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RPrimitive);
-    type.name         = "primitive";
-    type.ops.write    = primitive_write;
-    type.ops.display  = primitive_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = NULL;
-    type.ops.mark     = NULL;
-    type.ops.finalize = NULL;
-
-    init_builtin_type (r, R_TAG_PRIMITIVE, &type);
 }
 
 rsexp r_primitive_apply (RState* r, rsexp obj, rsexp args)
@@ -138,3 +125,12 @@ void r_match_args (RState* r,
     r_vmatch_args (r, args, required, optional, rest_p, va);
     va_end (va);
 }
+
+RTypeInfo primitive_type = {
+    .size = sizeof (RPrimitive),
+    .name = "primitive",
+    .ops = {
+        .write    = primitive_write,
+        .display  = primitive_display
+    }
+};

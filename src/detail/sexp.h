@@ -34,6 +34,12 @@ ruint      r_type_tag  (rsexp obj);
 RTypeInfo* r_type_info (RState* r,
                         rsexp obj);
 
+#define STATIC_OBJECT_HEADER(tag)\
+        .type_tag = (tag),\
+        .gc_color = R_GC_COLOR_BLACK,\
+        .gray_next = NULL,\
+        .chrono_next = NULL,
+
 #define object_from_sexp(obj)   (r_cast (RObject*, (obj)))
 #define object_to_sexp(obj)     (r_cast (rsexp, (obj)))
 

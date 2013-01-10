@@ -79,9 +79,9 @@ static rsexp vvector (RState* r, rsize k, va_list args)
 
 static rbool vector_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    rsize  k;
-    rsize  lhs_len;
-    rsize  rhs_len;
+    rsize k;
+    rsize lhs_len;
+    rsize rhs_len;
     rsexp* lhs_data;
     rsexp* rhs_data;
 
@@ -123,22 +123,6 @@ static void vector_mark (RState* r, rsexp obj)
 
     for (i = 0; i < length; ++i)
         r_gc_mark (r, r_vector_ref (r, obj, i));
-}
-
-void init_vector_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RVector);
-    type.name         = "vector";
-    type.ops.write    = vector_write;
-    type.ops.display  = vector_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = vector_equal_p;
-    type.ops.mark     = vector_mark;
-    type.ops.finalize = vector_finalize;
-
-    init_builtin_type (r, R_TAG_VECTOR, &type);
 }
 
 rsexp r_vector_new (RState* r, rsize k, rsexp fill)
@@ -204,23 +188,17 @@ rsexp r_vector_length (rsexp vector)
 
 rsexp r_list_to_vector (RState* r, rsexp list)
 {
-    rsexp res;
+    rsexp length, res;
     rsize i;
 
-    res = r_length (r, list);
-
-    if (r_failure_p (res))
-        goto exit;
-
-    res = r_vector_new (r,
-                        r_uint_from_sexp (res),
-                        R_UNDEFINED);
-
-    if (r_failure_p (res))
-        goto exit;
+    ensure_or_goto (length = r_length (r, list), exit);
+    ensure_or_goto (res = r_vector_new (r,
+                                        r_uint_from_sexp (length),
+                                        R_UNDEFINED),
+                    exit);
 
     for (i = 0; !r_null_p (list); ++i) {
-        r_vector_set_x (r, res, i, r_car (list));
+        ensure_or_goto (r_vector_set_x (r, res, i, r_car (list)), exit);
         list = r_cdr (list);
     }
 
@@ -231,18 +209,14 @@ exit:
 rsexp r_vector_to_list (RState* r, rsexp vector)
 {
     rsize i;
-    rsexp res;
+    rsexp datum, res;
     rsize length = r_uint_from_sexp (r_vector_length (vector));
 
     r_gc_scope_open (r);
 
     for (i = length, res = R_NULL; i > 0; --i) {
-        res = r_cons (r, r_vector_ref (r, vector, i - 1), res);
-
-        if (r_failure_p (res)) {
-            res = R_FAILURE;
-            goto exit;
-        }
+        ensure_or_goto (datum = r_vector_ref (r, vector, i - 1), exit);
+        ensure_or_goto (res = r_cons (r, datum, res), exit);
     }
 
 exit:
@@ -250,3 +224,15 @@ exit:
 
     return res;
 }
+
+RTypeInfo vector_type = {
+    .size = sizeof (RVector),
+    .name = "vector",
+    .ops = {
+        .write = vector_write,
+        .display = vector_display,
+        .equal_p = vector_equal_p,
+        .mark = vector_mark,
+        .finalize = vector_finalize
+    }
+};

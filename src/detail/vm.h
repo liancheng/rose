@@ -3,6 +3,7 @@
 
 #include "rose/sexp.h"
 #include "rose/state.h"
+#include "rose/vm.h"
 
 #include <glib.h>
 

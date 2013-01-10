@@ -10,7 +10,7 @@ protected:
     {
         rsexp port = r_open_input_file (r, filename);
         rsexp dag = r_compile_from_port (r, port);
-        return r_run (r, dag);
+        return r_eval (r, dag);
     }
 };
 

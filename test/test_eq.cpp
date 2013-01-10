@@ -12,9 +12,7 @@ class test_equal_p : public fixture_base {};
 
 TEST_F (test_eq_p, symbol)
 {
-    EXPECT_TRUE (r_eq_p (r,
-                         r_symbol_new (r, "a"),
-                         r_symbol_new (r, "a")));
+    EXPECT_TRUE (r_eq_p (r, r_intern (r, "a"), r_intern (r, "a")));
 }
 
 TEST_F (test_eq_p, character)

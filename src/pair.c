@@ -85,23 +85,6 @@ static rbool pair_equal_p (RState* r, rsexp lhs, rsexp rhs)
            r_equal_p (r, r_cdr (lhs), r_cdr (rhs));
 }
 
-void init_pair_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RPair);
-    type.name         = "pair";
-    type.ops.write    = pair_write;
-    type.ops.display  = pair_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = pair_equal_p;
-    type.ops.mark     = pair_mark;
-    type.ops.finalize = NULL;
-
-    init_builtin_type (r, R_TAG_PAIR, &type);
-}
-
-
 rbool r_pair_p (rsexp obj)
 {
     return r_type_tag (obj) == R_TAG_PAIR;
@@ -151,7 +134,8 @@ rsexp r_reverse (RState* r, rsexp list)
             goto exit;
         }
 
-        res = r_cons (r, r_car (list), res);
+        ensure_or_goto (res = r_cons (r, r_car (list), res), exit);
+
         list = r_cdr (list);
     }
 
@@ -236,14 +220,8 @@ rsexp r_vlist (RState* r, rsize k, va_list args)
 
     r_gc_scope_open (r);
 
-    for (i = 0; i < k; ++i) {
-        res = r_cons (r, va_arg (args, rsexp), res);
-
-        if (r_failure_p (res)) {
-            res = R_FAILURE;
-            goto exit;
-        }
-    }
+    for (i = 0; i < k; ++i)
+        ensure_or_goto (res = r_cons (r, va_arg (args, rsexp), res), exit);
 
     res = r_reverse_x (r, res);
 
@@ -425,3 +403,16 @@ void pair_init_primitives (RState* r, rsexp* env)
     bind_primitive_x (r, env, "append!",  np_append_x,  2, 0, FALSE);
     bind_primitive_x (r, env, "list-ref", np_list_ref,  2, 0, FALSE);
 }
+
+RTypeInfo pair_type = {
+    .size = sizeof (RPair),
+    .name = "pair",
+    .ops = {
+        .write = pair_write,
+        .display = pair_display,
+        .eqv_p = NULL,
+        .equal_p = pair_equal_p,
+        .mark = pair_mark,
+        .finalize = NULL
+    }
+};

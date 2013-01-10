@@ -7,113 +7,97 @@
 #include <string.h>
 #include <stdlib.h>
 
-void init_bytevector_type_info    (RState* r);
-void init_char_type_info          (RState* r);
-void init_procedure_type_info     (RState* r);
-void init_error_type_info         (RState* r);
-void init_fixnum_type_info        (RState* r);
-void init_flonum_type_info        (RState* r);
-void init_opaque_type_info        (RState* r);
-void init_pair_type_info          (RState* r);
-void init_port_type_info          (RState* r);
-void init_primitive_type_info     (RState* r);
-void init_smi_type_info           (RState* r);
-void init_special_const_type_info (RState* r);
-void init_string_type_info        (RState* r);
-void init_symbol_type_info        (RState* r);
-void init_vector_type_info        (RState* r);
+extern RTypeInfo char_type;
+extern RTypeInfo small_int_type;
+extern RTypeInfo special_const_type;
+extern RTypeInfo symbol_type;
 
-static void reserve (RState*       r,
-                     ruint         index,
-                     rconstcstring symbol)
+extern RTypeInfo bytevector_type;
+extern RTypeInfo error_type;
+extern RTypeInfo fixnum_type;
+extern RTypeInfo flonum_type;
+extern RTypeInfo opaque_type;
+extern RTypeInfo pair_type;
+extern RTypeInfo port_type;
+extern RTypeInfo primitive_type;
+extern RTypeInfo procedure_type;
+extern RTypeInfo string_type;
+extern RTypeInfo vector_type;
+
+static void init_reserved_words (RState* r)
 {
-    r->reserved [index] = r_symbol_new_static (r, symbol);
+    r->kw.quote            = r_intern (r, "quote");
+    r->kw.lambda           = r_intern (r, "lambda");
+    r->kw.if_              = r_intern (r, "if");
+    r->kw.set_x            = r_intern (r, "set!");
+    r->kw.quasiquote       = r_intern (r, "quasiquote");
+    r->kw.define           = r_intern (r, "define");
+    r->kw.unquote          = r_intern (r, "unquote");
+    r->kw.unquote_splicing = r_intern (r, "unquote-splicing");
+    r->kw.call_cc          = r_intern (r, "call/cc");
+
+    r->i.apply             = r_intern (r, "apply");
+    r->i.arg               = r_intern (r, "arg");
+    r->i.assign            = r_intern (r, "assign");
+    r->i.branch            = r_intern (r, "branch");
+    r->i.capture_cc        = r_intern (r, "capture-cc");
+    r->i.close             = r_intern (r, "close");
+    r->i.constant          = r_intern (r, "constant");
+    r->i.bind              = r_intern (r, "bind");
+    r->i.frame             = r_intern (r, "frame");
+    r->i.halt              = r_intern (r, "halt");
+    r->i.refer             = r_intern (r, "refer");
+    r->i.restore_cc        = r_intern (r, "restore-cc");
+    r->i.return_           = r_intern (r, "return");
 }
 
-static void state_init_reserved_words (RState* r)
-{
-    reserve (r, KW_QUOTE,            "quote");
-    reserve (r, KW_LAMBDA,           "lambda");
-    reserve (r, KW_IF,               "if");
-    reserve (r, KW_SET_X,            "set!");
-    reserve (r, KW_BEGIN,            "begin");
-    reserve (r, KW_COND,             "cond");
-    reserve (r, KW_AND,              "and");
-    reserve (r, KW_OR,               "or");
-    reserve (r, KW_CASE,             "case");
-    reserve (r, KW_LET,              "let");
-    reserve (r, KW_LET_S,            "let*");
-    reserve (r, KW_LETREC,           "letrec");
-    reserve (r, KW_DO,               "do");
-    reserve (r, KW_DELAY,            "delay");
-    reserve (r, KW_QUASIQUOTE,       "quasiquote");
-    reserve (r, KW_ELSE,             "else");
-    reserve (r, KW_ARROW,            "=>");
-    reserve (r, KW_DEFINE,           "define");
-    reserve (r, KW_UNQUOTE,          "unquote");
-    reserve (r, KW_UNQUOTE_SPLICING, "unquote-splicing");
-    reserve (r, KW_CALL_CC,          "call/cc");
-
-    reserve (r, INS_APPLY,           "apply");
-    reserve (r, INS_ARG,             "arg");
-    reserve (r, INS_ASSIGN,          "assign");
-    reserve (r, INS_BRANCH,          "branch");
-    reserve (r, INS_CAPTURE_CC,      "capture-cc");
-    reserve (r, INS_CLOSE,           "close");
-    reserve (r, INS_CONST,           "const");
-    reserve (r, INS_BIND,            "bind");
-    reserve (r, INS_FRAME,           "frame");
-    reserve (r, INS_HALT,            "halt");
-    reserve (r, INS_REFER,           "refer");
-    reserve (r, INS_RESTORE_CC,      "restore-cc");
-    reserve (r, INS_RETURN,          "return");
-}
-
-static void state_init_builtin_types (RState* r)
+static void init_builtin_types (RState* r)
 {
     /* Immediate types */
-    init_char_type_info          (r);
-    init_smi_type_info           (r);
-    init_special_const_type_info (r);
-    init_symbol_type_info        (r);
+    r->builtin_types [R_TAG_CHAR]          = char_type;
+    r->builtin_types [R_TAG_SMI_EVEN]      = small_int_type;
+    r->builtin_types [R_TAG_SMI_ODD]       = small_int_type;
+    r->builtin_types [R_TAG_SPECIAL_CONST] = special_const_type;
+    r->builtin_types [R_TAG_SYMBOL]        = symbol_type;
 
     /* Boxed types */
-    init_pair_type_info          (r);
-    init_bytevector_type_info    (r);
-    init_error_type_info         (r);
-    init_fixnum_type_info        (r);
-    init_flonum_type_info        (r);
-    init_primitive_type_info     (r);
-    init_port_type_info          (r);
-    init_string_type_info        (r);
-    init_vector_type_info        (r);
-    init_opaque_type_info        (r);
-    init_procedure_type_info     (r);
+    r->builtin_types [R_TAG_BYTEVECTOR]    = bytevector_type;
+    r->builtin_types [R_TAG_ERROR]         = error_type;
+    r->builtin_types [R_TAG_FIXNUM]        = fixnum_type;
+    r->builtin_types [R_TAG_FLONUM]        = flonum_type;
+    r->builtin_types [R_TAG_OPAQUE]        = opaque_type;
+    r->builtin_types [R_TAG_PAIR]          = pair_type;
+    r->builtin_types [R_TAG_PORT]          = port_type;
+    r->builtin_types [R_TAG_PRIMITIVE]     = primitive_type;
+    r->builtin_types [R_TAG_PROCEDURE]     = procedure_type;
+    r->builtin_types [R_TAG_STRING]        = string_type;
+    r->builtin_types [R_TAG_VECTOR]        = vector_type;
 }
 
-static void state_init_std_ports (RState* r)
+static void init_std_ports (RState* r)
 {
     r->current_input_port  = r_stdin_port  (r);
     r->current_output_port = r_stdout_port (r);
     r->current_error_port  = r_stderr_port (r);
 }
 
-void init_builtin_type (RState* r, RTypeTag tag, RTypeInfo* type)
+static rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
 {
-    assert (R_TAG_RESERVED < tag && tag < R_TAG_MAX);
-    r->builtin_types [tag] = *type;
-}
+    if (0 == size) {
+        free (ptr);
+        return NULL;
+    }
 
-rsexp reserved (RState* r, RReservedWord index)
-{
-    assert (index < RESERVED_WORD_COUNT);
-    return r->reserved [index];
+    if (NULL == ptr)
+        return malloc (size);
+
+    return realloc (ptr, size);
 }
 
 RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 {
     RState* r;
-    RState  zero = { { 0 } };
+    RState zero = { { 0 } };
 
     r = alloc_fn (NULL, NULL, sizeof (RState));
 
@@ -122,16 +106,19 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
 
     *r = zero;
 
+    /* Initialize memory allocator */
+    r->alloc_fn = alloc_fn;
+    r->alloc_aux = aux;
+
+    /* Initialize error handling facilities */
+    r->error_jmp = NULL;
     r->last_error = R_UNDEFINED;
-    r->error_jmp  = NULL;
-    r->alloc_fn   = alloc_fn;
-    r->alloc_aux  = aux;
 
     gc_init (r);
 
-    state_init_builtin_types  (r);
-    state_init_std_ports      (r);
-    state_init_reserved_words (r);
+    init_builtin_types (r);
+    init_reserved_words (r);
+    init_std_ports (r);
 
     vm_init (r);
 

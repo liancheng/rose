@@ -7,9 +7,9 @@
 
 R_BEGIN_DECLS
 
-typedef struct RDatumReader RDatumReader;
+typedef struct Reader Reader;
 
-struct RDatumReader {
+struct Reader {
     RState* r;
     rsexp   input_port;
     rsexp   last_error;

@@ -1,12 +1,13 @@
+#include "detail/gc.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
+#include "detail/string.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
-#include "rose/string.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -20,99 +21,45 @@ struct RError {
     rsexp irritants;
 };
 
+static RErrorDesc error_desc [] = {
+#define ERROR_DESC(group, enum_name, desc)\
+        { group, enum_name, desc },
+#include "rose/error_desc.inc"
+#undef ERROR_DESC
+};
+
+#define OOM_MESSAGE "out of memory"
+
+static RString oom_message = {
+    STATIC_OBJECT_HEADER (R_TAG_STRING)
+    .data = OOM_MESSAGE,
+    .length = sizeof (OOM_MESSAGE)
+};
+
+static RError oom_error = {
+    STATIC_OBJECT_HEADER (R_TAG_ERROR)
+    .message = string_to_sexp (&oom_message),
+    .irritants = R_NULL
+};
+
 #define error_from_sexp(obj) (r_cast (RError*, (obj)))
 #define error_to_sexp(error) (r_cast (rsexp, (error)))
 
-static rconstcstring compiler_error_messages [] = {
-    "bad syntax ~s",
-    "bad variable ~s in ~s",
-    "bad formals ~s in ~s",
-};
-
-static rconstcstring runtime_error_messages [] = {
-    "unknown instruction ~s",
-    "wrong type argument ~s",
-    "unbound variable: ~s",
-    "wrong type to apply: ~s",
-    "wrong number of arguments to ~s",
-    "index overflow",
-};
-
 static rsexp error_write (RState* r, rsexp port, rsexp obj)
 {
-    static rconstcstring message;
-
-    switch (obj) {
-        case R_ERROR_OOM:
-            message = "(error out-of-memory)";
-            break;
-
-        default:
-            message = "(error unknown)";
-            break;
-    }
-
-    if (r_inline_error_p (obj))
-        ensure (r_port_puts (r, port, message));
-    else
-        ensure (r_port_format (r,
-                               port,
-                               "(error (message ~s) (irritants ~s))",
-                               r_error_object_message (obj),
-                               r_error_object_irritants (obj)));
-
-    return R_UNSPECIFIED;
-}
-
-static rsexp error_display (RState* r, rsexp port, rsexp obj)
-{
-    static rconstcstring message;
-
-    switch (obj) {
-        case R_ERROR_OOM:
-            message = "out of memory";
-            break;
-
-        default:
-            message = "unknown error";
-            break;
-    }
-
-    if (r_inline_error_p (obj))
-        ensure (r_port_puts (r, port, message));
-    else
-        ensure (r_port_format (r,
-                               port,
-                               "message: ~a; irritants: ~a",
-                               r_error_object_message (obj),
-                               r_error_object_irritants (obj)));
+    ensure (r_port_format (r,
+                           port,
+                           "#<error \"~s\" ~s>",
+                           r_error_object_message (obj),
+                           r_error_object_irritants (obj)));
 
     return R_UNSPECIFIED;
 }
 
 static void error_mark (RState* r, rsexp obj)
 {
-    if (!r_inline_error_p (obj)) {
-        r_gc_mark (r, error_from_sexp (obj)->message);
-        r_gc_mark (r, error_from_sexp (obj)->irritants);
-    }
-}
-
-void init_error_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RError);
-    type.name         = "error";
-    type.ops.write    = error_write;
-    type.ops.display  = error_display;
-    type.ops.eqv_p    = NULL;
-    type.ops.equal_p  = NULL;
-    type.ops.mark     = error_mark;
-    type.ops.finalize = NULL;
-
-    init_builtin_type (r, R_TAG_INLINE_ERROR, &type);
-    init_builtin_type (r, R_TAG_ERROR,        &type);
+    r_gc_mark (r, error_from_sexp (obj)->message);
+    r_gc_mark (r, error_from_sexp (obj)->irritants);
 }
 
 rsexp r_error_new (RState* r, rsexp message, rsexp irritants)
@@ -127,8 +74,7 @@ rsexp r_error_new (RState* r, rsexp message, rsexp irritants)
 
 rbool r_error_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TAG_ERROR
-        || r_type_tag (obj) == R_TAG_INLINE_ERROR;
+    return r_type_tag (obj) == R_TAG_ERROR;
 }
 
 rsexp r_error_object_message (rsexp error)
@@ -144,8 +90,8 @@ rsexp r_error_object_irritants (rsexp error)
 rsexp r_error_printf (RState* r, rconstcstring format, ...)
 {
     va_list args;
-    rsexp   message;
-    rsexp   res;
+    rsexp message;
+    rsexp res;
 
     r_gc_scope_open (r);
     va_start (args, format);
@@ -212,35 +158,20 @@ rsexp r_error (RState* r, rconstcstring message)
     return r_set_last_error_x (r, error);
 }
 
-rsexp r_verror_code (RState* r, rint error_code, va_list args)
+rsexp r_verror_code (RState* r, RErrorCode error_code, va_list args)
 {
-    rint index;
-    rconstcstring format;
-    rsexp message, error;
+    rsexp message;
+    rsexp error;
 
-    if (R_ERR_COMPILE < error_code && error_code < R_ERR_COMPILE_MAX) {
-        index = error_code - R_ERR_COMPILE - 1;
-        format = compiler_error_messages [index];
-    }
-    else if (R_ERR_RUNTIME < error_code && error_code < R_ERR_RUNTIME_MAX) {
-        index = error_code - R_ERR_RUNTIME - 1;
-        format = runtime_error_messages [index];
-    }
-    else {
-        goto unknown;
-    }
+    assert (0 <= error_code && error_code < R_ERR_END);
 
-    message = r_string_vformat (r, format, args);
-    error = r_error_new (r, message,
-                         r_list (r, 1, r_int_to_sexp (error_code)));
+    message = r_string_vformat (r, error_desc [error_code].desc, args);
+    error = r_error_new (r, message, R_NULL);
 
     return r_set_last_error_x (r, error);
-
-unknown:
-    return R_ERROR_UNKNOWN;
 }
 
-rsexp r_error_code (RState* r, rint error_code, ...)
+rsexp r_error_code (RState* r, RErrorCode error_code, ...)
 {
     va_list args;
     rsexp res;
@@ -297,3 +228,18 @@ rsexp r_inherit_errno_x (RState* r, rint errnum)
 
     return error;
 }
+
+void r_error_no_memory (RState* r)
+{
+    r_set_last_error_x (r, error_to_sexp (&oom_error));
+}
+
+RTypeInfo error_type = {
+    .size = sizeof (RError),
+    .name = "error",
+    .ops = {
+        .write = error_write,
+        .display = error_write,
+        .mark = error_mark
+    }
+};

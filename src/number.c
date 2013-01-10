@@ -17,7 +17,7 @@ static rsexp write_fixnum (RState* r, rsexp port, rsexp obj)
     FILE*    stream = port_to_stream (port);
 
     if (0 == mpq_out_str (stream, 10, fixnum->real)) {
-        r_set_last_error_x (r, R_ERROR_UNKNOWN);
+        r_error_code (r, R_ERR_UNKNOWN);
         return R_FAILURE;
     }
 
@@ -105,38 +105,6 @@ static RFixnum* fixnum_new (RState* r)
     RFixnum* fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     return fixnum;
-}
-
-void init_fixnum_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RFixnum);
-    type.name         = "fixnum";
-    type.ops.write    = write_fixnum;
-    type.ops.display  = write_fixnum;
-    type.ops.eqv_p    = fixnum_eqv_p;
-    type.ops.equal_p  = fixnum_eqv_p;
-    type.ops.mark     = NULL;
-    type.ops.finalize = fixnum_finalize;
-
-    init_builtin_type (r, R_TAG_FIXNUM, &type);
-}
-
-void init_flonum_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = sizeof (RFlonum);
-    type.name         = "flonum";
-    type.ops.write    = write_flonum;
-    type.ops.display  = write_flonum;
-    type.ops.eqv_p    = flonum_eqv_p;
-    type.ops.equal_p  = flonum_eqv_p;
-    type.ops.mark     = NULL;
-    type.ops.finalize = NULL;
-
-    init_builtin_type (r, R_TAG_FLONUM, &type);
 }
 
 rbool r_fixnum_p (rsexp obj)
@@ -259,3 +227,66 @@ rbool r_exact_p (rsexp obj)
 {
     return r_small_int_p (obj) || r_fixnum_p (obj);
 }
+
+rsexp r_add (RState* r, rsexp lhs, rsexp rhs)
+{
+    assert (r_small_int_p (lhs));
+    assert (r_small_int_p (rhs));
+
+    return r_int_to_sexp (r_int_from_sexp (lhs) + r_int_from_sexp (rhs));
+}
+
+rsexp r_minus (RState* r, rsexp lhs, rsexp rhs)
+{
+    assert (r_small_int_p (lhs));
+    assert (r_small_int_p (rhs));
+
+    return r_int_to_sexp (r_int_from_sexp (lhs) - r_int_from_sexp (rhs));
+}
+
+rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs)
+{
+    assert (r_small_int_p (lhs));
+    assert (r_small_int_p (rhs));
+
+    return r_int_to_sexp (r_int_from_sexp (lhs) * r_int_from_sexp (rhs));
+}
+
+rsexp r_divide (RState* r, rsexp lhs, rsexp rhs)
+{
+    assert (r_small_int_p (lhs));
+    assert (r_small_int_p (rhs));
+
+    return r_int_to_sexp (r_int_from_sexp (lhs) / r_int_from_sexp (rhs));
+}
+
+rsexp r_modulo (RState* r, rsexp lhs, rsexp rhs)
+{
+    assert (r_small_int_p (lhs));
+    assert (r_small_int_p (rhs));
+
+    return r_int_to_sexp (r_int_from_sexp (lhs) % r_int_from_sexp (rhs));
+}
+
+RTypeInfo fixnum_type = {
+    .size = sizeof (RFixnum),
+    .name = "fixnum",
+    .ops = {
+        .write    = write_fixnum,
+        .display  = write_fixnum,
+        .eqv_p    = fixnum_eqv_p,
+        .equal_p  = fixnum_eqv_p,
+        .finalize = fixnum_finalize
+    }
+};
+
+RTypeInfo flonum_type = {
+    .size = sizeof (RFlonum),
+    .name = "flonum",
+    .ops = {
+        .write   = write_flonum,
+        .display = write_flonum,
+        .eqv_p   = flonum_eqv_p,
+        .equal_p = flonum_eqv_p,
+    }
+};

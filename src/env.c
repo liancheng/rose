@@ -7,7 +7,9 @@
 
 rsexp env_extend (RState* r, rsexp env, rsexp vars, rsexp vals)
 {
-    return r_cons (r, r_cons (r, vars, vals), env);
+    rsexp rib;
+    ensure (rib = r_cons (r, vars, vals));
+    return r_cons (r, rib, env);
 }
 
 rsexp r_env_lookup (RState* r, rsexp env, rsexp var)
@@ -54,9 +56,9 @@ rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
         return env;
     }
 
-    vars = r_cons (r, var, r_car (r_car (env)));
-    vals = r_cons (r, val, r_cdr (r_car (env)));
-    frame = r_cons (r, vars, vals);
+    ensure (vars = r_cons (r, var, r_car (r_car (env))));
+    ensure (vals = r_cons (r, val, r_cdr (r_car (env))));
+    ensure (frame = r_cons (r, vars, vals));
     r_set_car_x (env, frame);
 
     return env;
@@ -75,9 +77,9 @@ rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
         return R_FAILURE;
     }
 
-    vars = r_cons (r, var, r_car (r_car (env)));
-    vals = r_cons (r, val, r_cdr (r_car (env)));
-    frame = r_cons (r, vars, vals);
+    ensure (vars = r_cons (r, var, r_car (r_car (env))));
+    ensure (vals = r_cons (r, val, r_cdr (r_car (env))));
+    ensure (frame = r_cons (r, vars, vals));
     r_set_car_x (env, frame);
 
     return env;
@@ -91,7 +93,7 @@ void bind_primitive_x (RState* r,
                        rsize optional,
                        rbool rest_p)
 {
-    rsexp name_id = r_symbol_new (r, name);
+    rsexp name_id = r_intern (r, name);
     *env = r_env_bind_x (r, *env, name_id,
             r_primitive_new (r, name, func, required, optional, rest_p));
 }

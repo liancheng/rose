@@ -64,43 +64,6 @@ static rsexp display_char (RState* r, rsexp port, rsexp obj)
     return r_port_write_char (r, port, r_char_from_sexp (obj));
 }
 
-void init_char_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = 0;
-    type.name         = "character";
-    type.ops.write    = write_char;
-    type.ops.display  = display_char;
-
-    init_builtin_type (r, R_TAG_CHAR, &type);
-}
-
-void init_smi_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = 0;
-    type.name         = "small-integer";
-    type.ops.write    = write_smi;
-    type.ops.display  = write_smi;
-
-    init_builtin_type (r, R_TAG_SMI_EVEN, &type);
-    init_builtin_type (r, R_TAG_SMI_ODD,  &type);
-}
-
-void init_special_const_type_info (RState* r)
-{
-    RTypeInfo type = { 0 };
-
-    type.size         = 0;
-    type.name         = "special-constant";
-    type.ops.write    = write_special_const;
-    type.ops.display  = display_special_const;
-
-    init_builtin_type (r, R_TAG_SPECIAL_CONST, &type);
-}
-
 ruint r_type_tag (rsexp obj)
 {
     return r_boxed_p (obj)
@@ -112,3 +75,30 @@ RTypeInfo* r_type_info (RState* r, rsexp obj)
 {
     return &r->builtin_types [r_type_tag (obj)];
 }
+
+RTypeInfo char_type = {
+    .size = 0,
+    .name = "character",
+    .ops = {
+        .write = write_char,
+        .display = display_char
+    }
+};
+
+RTypeInfo small_int_type = {
+    .size = 0,
+    .name = "small-integer",
+    .ops = {
+        .write = write_smi,
+        .display = write_smi
+    }
+};
+
+RTypeInfo special_const_type = {
+    .size = 0,
+    .name = "special-constant",
+    .ops = {
+        .write = write_special_const,
+        .display = display_special_const
+    }
+};
