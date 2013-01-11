@@ -35,10 +35,10 @@ Check out the code and run `scons` to build ROSE:
 After the building process, you may find the ROSE interpreter executable `rsi` under `bin`:
 
     $ ./bin/rsi
-    (define x "hello world")
-    x
+    (display "hello world\n")
     ^D
-    result: "hello world"
+    hello world
+    #<unspecified>
     $
 
 ## Appendix
