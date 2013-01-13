@@ -22,7 +22,7 @@ Install all the dependencies other than Quex and googletest with the following c
 
 To install Quex, please refer to the appendix.
 
-To setup googletest, please refer to [the official documentation of googletest][gtest-setup].
+Googletest has already been added as a submodule of ROSE's git repository, nothing special is needed to be done to set it up.
 
 ### Build
 
@@ -78,4 +78,3 @@ For the Deb and RPM packages, set `QUEX_HOME` to `/opt/quex/quex-<version>`.  Fo
 [glib]: http://developer.gnome.org/glib/
 [gmp]: http://gmplib.org/
 [gtest]: http://code.google.com/p/googletest/
-[gtest-setup]: http://code.google.com/p/googletest/wiki/V1_6_Primer#Setting_up_a_New_Test_Project
