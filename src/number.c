@@ -176,26 +176,6 @@ rsexp r_flonum_new (RState* r, double real, double imag)
     return flonum_to_sexp (flonum);
 }
 
-void r_fixnum_set_real_x (rsexp obj, mpq_t real)
-{
-    mpq_set (fixnum_from_sexp (obj)->real, real);
-}
-
-void r_fixnum_set_imag_x (rsexp obj, mpq_t imag)
-{
-    mpq_set (fixnum_from_sexp (obj)->imag, imag);
-}
-
-void r_flonum_set_real_x (rsexp obj, double real)
-{
-    flonum_from_sexp (obj)->real = real;
-}
-
-void r_flonum_set_imag_x (rsexp obj, double imag)
-{
-    flonum_from_sexp (obj)->imag = imag;
-}
-
 rsexp r_int_to_sexp (rint n)
 {
     assert (n >= R_SMI_MIN && n <= R_SMI_MAX);
