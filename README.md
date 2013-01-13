@@ -14,12 +14,15 @@ ROSE depends on the following tools and libraries:
 *   [SCons][scons], the construction tool, v2.1.0 or newer
 *   [GLib][glib], the GNOME Library, v2.0 or newer
 *   [GMP][gmp], the GNU Multiple Precesion Arithmetic Library, v5.0.2 or newer
+*   [googletest][gtest], Google C++ Testing Framework, v1.6 or newer
 
-Install all the dependencies other than Quex with the following command:
+Install all the dependencies other than Quex and googletest with the following command:
 
     $ sudo aptitude install libgmp-dev libglib2.0-dev scons
 
 To install Quex, please refer to the appendix.
+
+To setup googletest, please refer to [the official documentation of googletest][gtest-setup].
 
 ### Build
 
@@ -32,10 +35,10 @@ Check out the code and run `scons` to build ROSE:
 After the building process, you may find the ROSE interpreter executable `rsi` under `bin`:
 
     $ ./bin/rsi
-    (define x "hello world")
-    x
+    (display "hello world\n")
     ^D
-    result: "hello world"
+    hello world
+    #<unspecified>
     $
 
 ## Appendix
@@ -67,10 +70,12 @@ Now test `quex` from terminal:
 
 For the Deb and RPM packages, set `QUEX_HOME` to `/opt/quex/quex-<version>`.  For details, please refer to [Quex's online documentation][quex-doc].
 
-[wiki]:     https://github.com/liancheng/rose/wiki
-[quex]:     http://quex.sourceforge.net
-[quex-dl]:  http://sourceforge.net/projects/quex/files/DOWNLOAD/
+[wiki]: https://github.com/liancheng/rose/wiki
+[quex]: http://quex.sourceforge.net
+[quex-dl]: http://sourceforge.net/projects/quex/files/DOWNLOAD/
 [quex-doc]: http://quex.sourceforge.net/doc/html/intro/installation.html
-[scons]:    http://www.scons.org
-[glib]:     http://developer.gnome.org/glib/
-[gmp]:      http://gmplib.org/
+[scons]: http://www.scons.org
+[glib]: http://developer.gnome.org/glib/
+[gmp]: http://gmplib.org/
+[gtest]: http://code.google.com/p/googletest/
+[gtest-setup]: http://code.google.com/p/googletest/wiki/V1_6_Primer#Setting_up_a_New_Test_Project
