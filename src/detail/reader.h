@@ -12,7 +12,6 @@ typedef struct Reader Reader;
 struct Reader {
     RState* r;
     rsexp   input_port;
-    rsexp   last_error;
     RLexer  lexer;
     RToken* lookahead;
     RToken  token;
