@@ -27,9 +27,13 @@ static rbool validate_arity (RState* r, RPrimitive* prim, rsexp args)
 {
     rsize length;
 
+    /* Optional arguments and rest argument cannot co-exist */
     assert (!(prim->optional > 0 && prim->rest_p));
 
     length = r_uint_from_sexp (r_length (r, args));
+
+    if (length < prim->required)
+        return FALSE;
 
     return prim->rest_p
            ? length >= prim->required
@@ -97,6 +101,11 @@ static rsexp primitive_display (RState* r, rsexp port, rsexp obj)
                           primitive_from_sexp (obj)->name);
 }
 
+static void primitive_mark (RState* r, rsexp obj)
+{
+    r_gc_mark (r, primitive_from_sexp (obj)->name);
+}
+
 rsexp r_primitive_apply (RState* r, rsexp obj, rsexp args)
 {
     RPrimitive* prim;
@@ -130,7 +139,8 @@ RTypeInfo primitive_type = {
     .size = sizeof (RPrimitive),
     .name = "primitive",
     .ops = {
-        .write    = primitive_write,
-        .display  = primitive_display
+        .write = primitive_write,
+        .display = primitive_display,
+        .mark = primitive_mark
     }
 };
