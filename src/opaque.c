@@ -10,8 +10,8 @@ typedef struct ROpaque ROpaque;
 
 struct ROpaque {
     R_OBJECT_HEADER
-    rpointer          opaque;
-    ROpaqueGcMark     mark;
+    rpointer opaque;
+    ROpaqueGcMark mark;
     ROpaqueGcFinalize finalize;
 };
 
@@ -80,10 +80,10 @@ RTypeInfo opaque_type = {
     .size = sizeof (ROpaque),
     .name = "opaque",
     .ops = {
-        .write    = opaque_write,
-        .display  = opaque_write,
-        .equal_p  = opaque_equal_p,
-        .mark     = opaque_mark,
+        .write = opaque_write,
+        .display = opaque_write,
+        .equal_p = opaque_equal_p,
+        .mark = opaque_mark,
         .finalize = opaque_finalize
     }
 };

@@ -49,7 +49,7 @@ static rsexp error_write (RState* r, rsexp port, rsexp obj)
 {
     ensure (r_port_format (r,
                            port,
-                           "#<error \"~s\" ~s>",
+                           "#<error \"~a\" ~s>",
                            r_error_object_message (obj),
                            r_error_object_irritants (obj)));
 

@@ -208,10 +208,13 @@ static rsexp exec_return (RState* r, RVm* vm)
 
 static rsexp single_step (RState* r)
 {
-    RVm* vm = &r->vm;
-    rsexp ins = r_car (vm->next);
+    RVm* vm;
+    rsexp ins;
+    rsexp res;
     RInstructionExecutor exec;
 
+    vm = &r->vm;
+    ins = r_car (vm->next);
     exec = r_cast (RInstructionExecutor,
                    g_hash_table_lookup (vm->executors,
                                         r_cast (rconstpointer, ins)));
@@ -221,7 +224,11 @@ static rsexp single_step (RState* r)
         return R_FAILURE;
     }
 
-    return exec (r, &r->vm);
+    r_gc_scope_open (r);
+    res = exec (r, vm);
+    r_gc_scope_close (r);
+
+    return res;
 }
 
 static void install_instruction_executor (RState* r,
@@ -238,12 +245,11 @@ void vm_dump (RState* r)
 {
     RVm* vm = &r->vm;
 
-    r_format (r, "*** vm dump ***~%");
-    r_format (r, "vm.args  = ~s~%", vm->args);
-    r_format (r, "vm.env   = ~s~%", vm->env);
-    r_format (r, "vm.stack = ~s~%", vm->stack);
-    r_format (r, "vm.value = ~s~%", vm->value);
-    r_format (r, "vm.next  = ~s~%", vm->next);
+    r_format (r, "(vm:args  ~s~%", vm->args);
+    r_format (r, " vm:env   ~s~%", vm->env);
+    r_format (r, " vm:stack ~s~%", vm->stack);
+    r_format (r, " vm:value ~s~%", vm->value);
+    r_format (r, " vm:next  ~s)~%", vm->next);
 }
 
 void vm_init (RState* r)

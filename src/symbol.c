@@ -32,7 +32,7 @@ RTypeInfo symbol_type = {
     .size = 0,
     .name = "symbol",
     .ops = {
-        .write   = write_symbol,
+        .write = write_symbol,
         .display = write_symbol
     }
 };
