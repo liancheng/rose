@@ -456,10 +456,6 @@ static rsexp compile (RState* r, rsexp expr, rsexp next)
     }
 
     code = compile_application (r, expr, next);
-    goto exit;
-
-    r_error_code (r, R_ERR_BAD_SYNTAX, expr);
-    code = R_FAILURE;
 
 exit:
     r_gc_scope_close_and_protect (r, code);
