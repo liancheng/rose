@@ -73,6 +73,7 @@ static rsexp pair_display (RState* r, rsexp port, rsexp obj)
 
 static void pair_mark (RState* r, rsexp obj)
 {
+    assert (r_pair_p (obj));
     r_gc_mark (r, pair_from_sexp (obj)->car);
     r_gc_mark (r, pair_from_sexp (obj)->cdr);
 }
@@ -105,21 +106,25 @@ rsexp r_cons (RState* r, rsexp car, rsexp cdr)
 
 rsexp r_car (rsexp obj)
 {
+    assert (r_pair_p (obj));
     return pair_from_sexp (obj)->car;
 }
 
 rsexp r_cdr (rsexp obj)
 {
+    assert (r_pair_p (obj));
     return pair_from_sexp (obj)->cdr;
 }
 
 void r_set_car_x (rsexp pair, rsexp obj)
 {
+    assert (r_pair_p (obj));
     pair_from_sexp (pair)->car = obj;
 }
 
 void r_set_cdr_x (rsexp pair, rsexp obj)
 {
+    assert (r_pair_p (pair));
     pair_from_sexp (pair)->cdr = obj;
 }
 
