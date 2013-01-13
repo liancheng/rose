@@ -5,13 +5,15 @@ Import('rose_lib')
 
 env = env.Clone()
 
+GTEST_DIR = '#/external/googletest'
+
 env.Prepend(LIBS=[rose_lib],
-            CPPPATH=[environ['GTEST_DIR'],
-                     environ['GTEST_DIR'] + '/include'])
+            CPPPATH=[Dir(GTEST_DIR),
+                     Dir(GTEST_DIR + '/include')])
 
 test = env.Program(target='test',
                    source=[env.Glob('*.cpp'),
-                           environ['GTEST_DIR'] + '/src/gtest-all.cc'])
+                           File(GTEST_DIR + '/src/gtest-all.cc')])
 
 env.Command(target='unit-test',
             source=test[0],
