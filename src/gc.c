@@ -119,28 +119,23 @@ static void gc_mark_phase (RState* r)
 
 static void gc_sweep_phase (RState* r)
 {
-    RObject dummy = { 0 };
-    RGcState* gc = &r->gc;
-    RObject* obj = gc->chrono_list;
-    RObject* prev = &dummy;
+    RGcState* gc;
+    RObject** head;
+    RObject* obj;
 
-    prev->chrono_next = obj;
-    gc->n_live_after_mark = 0u;
+    gc = &r->gc;
 
-    while (obj) {
-        assert (!gc_gray_p (obj) &&
-                "no gray object during sweep phase");
+    for (head = &gc->chrono_list; *head; ) {
+        obj = *head;
 
-        if (gc_black_p (obj)) {
-            gc_paint_white (obj);
-            prev = obj;
-            obj = obj->chrono_next;
-            gc->n_live_after_mark++;
+        if (gc_white_p (obj)) {
+            *head = obj->chrono_next;
+            r_object_free (r, obj);
         }
         else {
-            prev->chrono_next = obj->chrono_next;
-            r_object_free (r, obj);
-            obj = prev->chrono_next;
+            gc_paint_white (obj);
+            gc->n_live_after_mark++;
+            head = &obj->chrono_next;
         }
     }
 
