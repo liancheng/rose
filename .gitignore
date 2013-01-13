@@ -7,3 +7,4 @@ lib/*
 *.pyc
 *.sconsign.dblite
 tags
+external/googletest/src/*.o
