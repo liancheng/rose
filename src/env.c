@@ -1,4 +1,3 @@
-#include "detail/env.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/pair.h"
@@ -100,9 +99,7 @@ void bind_primitive_x (RState* r,
 
 void pair_init_primitives (RState* r, rsexp* env);
 void port_init_primitives (RState* r, rsexp* env);
-void number_init_primitives (RState* r, rsexp* env);
-
-rsexp np_add (RState* r, rsexp args);
+void math_init_primitives (RState* r, rsexp* env);
 
 rsexp default_env (RState* r)
 {
@@ -110,7 +107,7 @@ rsexp default_env (RState* r)
 
     pair_init_primitives (r, &env);
     port_init_primitives (r, &env);
-    number_init_primitives (r, &env);
+    math_init_primitives (r, &env);
 
     return env;
 }
