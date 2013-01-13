@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GC_ARENA_CHUNK_SIZE     256
-#define GC_DEFAULT_THRESHOLD    128
+#define GC_ARENA_CHUNK_SIZE     1024
+#define GC_DEFAULT_THRESHOLD    1024
 
 #define gc_white_p(obj)     ((obj)->gc_color == R_GC_COLOR_WHITE)
 #define gc_gray_p(obj)      ((obj)->gc_color == R_GC_COLOR_GRAY)
@@ -21,23 +21,25 @@
 #define gc_paint_gray(obj)  ((obj)->gc_color = R_GC_COLOR_GRAY)
 #define gc_paint_black(obj) ((obj)->gc_color = R_GC_COLOR_BLACK)
 
+static rbool valid_boxed_type_p (RTypeTag tag)
+{
+    return tag > R_TAG_BOXED && tag < R_TAG_MAX;
+}
+
 static void gc_scope_protect (RState* r, RObject* obj)
 {
     RGcState* gc = &r->gc;
 
-    if (gc->arena_index >= gc->arena_size) {
-#ifdef ROSE_DYNAMIC_ARENA
+    assert (valid_boxed_type_p (obj->type_tag));
+
+    if (gc->arena_index == gc->arena_size) {
         gc->arena_size += GC_ARENA_CHUNK_SIZE;
         gc->arena = r_realloc (r,
                                gc->arena,
-                               gc->arena_size * sizeof (RObject*));
-#else
-        fprintf (stderr, "arena index overflow\n");
-        abort ();
-#endif
+                               gc->arena_size * sizeof (rsexp));
     }
 
-    gc->arena [gc->arena_index++] = obj;
+    gc->arena [gc->arena_index++] = object_to_sexp (obj);
 }
 
 static void gc_prepend_to_gray_list (RState* r, RObject* obj)
@@ -45,7 +47,7 @@ static void gc_prepend_to_gray_list (RState* r, RObject* obj)
     RGcState* gc = &r->gc;
 
     obj->gray_next = gc->gray_list;
-    gc->gray_list  = obj;
+    gc->gray_list = obj;
 }
 
 static void gc_prepend_to_chrono_list (RState* r, RObject* obj)
@@ -53,7 +55,7 @@ static void gc_prepend_to_chrono_list (RState* r, RObject* obj)
     RGcState* gc = &r->gc;
 
     obj->chrono_next = gc->chrono_list;
-    gc->chrono_list  = obj;
+    gc->chrono_list = obj;
 }
 
 static void gc_mark (RState* r, RObject* obj)
@@ -71,7 +73,7 @@ static void gc_mark_arena (RState* r)
     RGcState* gc = &r->gc;
 
     for (i = 0u; i < gc->arena_index; ++i)
-        gc_mark (r, gc->arena [i]);
+        r_gc_mark (r, gc->arena [i]);
 }
 
 static void gc_mark_vm (RState* r)
@@ -94,7 +96,7 @@ static void gc_scan_phase (RState* r)
 static void gc_mark_children (RState* r, RObject* obj)
 {
     RTypeInfo* type;
-    RGcMark    mark;
+    RGcMark mark;
 
     type = r_type_info (r, object_to_sexp (obj));
     mark = type->ops.mark;
@@ -127,6 +129,7 @@ static void gc_sweep_phase (RState* r)
 
     for (head = &gc->chrono_list; *head; ) {
         obj = *head;
+        assert (valid_boxed_type_p (obj->type_tag));
 
         if (gc_white_p (obj)) {
             *head = obj->chrono_next;
@@ -146,10 +149,12 @@ void gc_init (RState* r)
 {
     RGcState* gc = &r->gc;
 
+    gc->enabled           = FALSE;
+
     gc->arena_size        = GC_ARENA_CHUNK_SIZE;
     gc->arena_index       = 0u;
     gc->arena_last_index  = 0u;
-    gc->arena             = r_new_array (r, RObject*, gc->arena_size);
+    gc->arena             = r_new_array (r, rsexp, gc->arena_size);
 
     gc->n_live            = 0u;
     gc->n_live_after_mark = 0u;
@@ -167,6 +172,21 @@ void gc_finish (RState* r)
 
     r_full_gc (r);
     r_free (r, r->gc.arena);
+}
+
+void gc_enable (RState* r)
+{
+    r->gc.enabled = TRUE;
+}
+
+void gc_disable (RState* r)
+{
+    r->gc.enabled = FALSE;
+}
+
+rbool gc_enabled_p (RState* r)
+{
+    return r->gc.enabled;
 }
 
 void gc_scope_reset (RState* r)
@@ -199,9 +219,11 @@ void r_gc_mark (RState* r, rsexp obj)
 
 void r_full_gc (RState* r)
 {
-    gc_scan_phase (r);
-    gc_mark_phase (r);
-    gc_sweep_phase (r);
+    if (gc_enabled_p (r)) {
+        gc_scan_phase (r);
+        gc_mark_phase (r);
+        gc_sweep_phase (r);
+    }
 }
 
 rpointer r_realloc (RState* r, rpointer ptr, rsize size)
@@ -241,6 +263,9 @@ RObject* r_object_alloc (RState* r, RTypeTag type_tag)
     RGcState* gc;
     RTypeInfo* type;
     RObject* obj;
+
+    assert (type_tag > R_TAG_BOXED && type_tag < R_TAG_MAX &&
+            "invalid boxed type tag");
 
     gc = &r->gc;
 

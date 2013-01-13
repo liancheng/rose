@@ -121,6 +121,7 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
     init_std_ports (r);
 
     vm_init (r);
+    gc_enable (r);
 
 exit:
     return r;

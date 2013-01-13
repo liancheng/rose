@@ -16,7 +16,9 @@ RGcColor;
 typedef struct RGcState RGcState;
 
 struct RGcState {
-    RObject** arena;
+    rbool     enabled;
+
+    rsexp*    arena;
     rsize     arena_size;
     rsize     arena_index;
     rsize     arena_last_index;
@@ -37,6 +39,9 @@ RObject* r_object_alloc    (RState* r,
 void     r_object_free     (RState* r,
                             RObject* obj);
 
+void     gc_enable         (RState* r);
+void     gc_disable        (RState* r);
+rbool    gc_enabled_p      (RState* r);
 void     gc_scope_reset    (RState* r);
 void     gc_init           (RState* r);
 void     gc_finish         (RState* r);
