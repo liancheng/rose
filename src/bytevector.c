@@ -15,7 +15,7 @@ typedef struct RBytevector RBytevector;
 
 struct RBytevector {
     R_OBJECT_HEADER
-    rsize  length;
+    rsize length;
     rbyte* data;
 };
 
@@ -49,7 +49,10 @@ static rsexp bytevector_write (RState* r, rsexp port, rsexp obj)
 
 static void bytevector_finalize (RState* r, RObject* obj)
 {
-    r_free (r, r_cast (RBytevector*, obj)->data);
+    RBytevector* bv = r_cast (RBytevector*, obj);
+
+    if (bv->length)
+        r_free (r, bv->data);
 }
 
 static rbool check_index_overflow (RState* r, rsexp bv, rsize k)
@@ -172,9 +175,7 @@ RTypeInfo bytevector_type = {
     .ops = {
         .write = bytevector_write,
         .display = bytevector_write,
-        .eqv_p = NULL,
         .equal_p = bytevector_equal_p,
-        .mark = NULL,
         .finalize = bytevector_finalize
     }
 };

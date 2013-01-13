@@ -16,7 +16,7 @@ typedef struct RVector RVector;
 
 struct RVector {
     R_OBJECT_HEADER
-    rsize  length;
+    rsize length;
     rsexp* data;
 };
 
@@ -63,7 +63,9 @@ static rsexp vector_display (RState* r, rsexp port, rsexp obj)
 static void vector_finalize (RState* r, RObject* obj)
 {
     RVector* v = r_cast (RVector*, obj);
-    r_free (r, v->data);
+
+    if (v->length)
+        r_free (r, v->data);
 }
 
 static rsexp vvector (RState* r, rsize k, va_list args)

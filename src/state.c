@@ -83,6 +83,8 @@ static void init_std_ports (RState* r)
 
 static rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
 {
+    assert (!(ptr == 0 && size == 0u));
+
     if (0 == size) {
         free (ptr);
         return NULL;
