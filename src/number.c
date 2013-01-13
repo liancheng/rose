@@ -147,7 +147,7 @@ rsexp r_fixreal_new (RState* r, mpq_t real)
     RFixnum* fixnum = fixnum_new (r);
 
     if (!fixnum)
-        return r_last_error (r);
+        return R_FAILURE;
 
     mpq_set (fixnum->real, real);
     return fixnum_to_sexp (fixnum);
