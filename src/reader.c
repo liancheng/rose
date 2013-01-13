@@ -388,6 +388,11 @@ static void reader_finalize (RState* r, rpointer obj)
     r_free (r, reader);
 }
 
+static void reader_mark (RState* r, rpointer obj)
+{
+    r_gc_mark (r, r_cast (Reader*, obj)->input_port);
+}
+
 rsexp r_reader_new (RState* r, rsexp port)
 {
     Reader* reader;
@@ -408,7 +413,7 @@ rsexp r_reader_new (RState* r, rsexp port)
     QUEX_NAME_TOKEN (construct) (&reader->token);
     QUEX_NAME (token_p_set) (&reader->lexer, &reader->token);
 
-    res = r_opaque_new (r, reader, NULL, reader_finalize);
+    res = r_opaque_new (r, reader, reader_mark, reader_finalize);
 
     if (r_failure_p (res))
         r_free (r, reader);
