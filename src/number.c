@@ -130,12 +130,14 @@ rsexp r_string_to_number (RState* r, rconstcstring text)
 
 rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
 {
-    rsexp number = try_small_int (real, imag);
+    RFixnum* fixnum;
 
-    if (!r_false_p (number))
-        return number;
+    fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
 
-    RFixnum* fixnum = fixnum_new (r);
+    if (fixnum == NULL)
+        return R_FAILURE;
+
+    mpq_inits (fixnum->real, fixnum->imag, NULL);
     mpq_set (fixnum->real, real);
     mpq_set (fixnum->imag, imag);
 
