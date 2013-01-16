@@ -229,10 +229,10 @@ RTypeInfo fixnum_type = {
     .size = sizeof (RFixnum),
     .name = "fixnum",
     .ops = {
-        .write    = write_fixnum,
-        .display  = write_fixnum,
-        .eqv_p    = fixnum_eqv_p,
-        .equal_p  = fixnum_eqv_p,
+        .write = write_fixnum,
+        .display = write_fixnum,
+        .eqv_p = fixnum_eqv_p,
+        .equal_p = fixnum_eqv_p,
         .finalize = fixnum_finalize
     }
 };
@@ -241,9 +241,9 @@ RTypeInfo flonum_type = {
     .size = sizeof (RFlonum),
     .name = "flonum",
     .ops = {
-        .write   = write_flonum,
+        .write = write_flonum,
         .display = write_flonum,
-        .eqv_p   = flonum_eqv_p,
+        .eqv_p = flonum_eqv_p,
         .equal_p = flonum_eqv_p,
     }
 };
