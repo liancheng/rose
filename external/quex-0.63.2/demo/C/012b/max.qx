@@ -1,0 +1,20 @@
+start = NORMAL;
+
+
+mode NORMAL 
+: <skip: [ \n\t]>
+{ 
+    on_end_of_stream         => TKN_TERMINATION(LexemeNull);
+    Max                      => TKN_ME________(Lexeme); 
+    Moritz                   => TKN_MY_BROTHER(Lexeme); 
+    Säge|Tücke|Brücke|Lücke  => TKN_SUBJECT___(Lexeme);
+    Sägen                    => GOTO(HAPPY, TKN_VERB______(Lexeme));
+    [a-zäöüA-Z]+             => TKN_UKNOWN____(Lexeme);
+    [,.!]                    => TKN_MARK______(Lexeme);
+}
+
+mode HAPPY : NORMAL {
+    on_entry {
+        printf("          Max: now happy!\n");
+    }
+}

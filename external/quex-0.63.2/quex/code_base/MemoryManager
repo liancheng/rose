@@ -1,0 +1,71 @@
+/* -*- C++ -*- vim: set syntax=cpp: */
+#ifndef __QUEX_INCLUDE_GUARD__MEMORY_MANAGER
+#define __QUEX_INCLUDE_GUARD__MEMORY_MANAGER
+
+#include <quex/code_base/definitions>
+#ifdef QUEX_OPTION_POST_CATEGORIZER
+#include <quex/code_base/analyzer/PostCategorizer>
+#endif
+
+#include <quex/code_base/temporary_macros_on>
+ 
+QUEX_NAMESPACE_MAIN_OPEN
+
+QUEX_INLINE QUEX_TYPE_CHARACTER*
+QUEX_NAME(MemoryManager_BufferMemory_allocate)(const size_t ByteN);
+
+QUEX_INLINE void
+QUEX_NAME(MemoryManager_BufferMemory_free)(QUEX_TYPE_CHARACTER* memory);
+
+QUEX_INLINE void*
+QUEX_NAME(MemoryManager_BufferFiller_allocate)(const size_t ByteN);
+
+QUEX_INLINE void
+QUEX_NAME(MemoryManager_BufferFiller_free)(void* memory);
+
+QUEX_INLINE uint8_t*  
+QUEX_NAME(MemoryManager_BufferFiller_RawBuffer_allocate)(const size_t ByteN);
+
+QUEX_INLINE void      
+QUEX_NAME(MemoryManager_BufferFiller_RawBuffer_free)(uint8_t* memory);
+
+#   ifdef QUEX_OPTION_STRING_ACCUMULATOR
+QUEX_INLINE QUEX_TYPE_CHARACTER*
+QUEX_NAME(MemoryManager_Text_allocate)(const size_t ByteN);
+QUEX_INLINE void
+QUEX_NAME(MemoryManager_Text_free)(QUEX_TYPE_CHARACTER* memory);
+#   endif
+
+QUEX_INLINE void*  QUEX_NAME(MemoryManager_Converter_allocate)(const size_t ByteN);
+QUEX_INLINE void   QUEX_NAME(MemoryManager_Converter_free)(void* memory);
+
+#   ifdef QUEX_OPTION_POST_CATEGORIZER
+QUEX_INLINE  QUEX_NAME(DictionaryNode)*  QUEX_NAME(MemoryManager_PostCategorizerNode_allocate)(size_t RemainderSize);
+QUEX_INLINE  void                        QUEX_NAME(MemoryManager_PostCategorizerNode_free)(QUEX_NAME(DictionaryNode)*);
+#   endif
+
+QUEX_INLINE size_t
+QUEX_NAME(MemoryManager_insert)(uint8_t* drain_begin_p,  uint8_t* drain_end_p,
+                                uint8_t* source_begin_p, uint8_t* source_end_p);
+
+#ifdef QUEX_OPTION_TOKEN_POLICY_QUEUE
+QUEX_INLINE void* 
+QUEX_NAME(MemoryManager_TokenArray_allocate)(const size_t N);
+
+QUEX_INLINE void 
+QUEX_NAME(MemoryManager_TokenArray_free)(void* memory);
+#endif
+
+#ifdef QUEX_OPTION_INCLUDE_STACK
+QUEX_INLINE  struct QUEX_NAME(Memento_tag)*
+QUEX_NAME(MemoryManager_Memento_allocate)();
+
+QUEX_INLINE void
+QUEX_NAME(MemoryManager_Memento_free)(struct QUEX_NAME(Memento_tag)* memory);
+#endif
+
+QUEX_NAMESPACE_MAIN_CLOSE
+ 
+#include <quex/code_base/temporary_macros_off>
+
+#endif /* __INCLUDE_GUARD_QUEX__CODE_BASE__MEMORY_MANAGER__ */

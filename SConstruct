@@ -1,5 +1,9 @@
 from os import environ
 
+environ['QUEX_PATH'] = Dir('#external/quex-0.63.2').abspath
+environ['PATH'] = ':'.join([environ['PATH'],
+                            environ['QUEX_PATH']])
+
 env = Environment(tools=['default', 'quex'],
                   ENV=environ,
                   CC=ARGUMENTS.get('CC', 'gcc'),

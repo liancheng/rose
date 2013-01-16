@@ -1,0 +1,18 @@
+token {
+    // Take **all** token ids in all lexical analyzers, so we can ;
+    // interpret them propperly;
+    ME________;
+    MY_BROTHER;
+    SCALLYWAG_;
+    PREDICATE_;
+    FILL_WORD_;
+    ARTICLE___;
+    SUBJECT___;
+    ADVERB____;
+    NEGATION__;
+    UKNOWN____;
+    MARK______;
+    VERB______;
+    OK;
+}
+

@@ -1,0 +1,23 @@
+start = NORMAL;
+
+mode NORMAL 
+: <skip: [ \n\t]>
+{ 
+    on_end_of_stream         => TKN_TERMINATION(LexemeNull);
+    Max|Moritz               => TKN_SCALLYWAG_(Lexeme);
+    und|mit|voller|In        => TKN_PREDICATE_(Lexeme);
+    nun|gar                  => TKN_FILL_WORD_(Lexeme);
+    die|der|diese|eine?      => TKN_ARTICLE___(Lexeme);
+    Säge|Tücke|Brücke|Lücke  => TKN_SUBJECT___(Lexeme);
+    (plötz|heim)lich         => TKN_ADVERB____(Lexeme);
+    nicht                    => TKN_NEGATION__(Lexeme);
+    [,.!]                    => TKN_MARK______(Lexeme);
+    Sägen                    => GOTO(ANGRY, TKN_VERB______(Lexeme));
+    [a-zäüöA-Z]+             => TKN_UKNOWN____(Lexeme); 
+}
+
+mode ANGRY : NORMAL {
+    on_entry {
+        printf("          Boeck: now angry!\n");
+    }
+}

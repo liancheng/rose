@@ -1,0 +1,106 @@
+// -*- C++ -*- vim: set syntax=cpp:
+start = PROGRAM;
+
+
+define {
+    // Pattern definitions for example application
+    P_WHITESPACE          [ \t\n]+
+    P_IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
+    P_NUMBER              [0-9]+
+    //
+    // String: 
+    //    Quote " followe by either \" or something different from " and then a final "
+    P_STRING              "\""(\\"\""|[^"])*"\""
+    P_QUOTED_CHAR_1       ("'\\''")|("'"[^'\n\t]?"'")
+    P_QUOTED_CHAR_2       "'\\"([0-7]+|[abcfnrtv\\])"'"
+    P_QUOTED_CHAR_3       "'\\x"[0-9a-fA-F]+"'"
+    P_QUOTED_CHAR         ({P_QUOTED_CHAR_1}|{P_QUOTED_CHAR_2}|{P_QUOTED_CHAR_3})
+    P_INCLUDE_FILE1       "<"[^>]+">"
+    P_INCLUDE_FILE2       "\""[^"]+"\""
+}
+
+mode PROGRAM :
+<skip:       [ \r\n\t]>
+<skip_range: "/*" "*/">
+<skip_range: "//" "\n">
+{
+    <<EOF>>       => TKN_TERMINATION;
+
+    "#"[ \t]*"include"[ \t]*{P_INCLUDE_FILE2} => TKN_PP_INCLUDE;
+    "#"[ \t]*"include"[ \t]*{P_INCLUDE_FILE1} => TKN_PP_INCLUDE;
+    "#"[ \t]*"define"  => TKN_PP_DEFINE;
+    "#"[ \t]*"if"      => TKN_PP_IF;
+    "#"[ \t]*"elif"    => TKN_PP_ELIF;
+    "#"[ \t]*"ifdef"   => TKN_PP_IFDEF;
+    "#"[ \t]*"ifndef"  => TKN_PP_IFNDEF;
+    "#"[ \t]*"endif"   => TKN_PP_ENDIF;
+    "#"[ \t]*"else"    => TKN_PP_ELSE;
+    "#"[ \t]*"pragma"  => TKN_PP_PRAGMA;
+    "#"[ \t]*"error"   => TKN_PP_ERROR;
+    defined            => TKN_PP_DEFINED;
+    "\\\n"             => TKN_BACKLASHED_NEWLINE;
+
+    unsigned  => TKN_TYPE_UNSIGNED;
+    int       => TKN_TYPE_INT;
+    long      => TKN_TYPE_LONG;
+    float     => TKN_TYPE_FLOAT;
+    double    => TKN_TYPE_DOUBLE;
+    char      => TKN_TYPE_CHAR;
+
+    "#"           => TKN_HASH;
+    "##"          => TKN_DOUBLE_HASH;
+    "?"           => TKN_QUESTION_MARK;
+    "~"           => TKN_TILDE;
+    "("           => TKN_BRACKET_O;
+    ")"           => TKN_BRACKET_C;
+    "["           => TKN_CORNER_BRACKET_O;
+    "]"           => TKN_CORNER_BRACKET_C;
+    "{"           => TKN_CURLY_BRACKET_O;
+    "}"           => TKN_CURLY_BRACKET_C;
+    "="           => TKN_OP_ASSIGNMENT;
+    "+"           => TKN_PLUS;
+    "-"           => TKN_MINUS;
+    "*"           => TKN_MULT;
+    "/"           => TKN_DIV;
+    "%"           => TKN_MODULO;
+    "+="          => TKN_ASSIGN_PLUS;
+    "-="          => TKN_ASSIGN_MINUS;
+    "*="          => TKN_ASSIGN_MULT;
+    "/="          => TKN_ASSIGN_DIV;
+    "=="          => TKN_EQ;
+    "!="          => TKN_NOT_EQ;
+    ">"           => TKN_GREATER;
+    ">="          => TKN_GR_EQ;
+    "<"           => TKN_LESS;
+    "<="          => TKN_LE_EQ;
+    "!"           => TKN_NOT;
+    "|"           => TKN_LOGICAL_OR;
+    "^"           => TKN_EXCLUSIVE_OR;
+    "||"          => TKN_OR;
+    "&"           => TKN_AMPERSANT;
+    "&&"          => TKN_AND;
+    ":"           => TKN_COLON;
+    struct        => TKN_STRUCT;
+    const         => TKN_CONST;
+    if            => TKN_IF;
+    else          => TKN_ELSE;
+    switch        => TKN_SWITCH;
+    for           => TKN_FOR;
+    do            => TKN_DO;
+    while         => TKN_WHILE;
+    break         => TKN_BREAK;
+    continue      => TKN_CONTINUE;
+    ";"           => TKN_SEMICOLON;
+    "."           => TKN_DOT;
+    ","           => TKN_COMMA;
+
+    {P_IDENTIFIER}  => TKN_IDENTIFIER;
+    {P_NUMBER}      => TKN_NUMBER;
+    {P_STRING}      => TKN_STRING;
+    {P_QUOTED_CHAR} => TKN_QUOTED_CHAR;
+
+    // {P_WHITESPACE}           { }
+    //"/*"([^*]|[\r\n]|("*"+([^*/]|[\r\n])))*"*"+"/" { } // => TKN_COMMENT;
+    // "//"[^\n]*"\n"           { } // => TKN_COMMENT;
+}
+

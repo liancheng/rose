@@ -40,7 +40,7 @@ def quex_generator(source, target, env, for_signature):
 
     Mkdir(env['QUEXOUTDIR'])
 
-    cmd = ['quex']
+    cmd = ['quex-exe.py']
     cmd += ['--mode-files', str(source[0])]
     cmd += ['--engine', env['QUEXENGINENS'] + env['QUEXENGINE']]
     cmd += [env['QUEXFLAGS']]
@@ -119,7 +119,7 @@ def _detect(env):
     except KeyError:
         pass
 
-    quex = env.WhereIs('quex')
+    quex = env.WhereIs('quex-exe.py')
     if quex:
         return quex
 

@@ -1,0 +1,92 @@
+// -*- C++ -*-
+
+header {
+void    print_token(quex::EasyLexer* qlex, quex::Token* Token, bool TextF = false);
+void    print(quex::EasyLexer* qlex, const char* Str1, const char* Str2=0x0, const char* Str3=0x0);
+
+}
+
+body {
+    size_t      letter_count;
+    size_t      include_depth;  /* Track the include depth for fun */
+}
+
+init {
+    self.letter_count  = 0;
+    self.include_depth = 0;
+}
+
+memento {
+    size_t   my_letter_count_store;
+    FILE*    included_file_handle;
+}
+
+memento_pack {
+    *input_handle = fopen((const char*)(InputName), "r");
+    if( *input_handle == NULL ) {
+        std::cout << "file not found\n";
+        return 0;
+    }
+    memento->my_letter_count_store = self.letter_count;
+    self.letter_count = 0;
+    self.include_depth += 1;
+    /* Store the file handle, so that it can be closed later */
+    memento->included_file_handle = *input_handle;
+}
+
+memento_unpack {
+    self.letter_count = memento->my_letter_count_store;
+    self.include_depth -= 1;
+    /* Close the file handle */
+    fclose(memento->included_file_handle);
+}
+
+token {
+   INCLUDE;
+   IDENTIFIER;
+   BRACKET_OPEN;
+   BRACKET_CLOSE;
+   NUMBER;
+}
+
+start = MAIN;
+
+mode MAIN
+: <skip: [ \t\r\n]> 
+{
+    <<EOF>> {
+	    self_send1(QUEX_TKN_TERMINATION, LexemeNull);
+        for(size_t i=0; i<self.include_depth; ++i) std::cout << "    ";
+        std::cout << "Per File Letter Count = " << self.letter_count << std::endl;
+        RETURN;
+    }
+
+    "(" => QUEX_TKN_BRACKET_OPEN(LexemeNull);
+    ")" => QUEX_TKN_BRACKET_CLOSE(LexemeNull);
+    //
+    "include"   { 
+        self_send1(QUEX_TKN_INCLUDE, LexemeNull); 
+        self.letter_count += strlen((char*)Lexeme); 
+        self.enter_mode(FIND_INCLUDE_NAME);
+        RETURN;
+    }
+    //
+    ([_a-zA-Z]|("/"|"."|"'"))+  { 
+        self_send1(QUEX_TKN_IDENTIFIER, Lexeme); 
+        self.letter_count += strlen((char*)Lexeme); 
+    }
+}
+
+mode FIND_INCLUDE_NAME 
+: <skip: [ \t\r\n]> 
+{
+    ([_a-zA-Z]|("/"|"."|"'"))+  { 
+        self_send1(QUEX_TKN_IDENTIFIER, Lexeme); 
+        self.letter_count += strlen((char*)Lexeme); 
+        self.enter_mode(MAIN);
+        /* IMPORTANT -- see documentation */
+        RETURN;
+    }
+}
+
+

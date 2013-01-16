@@ -1,0 +1,75 @@
+Normal FILE input
+==17900== Memcheck, a memory error detector
+==17900== Copyright (C) 2002-2011, and GNU GPL'd, by Julian Seward et al.
+==17900== Using Valgrind-3.7.0 and LibVEX; rerun with -h for copyright info
+==17900== Command: ./wlexer FILE
+==17900== 
+==17900== Conditional jump or move depends on uninitialised value(s)
+==17900==    at 0x41F54D8: __wcslen_sse2 (wcslen-sse2.S:95)
+==17900==    by 0x8049913: main (wlexer.cpp:25)
+==17900== 
+==17900== Conditional jump or move depends on uninitialised value(s)
+==17900==    at 0x41F54E8: __wcslen_sse2 (wcslen-sse2.S:101)
+==17900==    by 0x8049913: main (wlexer.cpp:25)
+==17900== 
+==17900== Conditional jump or move depends on uninitialised value(s)
+==17900==    at 0x41F5527: __wcslen_sse2 (wcslen-sse2.S:128)
+==17900==    by 0x8049913: main (wlexer.cpp:25)
+==17900== 
+==17900== Conditional jump or move depends on uninitialised value(s)
+==17900==    at 0x41F552E: __wcslen_sse2 (wcslen-sse2.S:132)
+==17900==    by 0x8049913: main (wlexer.cpp:25)
+==17900== 
+## FILE* (stdio.h):
+##    Note this works only when engine is generated with -b wchar_t (or no -b)
+##    and therefore QUEX_TYPE_CHARACTER == wchar_t.
+,------------------------------------------------------------------------------------
+| [START]
+(1, 1)  	HELLO 'bonjour' 
+(1, 9)  	WORLD 'le monde' 
+(2, 1)  	HELLO 'hello' 
+(2, 7)  	WORLD 'world' 
+(3, 1)  	HELLO 'hallo' 
+(3, 7)  	WORLD 'welt' 
+(4, 1)  	<TERMINATION> '' 
+| [END] number of token = 7
+`------------------------------------------------------------------------------------
+==17900== 
+==17900== HEAP SUMMARY:
+==17900==     in use at exit: 0 bytes in 0 blocks
+==17900==   total heap usage: 61 allocs, 61 frees, 273,474 bytes allocated
+==17900== 
+==17900== All heap blocks were freed -- no leaks are possible
+==17900== 
+==17900== For counts of detected and suppressed errors, rerun with: -v
+==17900== Use --track-origins=yes to see where uninitialised values come from
+==17900== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+Normal stringstream input
+==17903== Memcheck, a memory error detector
+==17903== Copyright (C) 2002-2011, and GNU GPL'd, by Julian Seward et al.
+==17903== Using Valgrind-3.7.0 and LibVEX; rerun with -h for copyright info
+==17903== Command: ./wlexer stringstream
+==17903== 
+## wstringstream:
+##    Note this works only when engine is generated with -b wchar_t
+##    and therefore QUEX_TYPE_CHARACTER == wchar_t.
+,------------------------------------------------------------------------------------
+| [START]
+(1, 1)  	HELLO 'bonjour' 
+(1, 9)  	WORLD 'le monde' 
+(1, 18)  	HELLO 'hello' 
+(1, 24)  	WORLD 'world' 
+(1, 30)  	HELLO 'hallo' 
+(1, 36)  	WORLD 'welt' 
+(1, 40)  	<TERMINATION> '' 
+| [END] number of token = 7
+`------------------------------------------------------------------------------------
+==17903== 
+==17903== HEAP SUMMARY:
+==17903==     in use at exit: 0 bytes in 0 blocks
+==17903==   total heap usage: 58 allocs, 58 frees, 266,634 bytes allocated
+==17903== 
+==17903== All heap blocks were freed -- no leaks are possible
+==17903== 
+==17903== For counts of detected and suppressed errors, rerun with: -v
+==17903== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

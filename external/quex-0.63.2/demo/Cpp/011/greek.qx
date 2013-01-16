@@ -1,0 +1,32 @@
+define {
+    /* Note, that the pattern names do not enter any program namespace.
+     * There is no harm if they interfer with token identifiers, or
+     * whatsoever.                                                      */
+    CAPITAL   [ΆΈΉΊΌΎ-Ϋ]   
+    LOWERCASE [ά-ώ]
+    WORD      {CAPITAL}{LOWERCASE}+
+    NUMBER    [0-9][0-9.,]+
+    UNIT      km2|"%"|{LOWERCASE}+
+}
+
+token {
+    WORD;
+    NUMBER;
+    UNIT;
+    PERIOD;
+    B_OPEN;
+    B_CLOSE;
+    UNKNOWN;
+}
+
+mode X :
+<skip: [ \t\n]>
+{
+    {WORD}   => TKN_WORD(Lexeme);
+    {NUMBER} => TKN_NUMBER(Lexeme);
+    {UNIT}   => TKN_UNIT(Lexeme);
+    "."      => TKN_PERIOD(Lexeme);
+    "("      => TKN_B_OPEN(Lexeme);
+    ")"      => TKN_B_CLOSE(Lexeme);
+    .        => TKN_UNKNOWN(Lexeme);
+}

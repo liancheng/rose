@@ -1,0 +1,588 @@
+// TokenN: 59917 [1]
+// FileSize: 59918 [Byte] = 58.5137 [kB] = 0.0571423 [MB].
+//Benchmark (including overhead)
+//    TokenN: 59917
+//    Total Time:  10 [sec]
+//    Runs:        4614 [1]
+//    TimePerRun:  0.00216732 [sec]
+//    Time / Char:         3.61714e-08
+//    Clock Cycles / Char: 66.3021
+// Overhead:
+//     Checksum (meaningless): 12060196 [1]
+//    Total Time:  2.12 [sec]
+//    Runs:        4614 [1]
+//    TimePerRun:  0.000459471 [sec]
+//    Time / Char:         7.66833e-09
+//    Clock Cycles / Char: 14.0561
+//Result:
+//   Time / Run:          0.00170785
+//   Time / Char:         2.8503e-08
+//   Clock Cycles / Char: 52.2461
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {80872}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {many-tiny-tokens.c}, 
+   file_size    = {59918}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {4614}, 
+   time_per_repetition        = {0.00170785},
+   token_n                    = {59917}, 
+   clock_cycles_per_character = {52.2461}, 
+   clock_cycles_per_token     = {52.247}, 
+}
+
+// TokenN: 1 [1]
+// FileSize: 38149 [Byte] = 37.2549 [kB] = 0.0363817 [MB].
+//Benchmark (including overhead)
+//    TokenN: 1
+//    Total Time:  10 [sec]
+//    Runs:        53449 [1]
+//    TimePerRun:  0.000187094 [sec]
+//    Time / Char:         4.9043e-09
+//    Clock Cycles / Char: 8.98959
+// Overhead:
+//     Checksum (meaningless): 10020174 [1]
+//    Total Time:  0.02 [sec]
+//    Runs:        53449 [1]
+//    TimePerRun:  3.74188e-07 [sec]
+//    Time / Char:         9.80861e-12
+//    Clock Cycles / Char: 0.0179792
+//Result:
+//   Time / Run:          0.00018672
+//   Time / Char:         4.89449e-09
+//   Clock Cycles / Char: 8.97161
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {80872}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {single-large-token.c}, 
+   file_size    = {38149}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {53449}, 
+   time_per_repetition        = {0.00018672},
+   token_n                    = {1}, 
+   clock_cycles_per_character = {8.97161}, 
+   clock_cycles_per_token     = {342258}, 
+}
+
+// TokenN: 245252 [1]
+// FileSize: 1585337 [Byte] = 1548.18 [kB] = 1.5119 [MB].
+//Benchmark (including overhead)
+//    TokenN: 245252
+//    Total Time:  10.02 [sec]
+//    Runs:        424 [1]
+//    TimePerRun:  0.0236321 [sec]
+//    Time / Char:         1.49067e-08
+//    Clock Cycles / Char: 27.3239
+// Overhead:
+//     Checksum (meaningless): 10944267 [1]
+//    Total Time:  0.79 [sec]
+//    Runs:        424 [1]
+//    TimePerRun:  0.00186321 [sec]
+//    Time / Char:         1.17528e-09
+//    Clock Cycles / Char: 2.15428
+//Result:
+//   Time / Run:          0.0217689
+//   Time / Char:         1.37314e-08
+//   Clock Cycles / Char: 25.1696
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {80872}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {linux-2.6.22.17-kernel-dir.c}, 
+   file_size    = {1585337}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {424}, 
+   time_per_repetition        = {0.0217689},
+   token_n                    = {245252}, 
+   clock_cycles_per_character = {25.1696}, 
+   clock_cycles_per_token     = {162.699}, 
+}
+
+// TokenN: 59917 [1]
+// FileSize: 59918 [Byte] = 58.5137 [kB] = 0.0571423 [MB].
+//Benchmark (including overhead)
+//    TokenN: 59917
+//    Total Time:  10 [sec]
+//    Runs:        5183 [1]
+//    TimePerRun:  0.00192938 [sec]
+//    Time / Char:         3.22004e-08
+//    Clock Cycles / Char: 59.0234
+// Overhead:
+//     Checksum (meaningless): 12331787 [1]
+//    Total Time:  2.37 [sec]
+//    Runs:        5183 [1]
+//    TimePerRun:  0.000457264 [sec]
+//    Time / Char:         7.6315e-09
+//    Clock Cycles / Char: 13.9885
+//Result:
+//   Time / Run:          0.00147212
+//   Time / Char:         2.45689e-08
+//   Clock Cycles / Char: 45.0348
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {76731}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {many-tiny-tokens.c}, 
+   file_size    = {59918}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {5183}, 
+   time_per_repetition        = {0.00147212},
+   token_n                    = {59917}, 
+   clock_cycles_per_character = {45.0348}, 
+   clock_cycles_per_token     = {45.0356}, 
+}
+
+// TokenN: 1 [1]
+// FileSize: 38149 [Byte] = 37.2549 [kB] = 0.0363817 [MB].
+//Benchmark (including overhead)
+//    TokenN: 1
+//    Total Time:  10 [sec]
+//    Runs:        50773 [1]
+//    TimePerRun:  0.000196955 [sec]
+//    Time / Char:         5.16278e-09
+//    Clock Cycles / Char: 9.46338
+// Overhead:
+//     Checksum (meaningless): 10020123 [1]
+//    Total Time:  0.02 [sec]
+//    Runs:        50773 [1]
+//    TimePerRun:  3.9391e-07 [sec]
+//    Time / Char:         1.03256e-11
+//    Clock Cycles / Char: 0.0189268
+//Result:
+//   Time / Run:          0.000196561
+//   Time / Char:         5.15246e-09
+//   Clock Cycles / Char: 9.44446
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {76731}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {single-large-token.c}, 
+   file_size    = {38149}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {50773}, 
+   time_per_repetition        = {0.000196561},
+   token_n                    = {1}, 
+   clock_cycles_per_character = {9.44446}, 
+   clock_cycles_per_token     = {360297}, 
+}
+
+// TokenN: 245252 [1]
+// FileSize: 1585337 [Byte] = 1548.18 [kB] = 1.5119 [MB].
+//Benchmark (including overhead)
+//    TokenN: 245252
+//    Total Time:  10 [sec]
+//    Runs:        467 [1]
+//    TimePerRun:  0.0214133 [sec]
+//    Time / Char:         1.35071e-08
+//    Clock Cycles / Char: 24.7585
+// Overhead:
+//     Checksum (meaningless): 10873896 [1]
+//    Total Time:  0.88 [sec]
+//    Runs:        467 [1]
+//    TimePerRun:  0.00188437 [sec]
+//    Time / Char:         1.18862e-09
+//    Clock Cycles / Char: 2.17875
+//Result:
+//   Time / Run:          0.0195289
+//   Time / Char:         1.23185e-08
+//   Clock Cycles / Char: 22.5797
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-O3}, 
+   executable_size = {76731}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {linux-2.6.22.17-kernel-dir.c}, 
+   file_size    = {1585337}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {467}, 
+   time_per_repetition        = {0.0195289},
+   token_n                    = {245252}, 
+   clock_cycles_per_character = {22.5797}, 
+   clock_cycles_per_token     = {145.958}, 
+}
+
+// TokenN: 59917 [1]
+// FileSize: 59918 [Byte] = 58.5137 [kB] = 0.0571423 [MB].
+//Benchmark (including overhead)
+//    TokenN: 59917
+//    Total Time:  10 [sec]
+//    Runs:        5113 [1]
+//    TimePerRun:  0.0019558 [sec]
+//    Time / Char:         3.26413e-08
+//    Clock Cycles / Char: 59.8314
+// Overhead:
+//     Checksum (meaningless): 14184626 [1]
+//    Total Time:  4.19 [sec]
+//    Runs:        5113 [1]
+//    TimePerRun:  0.00081948 [sec]
+//    Time / Char:         1.36767e-08
+//    Clock Cycles / Char: 25.0694
+//Result:
+//   Time / Run:          0.00113632
+//   Time / Char:         1.89646e-08
+//   Clock Cycles / Char: 34.7621
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {52224}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {many-tiny-tokens.c}, 
+   file_size    = {59918}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {5113}, 
+   time_per_repetition        = {0.00113632},
+   token_n                    = {59917}, 
+   clock_cycles_per_character = {34.7621}, 
+   clock_cycles_per_token     = {34.7626}, 
+}
+
+// TokenN: 1 [1]
+// FileSize: 38149 [Byte] = 37.2549 [kB] = 0.0363817 [MB].
+//Benchmark (including overhead)
+//    TokenN: 1
+//    Total Time:  10 [sec]
+//    Runs:        55450 [1]
+//    TimePerRun:  0.000180343 [sec]
+//    Time / Char:         4.72732e-09
+//    Clock Cycles / Char: 8.66518
+// Overhead:
+//     Checksum (meaningless): 10020025 [1]
+//    Total Time:  0.02 [sec]
+//    Runs:        55450 [1]
+//    TimePerRun:  3.60685e-07 [sec]
+//    Time / Char:         9.45465e-12
+//    Clock Cycles / Char: 0.0173304
+//Result:
+//   Time / Run:          0.000179982
+//   Time / Char:         4.71787e-09
+//   Clock Cycles / Char: 8.64785
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {52224}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {single-large-token.c}, 
+   file_size    = {38149}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {55450}, 
+   time_per_repetition        = {0.000179982},
+   token_n                    = {1}, 
+   clock_cycles_per_character = {8.64785}, 
+   clock_cycles_per_token     = {329907}, 
+}
+
+// TokenN: 245252 [1]
+// FileSize: 1585337 [Byte] = 1548.18 [kB] = 1.5119 [MB].
+//Benchmark (including overhead)
+//    TokenN: 245252
+//    Total Time:  10.01 [sec]
+//    Runs:        436 [1]
+//    TimePerRun:  0.0229587 [sec]
+//    Time / Char:         1.44819e-08
+//    Clock Cycles / Char: 26.5454
+// Overhead:
+//     Checksum (meaningless): 12008694 [1]
+//    Total Time:  1.81 [sec]
+//    Runs:        436 [1]
+//    TimePerRun:  0.00415138 [sec]
+//    Time / Char:         2.61861e-09
+//    Clock Cycles / Char: 4.79991
+//Result:
+//   Time / Run:          0.0188073
+//   Time / Char:         1.18633e-08
+//   Clock Cycles / Char: 21.7454
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {52224}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {linux-2.6.22.17-kernel-dir.c}, 
+   file_size    = {1585337}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {true},
+   column_count = {true},
+   note         = {}, 
+   repetition_n               = {436}, 
+   time_per_repetition        = {0.0188073},
+   token_n                    = {245252}, 
+   clock_cycles_per_character = {21.7454}, 
+   clock_cycles_per_token     = {140.565}, 
+}
+
+// TokenN: 59917 [1]
+// FileSize: 59918 [Byte] = 58.5137 [kB] = 0.0571423 [MB].
+//Benchmark (including overhead)
+//    TokenN: 59917
+//    Total Time:  10 [sec]
+//    Runs:        5483 [1]
+//    TimePerRun:  0.00182382 [sec]
+//    Time / Char:         3.04386e-08
+//    Clock Cycles / Char: 55.7939
+// Overhead:
+//     Checksum (meaningless): 14509265 [1]
+//    Total Time:  4.52 [sec]
+//    Runs:        5483 [1]
+//    TimePerRun:  0.000824366 [sec]
+//    Time / Char:         1.37582e-08
+//    Clock Cycles / Char: 25.2189
+//Result:
+//   Time / Run:          0.000999453
+//   Time / Char:         1.66803e-08
+//   Clock Cycles / Char: 30.5751
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {48083}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {many-tiny-tokens.c}, 
+   file_size    = {59918}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {5483}, 
+   time_per_repetition        = {0.000999453},
+   token_n                    = {59917}, 
+   clock_cycles_per_character = {30.5751}, 
+   clock_cycles_per_token     = {30.5756}, 
+}
+
+// TokenN: 1 [1]
+// FileSize: 38149 [Byte] = 37.2549 [kB] = 0.0363817 [MB].
+//Benchmark (including overhead)
+//    TokenN: 1
+//    Total Time:  10 [sec]
+//    Runs:        55180 [1]
+//    TimePerRun:  0.000181225 [sec]
+//    Time / Char:         4.75045e-09
+//    Clock Cycles / Char: 8.70758
+// Overhead:
+//     Checksum (meaningless): 10020185 [1]
+//    Total Time:  0.02 [sec]
+//    Runs:        55180 [1]
+//    TimePerRun:  3.6245e-07 [sec]
+//    Time / Char:         9.50091e-12
+//    Clock Cycles / Char: 0.0174152
+//Result:
+//   Time / Run:          0.000180863
+//   Time / Char:         4.74095e-09
+//   Clock Cycles / Char: 8.69017
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {48083}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {single-large-token.c}, 
+   file_size    = {38149}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {55180}, 
+   time_per_repetition        = {0.000180863},
+   token_n                    = {1}, 
+   clock_cycles_per_character = {8.69017}, 
+   clock_cycles_per_token     = {331521}, 
+}
+
+// TokenN: 245252 [1]
+// FileSize: 1585337 [Byte] = 1548.18 [kB] = 1.5119 [MB].
+//Benchmark (including overhead)
+//    TokenN: 245252
+//    Total Time:  10.02 [sec]
+//    Runs:        494 [1]
+//    TimePerRun:  0.0202834 [sec]
+//    Time / Char:         1.27944e-08
+//    Clock Cycles / Char: 23.4521
+// Overhead:
+//     Checksum (meaningless): 12285676 [1]
+//    Total Time:  2.07 [sec]
+//    Runs:        494 [1]
+//    TimePerRun:  0.00419028 [sec]
+//    Time / Char:         2.64315e-09
+//    Clock Cycles / Char: 4.84489
+//Result:
+//   Time / Run:          0.0160931
+//   Time / Char:         1.01512e-08
+//   Clock Cycles / Char: 18.6072
+{
+   generator       = {ANALYZER_GENERATOR},
+   quex_version    = {0.38.3}, 
+   cpu_name        = {IntelCoreDuo}, 
+   cpu_code        = {T2400}, 
+   cpu_freq_mhz    = {1833}, 
+   cc_name         = {g++    }, 
+   cc_version      = {4.3.1  }, 
+   cc_opt_flags    = {-Os}, 
+   executable_size = {48083}, 
+   os_name         = {linux-2}, 
+   tester_email    = {fschaef@users.sourceforge.net}, 
+   year         = {2009},
+   month        = {4},
+   day          = {30},
+   file_name    = {linux-2.6.22.17-kernel-dir.c}, 
+   file_size    = {1585337}, 
+   char_size    = {1}, 
+   buffer_size  = {65536}, 
+   line_count   = {false},
+   column_count = {false},
+   note         = {}, 
+   repetition_n               = {494}, 
+   time_per_repetition        = {0.0160931},
+   token_n                    = {245252}, 
+   clock_cycles_per_character = {18.6072}, 
+   clock_cycles_per_token     = {120.279}, 
+}
+

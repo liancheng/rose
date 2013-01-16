@@ -1,0 +1,7 @@
+mode END_OF_FILE :
+<inheritable: only>  
+{    
+    <<EOF>> => QUEX_TKN_TERMINATION(LexemeNull);
+}
+
+

@@ -1,0 +1,114 @@
+// -*- C++ -*-
+start = PROGRAM;
+
+define {
+    // Pattern definitions for example application
+    P_WHITESPACE          [ \t]
+    P_CURLY_BRACKET_O     "{"
+    P_CURLY_BRACKET_C     "}"
+    P_BRACKET_O           "("
+    P_BRACKET_C           ")"
+    P_EQUAL               "=="
+    P_KEY_STRUCT          "struct"
+    P_KEY_IF              "if"
+    P_KEY_IN              "in"
+    P_KEY_ELSE            "else:"
+    P_KEY_AND             "and"
+    P_KEY_OR              "or"
+    P_KEY_FOR             "for"
+    P_KEY_DEF             "def"
+    P_COLON               ":"
+    P_IDENTIFIER          [a-zA-Z]+
+    P_PRINT               "print"
+    P_NUMBER              [0-9]+
+    //
+    P_STRING_DELIMITER               "\""
+    P_BACKSLASHED_STRING_DELIMITER   "\\\""
+    P_BACKSLASHED_BACKSLASH          "\\\\"
+    P_BACKSLASHED_NEWLINE            "\\\n"
+}
+
+token {
+    INDENT;
+    DEDENT;
+    NODENT;
+    BRACKET_O;
+    BRACKET_C;
+    CURLY_BRACKET_O;
+    CURLY_BRACKET_C;
+    OP_EQUAL;
+    IF;
+    ELSE;
+    AND;
+    OR;
+    COLON;
+    FOR;
+    IN;
+    PRINT;
+    FUNCTION_DEF;
+    INDENTATION;
+    STRUCT;
+    SEMICOLON;
+    IDENTIFIER;
+    NUMBER;
+    STRING;
+    ERROR_MISALIGNED_INDENTATION;
+    EVENT_MODE_CHANGE;
+}
+
+/* Enables token repetition and defines the token to be
+ * potentially repeated.                                */
+repeated_token { 
+    DEDENT;
+}
+
+mode END_OF_FILE :
+<inheritable: only>  
+{    
+    <<EOF>> => QUEX_TKN_TERMINATION;
+}
+
+
+mode PROGRAM :
+     END_OF_FILE
+<entry: STRING_READER>
+<exit:  STRING_READER>
+<indentation: /* the default setup will do */>
+<skip: {P_WHITESPACE}>
+{
+    {P_CURLY_BRACKET_O} => QUEX_TKN_CURLY_BRACKET_O(Lexeme); 
+    {P_CURLY_BRACKET_C} => QUEX_TKN_CURLY_BRACKET_C(Lexeme); 
+    {P_BRACKET_O}       => QUEX_TKN_BRACKET_O(Lexeme);
+    {P_BRACKET_C}       => QUEX_TKN_BRACKET_C(Lexeme);
+    {P_EQUAL}           => QUEX_TKN_OP_EQUAL(Lexeme);
+    {P_KEY_AND}         => QUEX_TKN_AND(Lexeme);
+    {P_PRINT}           => QUEX_TKN_PRINT(Lexeme);
+    {P_KEY_OR}          => QUEX_TKN_OR(Lexeme);
+    {P_COLON}           => QUEX_TKN_COLON(Lexeme);
+    {P_KEY_IN}          => QUEX_TKN_IN(Lexeme);
+
+    {P_KEY_STRUCT}      => QUEX_TKN_STRUCT(Lexeme);
+    {P_KEY_IF}          => QUEX_TKN_IF(Lexeme); 
+    {P_KEY_ELSE}        => QUEX_TKN_ELSE(Lexeme);
+    {P_KEY_FOR}         => QUEX_TKN_FOR(Lexeme); 
+    {P_KEY_DEF}         => QUEX_TKN_FUNCTION_DEF(Lexeme);
+    {P_IDENTIFIER}      => QUEX_TKN_IDENTIFIER(Lexeme);
+    {P_NUMBER}          => QUEX_TKN_NUMBER(LexemeNull);
+
+    {P_STRING_DELIMITER} => GOTO(STRING_READER, QUEX_TKN_EVENT_MODE_CHANGE);
+}
+
+mode STRING_READER :
+     END_OF_FILE
+    <entry: PROGRAM>
+    <exit:  PROGRAM>
+{
+    on_entry                         { self_accumulator_clear(); }
+    on_exit                          { self_accumulator_flush(QUEX_TKN_STRING); }
+
+    {P_BACKSLASHED_STRING_DELIMITER} { self_accumulator_add(Lexeme, LexemeEnd); }
+    {P_BACKSLASHED_BACKSLASH}        { self_accumulator_add(Lexeme, LexemeEnd); }
+    {P_STRING_DELIMITER} => GOTO(PROGRAM, QUEX_TKN_EVENT_MODE_CHANGE);
+    /* Default pattern must come last! */
+    .                                { self_accumulator_add(Lexeme, LexemeEnd); }
+}

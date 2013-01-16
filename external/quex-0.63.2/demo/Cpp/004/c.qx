@@ -1,0 +1,177 @@
+// -*- C++ -*- vim: set syntax=cpp:
+start = PROGRAM;
+
+token {
+    PP_INCLUDE;
+    PP_DEFINE;
+    PP_IF;
+    PP_ELIF;
+    PP_IFDEF;
+    PP_IFNDEF;
+    PP_ENDIF;
+    PP_ELSE;
+    PP_PRAGMA;
+    PP_ERROR;
+    PP_DEFINED;
+    BACKLASHED_NEWLINE;
+    TYPE_UNSIGNED;
+    TYPE_INT;
+    TYPE_LONG;
+    TYPE_FLOAT;
+    TYPE_DOUBLE;
+    TYPE_CHAR;
+    HASH;
+    DOUBLE_HASH;
+    QUESTION_MARK;
+    TILDE;
+    BRACKET_O;
+    BRACKET_C;
+    CORNER_BRACKET_O;
+    CORNER_BRACKET_C;
+    CURLY_BRACKET_O;
+    CURLY_BRACKET_C;
+    OP_ASSIGNMENT;
+    PLUS;
+    MINUS;
+    MULT;
+    DIV;
+    MODULO;
+    ASSIGN_PLUS;
+    ASSIGN_MINUS;
+    ASSIGN_MULT;
+    ASSIGN_DIV;
+    EQ;
+    NOT_EQ;
+    GREATER;
+    GR_EQ;
+    LESS;
+    LE_EQ;
+    NOT;
+    LOGICAL_OR;
+    EXCLUSIVE_OR;
+    OR;
+    AMPERSANT;
+    AND;
+    COLON;
+    STRUCT;
+    CONST;
+    IF;
+    ELSE;
+    SWITCH;
+    FOR;
+    DO;
+    WHILE;
+    BREAK;
+    CONTINUE;
+    SEMICOLON;
+    DOT;
+    COMMA;
+    IDENTIFIER;
+    NUMBER;
+    STRING;
+    QUOTED_CHAR;
+}
+
+
+define {
+    // Pattern definitions for example application
+    P_WHITESPACE          [ \t\n]+
+    P_IDENTIFIER          [_a-zA-Z][_a-zA-Z0-9]*
+    P_NUMBER              [0-9]+
+    //
+    // String: 
+    //    Quote " followe by either \" or something different from " and then a final "
+    P_STRING              "\""(\\"\""|[^"])*"\""
+    P_QUOTED_CHAR_1       ("'\\''")|("'"[^'\n\t]?"'")
+    P_QUOTED_CHAR_2       "'\\"([0-7]+|[abcfnrtv\\])"'"
+    P_QUOTED_CHAR_3       "'\\x"[0-9a-fA-F]+"'"
+    P_QUOTED_CHAR         ({P_QUOTED_CHAR_1}|{P_QUOTED_CHAR_2}|{P_QUOTED_CHAR_3})
+    P_INCLUDE_FILE1       "<"[^>]+">"
+    P_INCLUDE_FILE2       "\""[^"]+"\""
+}
+
+mode PROGRAM :
+<skip:       [ \r\n\t]>
+<skip_range: "/*" "*/">
+<skip_range: "//" "\n">
+{
+    <<EOF>>       => QUEX_TKN_TERMINATION(Lexeme);
+
+    "#"[ \t]*"include"[ \t]*{P_INCLUDE_FILE2} => QUEX_TKN_PP_INCLUDE(Lexeme);
+    "#"[ \t]*"include"[ \t]*{P_INCLUDE_FILE1} => QUEX_TKN_PP_INCLUDE(Lexeme);
+    "#"[ \t]*"define"  => QUEX_TKN_PP_DEFINE(Lexeme);
+    "#"[ \t]*"if"      => QUEX_TKN_PP_IF(Lexeme);
+    "#"[ \t]*"elif"    => QUEX_TKN_PP_ELIF(Lexeme);
+    "#"[ \t]*"ifdef"   => QUEX_TKN_PP_IFDEF(Lexeme);
+    "#"[ \t]*"ifndef"  => QUEX_TKN_PP_IFNDEF(Lexeme);
+    "#"[ \t]*"endif"   => QUEX_TKN_PP_ENDIF(Lexeme);
+    "#"[ \t]*"else"    => QUEX_TKN_PP_ELSE(Lexeme);
+    "#"[ \t]*"pragma"  => QUEX_TKN_PP_PRAGMA(Lexeme);
+    "#"[ \t]*"error"   => QUEX_TKN_PP_ERROR(Lexeme);
+    defined            => QUEX_TKN_PP_DEFINED(Lexeme);
+    "\\\n"             => QUEX_TKN_BACKLASHED_NEWLINE(Lexeme);
+
+    unsigned  => QUEX_TKN_TYPE_UNSIGNED(Lexeme);
+    int       => QUEX_TKN_TYPE_INT(Lexeme);
+    long      => QUEX_TKN_TYPE_LONG(Lexeme);
+    float     => QUEX_TKN_TYPE_FLOAT(Lexeme);
+    double    => QUEX_TKN_TYPE_DOUBLE(Lexeme);
+    char      => QUEX_TKN_TYPE_CHAR(Lexeme);
+
+    "#"           => QUEX_TKN_HASH(Lexeme);
+    "##"          => QUEX_TKN_DOUBLE_HASH(Lexeme);
+    "?"           => QUEX_TKN_QUESTION_MARK(Lexeme);
+    "~"           => QUEX_TKN_TILDE(Lexeme);
+    "("           => QUEX_TKN_BRACKET_O(Lexeme);
+    ")"           => QUEX_TKN_BRACKET_C(Lexeme);
+    "["           => QUEX_TKN_CORNER_BRACKET_O(Lexeme);
+    "]"           => QUEX_TKN_CORNER_BRACKET_C(Lexeme);
+    "{"           => QUEX_TKN_CURLY_BRACKET_O(Lexeme);
+    "}"           => QUEX_TKN_CURLY_BRACKET_C(Lexeme);
+    "="           => QUEX_TKN_OP_ASSIGNMENT(Lexeme);
+    "+"           => QUEX_TKN_PLUS(Lexeme);
+    "-"           => QUEX_TKN_MINUS(Lexeme);
+    "*"           => QUEX_TKN_MULT(Lexeme);
+    "/"           => QUEX_TKN_DIV(Lexeme);
+    "%"           => QUEX_TKN_MODULO(Lexeme);
+    "+="          => QUEX_TKN_ASSIGN_PLUS(Lexeme);
+    "-="          => QUEX_TKN_ASSIGN_MINUS(Lexeme);
+    "*="          => QUEX_TKN_ASSIGN_MULT(Lexeme);
+    "/="          => QUEX_TKN_ASSIGN_DIV(Lexeme);
+    "=="          => QUEX_TKN_EQ(Lexeme);
+    "!="          => QUEX_TKN_NOT_EQ(Lexeme);
+    ">"           => QUEX_TKN_GREATER(Lexeme);
+    ">="          => QUEX_TKN_GR_EQ(Lexeme);
+    "<"           => QUEX_TKN_LESS(Lexeme);
+    "<="          => QUEX_TKN_LE_EQ(Lexeme);
+    "!"           => QUEX_TKN_NOT(Lexeme);
+    "|"           => QUEX_TKN_LOGICAL_OR(Lexeme);
+    "^"           => QUEX_TKN_EXCLUSIVE_OR(Lexeme);
+    "||"          => QUEX_TKN_OR(Lexeme);
+    "&"           => QUEX_TKN_AMPERSANT(Lexeme);
+    "&&"          => QUEX_TKN_AND(Lexeme);
+    ":"           => QUEX_TKN_COLON(Lexeme);
+    struct        => QUEX_TKN_STRUCT(Lexeme);
+    const         => QUEX_TKN_CONST(Lexeme);
+    if            => QUEX_TKN_IF(Lexeme);
+    else          => QUEX_TKN_ELSE(Lexeme);
+    switch        => QUEX_TKN_SWITCH(Lexeme);
+    for           => QUEX_TKN_FOR(Lexeme);
+    do            => QUEX_TKN_DO(Lexeme);
+    while         => QUEX_TKN_WHILE(Lexeme);
+    break         => QUEX_TKN_BREAK(Lexeme);
+    continue      => QUEX_TKN_CONTINUE(Lexeme);
+    ";"           => QUEX_TKN_SEMICOLON(Lexeme);
+    "."           => QUEX_TKN_DOT(Lexeme);
+    ","           => QUEX_TKN_COMMA(Lexeme);
+
+    {P_IDENTIFIER}  => QUEX_TKN_IDENTIFIER(Lexeme);
+    {P_NUMBER}      => QUEX_TKN_NUMBER(Lexeme);
+    {P_STRING}      => QUEX_TKN_STRING(Lexeme);
+    {P_QUOTED_CHAR} => QUEX_TKN_QUOTED_CHAR(Lexeme);
+
+    // {P_WHITESPACE}           { }
+    //"/*"([^*]|[\r\n]|("*"+([^*/]|[\r\n])))*"*"+"/" { } // => QUEX_TKN_COMMENT(Lexeme);
+    // "//"[^\n]*"\n"           { } // => QUEX_TKN_COMMENT(Lexeme);
+}
+

@@ -1,0 +1,10 @@
+
+token {
+    WORD;
+}
+
+mode X :
+<skip: [ \t\n]>
+{
+    [ΆΈΉΊΌΎ-Ϋ]+   => QUEX_TKN_WORD(Lexeme);
+}

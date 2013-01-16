@@ -1,0 +1,33 @@
+import os
+import sys
+sys.path.insert(0, os.environ["QUEX_PATH"])
+
+from   quex.input.setup                                 import setup as Setup
+import quex.engine.generator.skipper.character_set as character_set
+import quex.engine.generator.skipper.range         as range
+import quex.engine.generator.skipper.nested_range  as nested_range
+import quex.blackboard                                  as blackboard
+
+def do(SkipperDescriptor):
+    """RETURNS: code_str --  a string containing source code of the skipper
+                db       --  database on required local variables
+    """
+    LanguageDB = Setup.language_db
+    skipper_class = SkipperDescriptor.__class__.__name__
+    assert skipper_class in ["SkipperRange", "SkipperCharacterSet"]
+
+    if   skipper_class == "SkipperCharacterSet":
+        return character_set.do(SkipperDescriptor.get_character_set())
+
+    elif skipper_class == "SkipperRange":
+        Mode = None
+        if SkipperDescriptor.containing_mode_name() != "":
+            Mode = lexer_mode.mode_db[SkipperDescriptor.containing_mode_name()]
+        return range.do(SkipperDescriptor.get_closing_sequence(), Mode)
+
+    elif skipper_class == "SkipperNestedRange":
+        return nested_range.do(SkipperDescriptor.get_opening_sequence(), 
+                               SkipperDescriptor.get_closing_sequence())
+    else:
+        assert None, None
+

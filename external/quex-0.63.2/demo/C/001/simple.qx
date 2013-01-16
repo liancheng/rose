@@ -1,0 +1,86 @@
+// -*- C++ -*-
+start = PROGRAM;
+
+header {
+#include <stdlib.h>  /* gets:  atoi(const char*) */
+}
+
+define {
+    P_IDENTIFIER          [a-zA-Z]+
+    P_NUMBER              [0-9]+
+    //
+    P_STRING_DELIMITER                "\""
+    P_BACKSLASHED_STRING_DELIMITER    "\\\""
+    P_BACKSLASHED_BACKSLASH           "\\\\"
+}
+
+token {
+    BRACKET_O;
+    BRACKET_C;
+    CURLY_BRACKET_O;
+    CURLY_BRACKET_C;
+    OP_ASSIGNMENT;
+    IF;
+    IDENTIFIER;
+    STRUCT;
+    SEMICOLON;
+    NUMBER;
+    STRING;
+    QUOTE;
+}
+
+mode END_OF_FILE :
+<inheritable: only>  
+{    
+    <<EOF>> {
+        self_send(QUEX_TKN_TERMINATION);
+        RETURN;
+    }
+}
+
+
+mode PROGRAM :
+     END_OF_FILE
+<entry: STRING_READER>
+<exit:  STRING_READER>
+{
+    "{"         { self_send(QUEX_TKN_CURLY_BRACKET_O); RETURN; }
+    "}"         => QUEX_TKN_CURLY_BRACKET_C;
+    "="         => QUEX_TKN_OP_ASSIGNMENT;
+    struct      => QUEX_TKN_STRUCT;
+    if          => QUEX_TKN_IF;
+    ";"         => QUEX_TKN_SEMICOLON;
+
+    [a-z]+      { self_send1(QUEX_TKN_IDENTIFIER, Lexeme); }
+    {P_NUMBER}  => QUEX_TKN_NUMBER(number=(size_t)atoi((const char*)(Lexeme)));
+
+    [ \t\n]     { }
+
+    {P_STRING_DELIMITER} {
+        self_send(QUEX_TKN_QUOTE);
+        self_enter_mode(&STRING_READER);
+        RETURN;
+    }
+}
+
+mode STRING_READER :
+     END_OF_FILE
+<entry: PROGRAM>
+<exit:  PROGRAM>
+{
+    on_entry { self_accumulator_clear(); }
+    on_exit  { 
+        self_accumulator_flush(QUEX_TKN_STRING); 
+        self_send(QUEX_TKN_QUOTE);
+    }
+
+    {P_BACKSLASHED_STRING_DELIMITER} { self_accumulator_add(Lexeme, LexemeEnd); }
+    {P_BACKSLASHED_BACKSLASH}        { self_accumulator_add(Lexeme, LexemeEnd); }
+
+    {P_STRING_DELIMITER}             { self_enter_mode(&PROGRAM); return; }
+
+    <<FAIL>> {
+        self_accumulator_add(Lexeme, LexemeEnd); 
+    }
+}
+

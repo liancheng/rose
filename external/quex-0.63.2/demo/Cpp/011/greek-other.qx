@@ -1,0 +1,22 @@
+define {
+    WORD      \P{Script=Greek}+
+    NUMBER    [0-9A-F][0-9A-F]+
+}
+
+token {
+    COLON;
+    NUMBER;
+    UNKNOWN;
+    WORD;
+    WHITE;
+}
+
+mode X :
+{
+    on_end_of_stream => TKN_TERMINATION(LexemeNull);
+    {WORD}   => TKN_WORD(Lexeme);
+    {NUMBER} => TKN_NUMBER(Lexeme);
+    ":"      => TKN_COLON(Lexeme);
+    .        => TKN_UNKNOWN(Lexeme);
+    [ \t\n]  => TKN_WHITE(Lexeme);
+}
