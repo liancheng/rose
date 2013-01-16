@@ -136,6 +136,11 @@ RState* r_state_open ()
 
 void r_state_free (RState* r)
 {
+    r->last_error          = R_UNDEFINED;
+    r->current_input_port  = R_UNDEFINED;
+    r->current_output_port = R_UNDEFINED;
+    r->current_error_port  = R_UNDEFINED;
+
     vm_finish (r);
     gc_finish (r);
 
