@@ -444,3 +444,23 @@ rsexp r_read_from_string (RState* r, rconstcstring input)
 
     return r_read (reader);
 }
+
+rsexp np_read (RState* r, rsexp args)
+{
+    rsexp port;
+    rsexp reader;
+
+    r_match_args (r, args, 0, 1, FALSE, &port);
+
+    if (r_undefined_p (port))
+        port = r_current_input_port (r);
+
+    reader = r_reader_new (r, port);
+
+    return r_read (reader);
+}
+
+void read_init_primitives (RState* r, rsexp* env)
+{
+    bind_primitive_x (r, env, "read", np_read, 0, 1, FALSE);
+}

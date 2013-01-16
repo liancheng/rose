@@ -100,6 +100,7 @@ void bind_primitive_x (RState* r,
 void pair_init_primitives (RState* r, rsexp* env);
 void port_init_primitives (RState* r, rsexp* env);
 void math_init_primitives (RState* r, rsexp* env);
+void read_init_primitives (RState* r, rsexp* env);
 
 rsexp default_env (RState* r)
 {
@@ -108,6 +109,7 @@ rsexp default_env (RState* r)
     pair_init_primitives (r, &env);
     port_init_primitives (r, &env);
     math_init_primitives (r, &env);
+    read_init_primitives (r, &env);
 
     return env;
 }
