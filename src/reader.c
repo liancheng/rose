@@ -1,3 +1,4 @@
+#include "detail/env.h"
 #include "detail/reader.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
@@ -7,6 +8,7 @@
 #include "rose/opaque.h"
 #include "rose/pair.h"
 #include "rose/port.h"
+#include "rose/primitive.h"
 #include "rose/reader.h"
 #include "rose/string.h"
 #include "rose/vector.h"
@@ -18,16 +20,22 @@ static rsexp read_datum (Reader* reader);
 
 static rint feed_lexer (Reader* reader)
 {
+    RState* r;
+    rcstring begin;
+    rcstring line;
+    rint size;
+    rint len;
+
     QUEX_NAME (buffer_fill_region_prepare) (&reader->lexer);
 
-    rcstring begin = r_cast (rcstring,
-                             QUEX_NAME (buffer_fill_region_begin)
-                                       (&reader->lexer));
+    begin = r_cast (rcstring,
+                    QUEX_NAME (buffer_fill_region_begin)
+                               (&reader->lexer));
 
-    RState*  r     = reader->r;
-    rint     size  = QUEX_NAME (buffer_fill_region_size) (&reader->lexer);
-    rcstring line  = r_port_gets (r, reader->input_port, begin, size);
-    rint     len   = line ? strlen (line) : 0;
+    r = reader->r;
+    size = QUEX_NAME (buffer_fill_region_size) (&reader->lexer);
+    line = r_port_gets (r, reader->input_port, begin, size);
+    len = line ? strlen (line) : 0;
 
     QUEX_NAME (buffer_fill_region_finish) (&reader->lexer, len);
 
@@ -312,14 +320,14 @@ exit:
 
 static rsexp read_simple_datum (Reader* reader)
 {
-    RToken*  token;
-    rsexp    datum;
+    RToken* token;
+    rsexp datum;
     rcstring text;
-    rsize    size;
+    rsize size;
 
     token = lookahead (reader);
-    size  = QUEX_NAME (strlen) (token->text) + 5;
-    text  = alloca (size);
+    size = QUEX_NAME (strlen) (token->text) + 5;
+    text = alloca (size);
 
     QUEX_NAME_TOKEN (pretty_char_text) (token, text, size);
 
@@ -430,8 +438,8 @@ rsexp r_read (rsexp reader)
 
 rsexp r_read_from_string (RState* r, rconstcstring input)
 {
-    rsexp str    = r_string_new (r, input);
-    rsexp port   = r_open_input_string (r, str);
+    rsexp str = r_string_new (r, input);
+    rsexp port = r_open_input_string (r, str);
     rsexp reader = r_reader_new (r, port);
 
     return r_read (reader);
