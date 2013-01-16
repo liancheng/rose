@@ -1,5 +1,5 @@
 #include "detail/env.h"
-#include "detail/reader.h"
+#include "detail/read.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
 #include "rose/error.h"
@@ -9,7 +9,7 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/primitive.h"
-#include "rose/reader.h"
+#include "rose/read.h"
 #include "rose/string.h"
 #include "rose/vector.h"
 

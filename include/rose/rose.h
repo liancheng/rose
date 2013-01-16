@@ -12,7 +12,7 @@
 #include "rose/pair.h"
 #include "rose/port.h"
 #include "rose/procedure.h"
-#include "rose/reader.h"
+#include "rose/read.h"
 #include "rose/rose.h"
 #include "rose/sexp.h"
 #include "rose/state.h"

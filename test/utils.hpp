@@ -4,7 +4,7 @@
 #include "detail/compile.h"
 #include "rose/eq.h"
 #include "rose/port.h"
-#include "rose/reader.h"
+#include "rose/read.h"
 #include "rose/state.h"
 #include "rose/string.h"
 

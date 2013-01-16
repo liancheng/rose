@@ -5,7 +5,7 @@
 #include "rose/error.h"
 #include "rose/number.h"
 #include "rose/port.h"
-#include "rose/reader.h"
+#include "rose/read.h"
 #include "rose/string.h"
 #include "rose/symbol.h"
 #include "rose/vector.h"
