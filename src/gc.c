@@ -21,12 +21,16 @@
 #define gc_paint_gray(obj)  ((obj)->gc_color = R_GC_COLOR_GRAY)
 #define gc_paint_black(obj) ((obj)->gc_color = R_GC_COLOR_BLACK)
 
-static rbool valid_boxed_type_p (RTypeTag tag)
+#ifndef NDEBUG
+
+static inline rbool valid_boxed_type_p (RTypeTag tag)
 {
     return tag > R_TAG_BOXED && tag < R_TAG_MAX;
 }
 
-static void gc_scope_protect (RState* r, RObject* obj)
+#endif
+
+static inline void gc_scope_protect (RState* r, RObject* obj)
 {
     RGcState* gc = &r->gc;
 
@@ -42,7 +46,7 @@ static void gc_scope_protect (RState* r, RObject* obj)
     gc->arena [gc->arena_index++] = object_to_sexp (obj);
 }
 
-static void gc_prepend_to_gray_list (RState* r, RObject* obj)
+static inline void gc_prepend_to_gray_list (RState* r, RObject* obj)
 {
     RGcState* gc = &r->gc;
 
@@ -50,7 +54,7 @@ static void gc_prepend_to_gray_list (RState* r, RObject* obj)
     gc->gray_list = obj;
 }
 
-static void gc_prepend_to_chrono_list (RState* r, RObject* obj)
+static inline void gc_prepend_to_chrono_list (RState* r, RObject* obj)
 {
     RGcState* gc = &r->gc;
 
@@ -58,7 +62,7 @@ static void gc_prepend_to_chrono_list (RState* r, RObject* obj)
     gc->chrono_list = obj;
 }
 
-static void gc_mark (RState* r, RObject* obj)
+static inline void gc_mark (RState* r, RObject* obj)
 {
     if (!gc_white_p (obj) || gc_gray_p (obj))
         return;
@@ -67,7 +71,7 @@ static void gc_mark (RState* r, RObject* obj)
     gc_prepend_to_gray_list (r, obj);
 }
 
-static void gc_mark_arena (RState* r)
+static inline void gc_mark_arena (RState* r)
 {
     rsize i;
     RGcState* gc = &r->gc;
@@ -76,7 +80,7 @@ static void gc_mark_arena (RState* r)
         r_gc_mark (r, gc->arena [i]);
 }
 
-static void gc_mark_vm (RState* r)
+static inline void gc_mark_vm (RState* r)
 {
     RVm* vm = &r->vm;
 
@@ -87,13 +91,13 @@ static void gc_mark_vm (RState* r)
     r_gc_mark (r, vm->value);
 }
 
-static void gc_scan_phase (RState* r)
+static inline void gc_scan_phase (RState* r)
 {
     gc_mark_arena (r);
     gc_mark_vm (r);
 }
 
-static void gc_mark_children (RState* r, RObject* obj)
+static inline void gc_mark_children (RState* r, RObject* obj)
 {
     RTypeInfo* type;
     RGcMark mark;
@@ -107,7 +111,7 @@ static void gc_mark_children (RState* r, RObject* obj)
     gc_paint_black (obj);
 }
 
-static void gc_mark_phase (RState* r)
+static inline void gc_mark_phase (RState* r)
 {
     RObject*  obj;
     RGcState* gc = &r->gc;
@@ -119,7 +123,7 @@ static void gc_mark_phase (RState* r)
     }
 }
 
-static void gc_sweep_phase (RState* r)
+static inline void gc_sweep_phase (RState* r)
 {
     RGcState* gc;
     RObject** head;
