@@ -7,6 +7,8 @@
 
 R_BEGIN_DECLS
 
+typedef rsexp (*RBinaryFunc) (RState*, rsexp, rsexp);
+
 rbool r_pair_p       (rsexp obj);
 rsexp r_cons         (RState* r,
                       rsexp car,
@@ -39,6 +41,10 @@ rsexp r_length       (RState* r,
 rsexp r_list_ref     (RState* r,
                       rsexp list,
                       rsize k);
+rsexp r_fold         (RState* r,
+                      RBinaryFunc proc,
+                      rsexp nil,
+                      rsexp list);
 
 #define r_caar(o)   r_car (r_car   ((o)))
 #define r_cadr(o)   r_car (r_cdr   ((o)))

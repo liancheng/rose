@@ -287,6 +287,32 @@ rsexp r_list_ref (RState* r, rsexp seq, rsize k)
     return res;
 }
 
+rsexp r_fold (RState* r, RBinaryFunc proc, rsexp nil, rsexp list)
+{
+    rsexp res;
+    rsexp car;
+
+    res = nil;
+
+    if (r_null_p (list))
+        goto exit;
+
+    while (!r_null_p (list)) {
+        if (!r_pair_p (list)) {
+            r_error_code (r, R_ERR_WRONG_TYPE_ARG, list);
+            res = R_FAILURE;
+            goto exit;
+        }
+
+        car = r_car (list);
+        list = r_cdr (list);
+        ensure_or_goto (res = proc (r, car, res), exit);
+    }
+
+exit:
+    return res;
+}
+
 rsexp np_cons (RState* r, rsexp args)
 {
     rsexp car, cdr;
