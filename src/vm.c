@@ -283,6 +283,12 @@ void vm_init (RState* r)
 
 void vm_finish (RState* r)
 {
+    r->vm.args  = R_UNDEFINED;
+    r->vm.env   = R_UNDEFINED;
+    r->vm.stack = R_UNDEFINED;
+    r->vm.value = R_UNDEFINED;
+    r->vm.next  = R_UNDEFINED;
+
     g_hash_table_destroy (r->vm.executors);
 }
 
