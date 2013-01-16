@@ -305,3 +305,19 @@ rsexp r_eval_from_port (RState* r, rsexp port)
     ensure (code = r_compile_from_port (r, port));
     return r_eval (r, code);
 }
+
+rsexp r_eval_from_string (RState* r, rsexp input)
+{
+    rsexp port;
+    rsexp code;
+
+    ensure (port = r_open_input_string (r, input));
+    ensure (code = r_compile_from_port (r, port));
+
+    return r_eval (r, code);
+}
+
+rsexp r_eval_from_cstr (RState* r, rconstcstring input)
+{
+    return r_eval_from_string (r, r_string_new (r, input));
+}
