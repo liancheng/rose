@@ -455,7 +455,7 @@ rsexp np_read (RState* r, rsexp args)
     if (r_undefined_p (port))
         port = r_current_input_port (r);
 
-    reader = r_reader_new (r, port);
+    ensure (reader = r_reader_new (r, port));
 
     return r_read (reader);
 }

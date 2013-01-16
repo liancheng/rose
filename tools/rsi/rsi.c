@@ -22,7 +22,7 @@ int main (int argc, char* argv[])
     result = r_eval_from_port (r, r_current_input_port (r));
 
     if (r_failure_p (result)) {
-        r_format (r, "Error: ~a~%", r_last_error (r));
+        r_format (r, "~s~%", r_last_error (r));
         exit_code = EXIT_FAILURE;
         goto clean;
     }
