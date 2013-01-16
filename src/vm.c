@@ -9,25 +9,26 @@
 #include "rose/primitive.h"
 #include "rose/procedure.h"
 #include "rose/sexp.h"
+#include "rose/string.h"
 #include "rose/symbol.h"
 
 typedef rsexp (*RInstructionExecutor) (RState*, RVm*);
 
-static rsexp pop (RVm* vm)
+static inline rsexp pop (RVm* vm)
 {
     rsexp res = r_car (vm->stack);
     vm->stack = r_cdr (vm->stack);
     return res;
 }
 
-static rsexp continuation (RState* r, rsexp stack)
+static inline rsexp continuation (RState* r, rsexp stack)
 {
     rsexp var = r_intern_static (r, "v");
     rsexp code = emit_restore_cc (r, stack, var);
     return r_procedure_new (r, code, R_NULL, r_list (r, 1, var));
 }
 
-static rsexp call_frame (RState* r,
+static inline rsexp call_frame (RState* r,
                          rsexp ret,
                          rsexp env,
                          rsexp args,
@@ -36,7 +37,7 @@ static rsexp call_frame (RState* r,
     return r_list (r, 4, ret, env, args, stack);
 }
 
-static rsexp apply_primitive (RState* r, RVm* vm)
+static inline rsexp apply_primitive (RState* r, RVm* vm)
 {
     r_gc_scope_open (r);
 
@@ -46,7 +47,7 @@ static rsexp apply_primitive (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp apply (RState* r, RVm* vm)
+static inline rsexp apply (RState* r, RVm* vm)
 {
     rsexp proc, body, env, formals;
 
@@ -64,7 +65,7 @@ static rsexp apply (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_apply (RState* r, RVm* vm)
+static inline rsexp exec_apply (RState* r, RVm* vm)
 {
     rsexp res;
 
@@ -85,7 +86,7 @@ exit:
     return res;
 }
 
-static rsexp exec_arg (RState* r, RVm* vm)
+static inline rsexp exec_arg (RState* r, RVm* vm)
 {
     rsexp args;
     
@@ -97,7 +98,7 @@ static rsexp exec_arg (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_assign (RState* r, RVm* vm)
+static inline rsexp exec_assign (RState* r, RVm* vm)
 {
     rsexp var;
 
@@ -112,7 +113,7 @@ static rsexp exec_assign (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_bind (RState* r, RVm* vm)
+static inline rsexp exec_bind (RState* r, RVm* vm)
 {
     vm->env = r_env_bind_x (r, vm->env, r_cadr (vm->next), vm->value);
     vm->next = r_caddr (vm->next);
@@ -120,7 +121,7 @@ static rsexp exec_bind (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_branch (RState* r, RVm* vm)
+static inline rsexp exec_branch (RState* r, RVm* vm)
 {
     vm->next = r_true_p (vm->value)
              ? r_cadr (vm->next)
@@ -129,7 +130,7 @@ static rsexp exec_branch (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_capture_cc (RState* r, RVm* vm)
+static inline rsexp exec_capture_cc (RState* r, RVm* vm)
 {
     vm->value = continuation (r, vm->stack);
     vm->next = r_cadr (vm->next);
@@ -137,7 +138,7 @@ static rsexp exec_capture_cc (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_const (RState* r, RVm* vm)
+static inline rsexp exec_constant (RState* r, RVm* vm)
 {
     vm->value = r_cadr (vm->next);
     vm->next = r_caddr (vm->next);
@@ -145,7 +146,7 @@ static rsexp exec_const (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_close (RState* r, RVm* vm)
+static inline rsexp exec_close (RState* r, RVm* vm)
 {
     rsexp formals = r_cadr (vm->next);
     rsexp body = r_caddr (vm->next);
@@ -155,7 +156,7 @@ static rsexp exec_close (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_frame (RState* r, RVm* vm)
+static inline rsexp exec_frame (RState* r, RVm* vm)
 {
     rsexp ret = r_cadr (vm->next);
 
@@ -166,14 +167,14 @@ static rsexp exec_frame (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_halt (RState* r, RVm* vm)
+static inline rsexp exec_halt (RState* r, RVm* vm)
 {
     vm->halt_p = TRUE;
 
     return vm->value;
 }
 
-static rsexp exec_refer (RState* r, RVm* vm)
+static inline rsexp exec_refer (RState* r, RVm* vm)
 {
     rsexp val = r_env_lookup (r, vm->env, r_cadr (vm->next));
     vm->value = r_undefined_p (val) ? val : r_car (val);
@@ -182,7 +183,7 @@ static rsexp exec_refer (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_restore_cc (RState* r, RVm* vm)
+static inline rsexp exec_restore_cc (RState* r, RVm* vm)
 {
     rsexp stack = r_cadr (vm->next);
     rsexp var = r_caddr (vm->next);
@@ -194,7 +195,7 @@ static rsexp exec_restore_cc (RState* r, RVm* vm)
     return vm->value;
 }
 
-static rsexp exec_return (RState* r, RVm* vm)
+static inline rsexp exec_return (RState* r, RVm* vm)
 {
     vm->next  = pop (vm);
     vm->env   = pop (vm);
@@ -269,7 +270,7 @@ void vm_init (RState* r)
     install_instruction_executor (r, vm, r->i.arg,        exec_arg);
     install_instruction_executor (r, vm, r->i.assign,     exec_assign);
     install_instruction_executor (r, vm, r->i.capture_cc, exec_capture_cc);
-    install_instruction_executor (r, vm, r->i.constant,   exec_const);
+    install_instruction_executor (r, vm, r->i.constant,   exec_constant);
     install_instruction_executor (r, vm, r->i.close,      exec_close);
     install_instruction_executor (r, vm, r->i.bind,       exec_bind);
     install_instruction_executor (r, vm, r->i.branch,     exec_branch);
