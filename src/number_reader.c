@@ -1,6 +1,7 @@
 #include "detail/math_workaround.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
+#include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 
@@ -714,7 +715,7 @@ static rbool read_rect_complex (RNumberReader* reader,
  */
 static rsexp read_number (RNumberReader* reader)
 {
-    rsexp number;
+    rsexp res;
     double rho;
     double theta;
     mpq_t real;
@@ -726,9 +727,9 @@ static rsexp read_number (RNumberReader* reader)
     read_prefix (reader);
 
     if (read_polar_complex (reader, &rho, &theta)) {
-        number = r_flonum_new (reader->r,
-                               rho * r_cos (theta),
-                               rho * r_sin (theta));
+        res = r_flonum_new (reader->r,
+                            rho * r_cos (theta),
+                            rho * r_sin (theta));
         goto clear;
     }
 
@@ -736,20 +737,23 @@ static rsexp read_number (RNumberReader* reader)
         double r;
         double i;
 
-        number = fix_exactness (reader, real, imag, &r, &i)
-               ? r_fixnum_new (reader->r, real, imag)
-               : r_flonum_new (reader->r, r, i);
+        if (fix_exactness (reader, real, imag, &r, &i)) {
+            ensure_or_goto (res = r_fixnum_new (reader->r, real, imag), clear);
+            res = r_fixnum_normalize (res);
+        }
+        else
+            res = r_flonum_new (reader->r, r, i);
 
         goto clear;
     }
 
     reset (reader, pos);
-    number = R_FAILURE;
+    res = R_FAILURE;
 
 clear:
     mpq_clears (real, imag, NULL);
 
-    return number;
+    return res;
 }
 
 /**
