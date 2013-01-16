@@ -5,6 +5,7 @@
 int main (int argc, char* argv[])
 {
     RState* r;
+    rsexp port;
     rsexp result;
     int exit_code;
 
@@ -15,11 +16,11 @@ int main (int argc, char* argv[])
         goto exit;
     }
 
-    if (argc > 1)
-        r_set_current_input_port_x
-            (r, r_open_input_file (r, argv [1]));
+    port = (argc > 1)
+         ? r_open_input_file (r, argv [1])
+         : r_current_input_port (r);
 
-    result = r_eval_from_port (r, r_current_input_port (r));
+    result = r_eval_from_port (r, port);
 
     if (r_failure_p (result)) {
         r_format (r, "~s~%", r_last_error (r));
