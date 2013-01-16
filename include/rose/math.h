@@ -9,6 +9,7 @@ rsexp r_add      (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_negate   (RState* r, rsexp num);
 rsexp r_minus    (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs);
+rsexp r_invert   (RState* r, rsexp num);
 rsexp r_divide   (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_modulo   (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs);

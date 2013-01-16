@@ -44,7 +44,27 @@ static rsexp np_multiply (RState* r, rsexp args)
 
 static rsexp np_divide (RState* r, rsexp args)
 {
-    return r_divide (r, r_car (args), r_cadr (args));
+    rsexp quot;
+
+    r_gc_scope_open (r);
+
+    if (r_null_p (r_cdr (args))) {
+        quot = r_invert (r, r_car (args));
+        goto exit;
+    }
+
+    quot = r_car (args);
+    args = r_cdr (args);
+
+    while (!r_null_p (args)) {
+        ensure_or_goto (quot = r_divide (r, quot, r_car (args)), exit);
+        args = r_cdr (args);
+    }
+
+exit:
+    r_gc_scope_close_and_protect (r, quot);
+
+    return quot;
 }
 
 static rsexp np_modulo (RState* r, rsexp args)
@@ -335,6 +355,9 @@ rsexp multiply_smi_any (RState* r, rsexp lhs, rsexp rhs)
     if (r_fixnum_p (rhs))
         return multiply_fix_smi (r, rhs, lhs);
 
+    if (r_flonum_p (rhs))
+        return multiply_flo_smi (r, rhs, lhs);
+
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, rhs);
 
     return R_FAILURE;
@@ -500,12 +523,91 @@ rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs)
     return R_FAILURE;
 }
 
+rsexp invert_smi (RState* r, rsexp num)
+{
+    mpq_t real;
+
+    mpq_init (real);
+    mpq_set_si (real, 1, r_int_from_sexp (num));
+
+    return r_fixreal_new (r, real);
+}
+
+rsexp invert_fix (RState* r, rsexp num)
+{
+    RFixnum* fixnum;
+    mpq_t tmp1;
+    mpq_t tmp2;
+    mpq_t tmp3;
+    rsexp res;
+
+    fixnum = fixnum_from_sexp (num);
+    mpq_inits (tmp1, tmp2, tmp3, NULL);
+
+    if (mpq_cmp_ui (fixnum->imag, 0, 1) == 0) {
+        mpq_inv (tmp1, fixnum->real);
+        goto result;
+    }
+
+    mpq_mul (tmp1, fixnum->real, fixnum->real);
+    mpq_mul (tmp2, fixnum->imag, fixnum->imag);
+    mpq_add (tmp3, tmp1, tmp2);
+
+    mpq_div (tmp1, fixnum->real, tmp3);
+    mpq_div (tmp2, fixnum->imag, tmp3);
+    mpq_neg (tmp2, tmp2);
+
+result:
+    ensure_or_goto (res = r_fixnum_new (r, tmp1, tmp2), exit);
+    res = r_fixnum_normalize (res);
+
+exit:
+    mpq_clears (tmp1, tmp2, tmp3, NULL);
+
+    return res;
+}
+
+rsexp invert_flo (RState* r, rsexp num)
+{
+    RFlonum* flonum;
+    double real;
+    double imag;
+    double tmp;
+
+    flonum = flonum_from_sexp (num);
+
+    if (flonum->imag == 0.0)
+        return r_flonum_new (r, 1 / flonum->real, 0.);
+
+    tmp = flonum->real * flonum->real + flonum->imag * flonum->imag;
+    real = flonum->real / tmp;
+    imag = -flonum->imag / tmp;
+
+    return r_flonum_new (r, real, imag);
+}
+
+rsexp r_invert (RState* r, rsexp num)
+{
+    if (r_small_int_p (num))
+        return invert_smi (r, num);
+
+    if (r_fixnum_p (num))
+        return invert_fix (r, num);
+
+    if (r_flonum_p (num))
+        return invert_flo (r, num);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, num);
+
+    return R_FAILURE;
+}
+
 rsexp r_divide (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
+    rsexp tmp;
 
-    return r_int_to_sexp (r_int_from_sexp (lhs) / r_int_from_sexp (rhs));
+    ensure (tmp = r_invert (r, rhs));
+    return r_multiply (r, lhs, tmp);
 }
 
 rsexp r_modulo (RState* r, rsexp lhs, rsexp rhs)
@@ -529,7 +631,7 @@ void math_init_primitives (RState* r, rsexp* env)
     bind_primitive_x (r, env, "+",      np_add,         0, 0, TRUE);
     bind_primitive_x (r, env, "-",      np_minus,       1, 0, TRUE);
     bind_primitive_x (r, env, "*",      np_multiply,    1, 0, TRUE);
-    bind_primitive_x (r, env, "/",      np_divide,      2, 0, FALSE);
+    bind_primitive_x (r, env, "/",      np_divide,      1, 0, TRUE);
     bind_primitive_x (r, env, "=",      np_num_eq_p,    2, 0, FALSE);
     bind_primitive_x (r, env, "modulo", np_modulo,      2, 0, FALSE);
 }
