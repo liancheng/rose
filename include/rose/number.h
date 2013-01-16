@@ -20,6 +20,8 @@ rsexp r_fixnum_new          (RState* r,
 rsexp r_fixreal_new         (RState* r,
                              mpq_t real);
 rsexp r_fixnum_normalize    (rsexp obj);
+rsexp r_smi_to_fixnum       (RState* r,
+                             rsexp num);
 rbool r_fixnum_p            (rsexp obj);
 rsexp r_int_to_sexp         (rint n);
 rint  r_int_from_sexp       (rsexp obj);

@@ -1,0 +1,5 @@
+(display (+ 1 2)) (newline)
+(display (+)) (newline)
+(display (+ 1+2i 3)) (newline)
+(display (+ 1+2i -3)) (newline)
+(display (+ 1+2i 3.5)) (newline)

@@ -5,7 +5,6 @@
 #include "detail/state.h"
 #include "rose/error.h"
 #include "rose/gmp.h"
-#include "rose/number.h"
 #include "rose/port.h"
 
 #include <assert.h>
@@ -103,6 +102,10 @@ static void fixnum_finalize (RState* r, RObject* obj)
 static RFixnum* fixnum_new (RState* r)
 {
     RFixnum* fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
+
+    if (fixnum == NULL)
+        return NULL;
+
     mpq_inits (fixnum->real, fixnum->imag, NULL);
     return fixnum;
 }
@@ -165,6 +168,19 @@ rsexp r_fixnum_normalize (rsexp obj)
     return r_false_p (smi) ? obj : smi;
 }
 
+rsexp r_smi_to_fixnum (RState* r, rsexp smi)
+{
+    mpq_t fixnum;
+    rsexp res;
+
+    mpq_init (fixnum);
+    mpq_set_si (fixnum, smi, 1);
+    res = r_fixreal_new (r, fixnum);
+    mpq_clear (fixnum);
+
+    return res;
+}
+
 rsexp r_flonum_new (RState* r, double real, double imag)
 {
     RFlonum* flonum = r_object_new (r, RFlonum, R_TAG_FLONUM);
@@ -180,7 +196,6 @@ rsexp r_flonum_new (RState* r, double real, double imag)
 
 rsexp r_int_to_sexp (rint n)
 {
-    assert (n >= R_SMI_MIN && n <= R_SMI_MAX);
     return (n << R_SMI_BITS) | R_TAG_SMI;
 }
 

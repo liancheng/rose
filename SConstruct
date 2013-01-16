@@ -6,7 +6,7 @@ env = Environment(tools=['default', 'quex'],
                   CXX=ARGUMENTS.get('CXX', 'g++'),
                   LIBS=['gmp', 'm'],
                   CPPFLAGS='-ggdb -Wall -Werror',
-                  CPPDEFINES='_GNU_SOURCE',
+                  CPPDEFINES=['_GNU_SOURCE'],
                   CPPPATH=['#include/',
                            '#build/src/',
                            environ['QUEX_PATH']])
