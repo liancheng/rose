@@ -26,7 +26,7 @@ TEST_F (test_output_string_port, empty)
     rsexp expected = r_string_new (r, "");
     rsexp actual   = r_get_output_string (r, port);
 
-    EXPECT_TRUE (r_equal_p (r, expected, actual));
+    EXPECT_TRUE (equal_p (expected, actual));
 }
 
 TEST_F (test_output_string_port, write_once)
@@ -36,7 +36,7 @@ TEST_F (test_output_string_port, write_once)
     rsexp expected = r_string_new (r, "#t");
     rsexp actual = r_get_output_string (r, port);
 
-    EXPECT_TRUE (r_equal_p (r, expected, actual));
+    EXPECT_TRUE (equal_p (expected, actual));
 }
 
 TEST_F (test_output_string_port, write_twice)
@@ -47,7 +47,7 @@ TEST_F (test_output_string_port, write_twice)
         rsexp expected = r_string_new (r, "hello");
         rsexp actual = r_get_output_string (r, port);
 
-        EXPECT_TRUE (r_equal_p (r, expected, actual));
+        EXPECT_TRUE (equal_p (expected, actual));
     }
 
     {
@@ -56,7 +56,7 @@ TEST_F (test_output_string_port, write_twice)
         rsexp expected = r_string_new (r, "hello world");
         rsexp actual = r_get_output_string (r, port);
 
-        EXPECT_TRUE (r_equal_p (r, expected, actual));
+        EXPECT_TRUE (equal_p (expected, actual));
     }
 }
 

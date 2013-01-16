@@ -30,13 +30,8 @@ TEST_F (test_vector, r_vector)
     EXPECT_EQ (r_uint_to_sexp (2u),
                r_vector_length (actual));
 
-    EXPECT_TRUE (r_equal_p (r,
-                            r_int_to_sexp (1),
-                            r_vector_ref (r, actual, 0)));
-
-    EXPECT_TRUE (r_equal_p (r,
-                            r_int_to_sexp (2),
-                            r_vector_ref (r, actual, 1)));
+    EXPECT_TRUE (equal_p (r_int_to_sexp (1), r_vector_ref (r, actual, 0)));
+    EXPECT_TRUE (equal_p (r_int_to_sexp (2), r_vector_ref (r, actual, 1)));
 }
 
 TEST_F (test_vector, r_vector_to_list)
@@ -57,7 +52,7 @@ TEST_F (test_vector, r_vector_to_list)
                        r_int_to_sexp (2),
                        r_int_to_sexp (3));
 
-    EXPECT_TRUE (r_equal_p (r, expected, actual));
+    EXPECT_TRUE (equal_p (expected, actual));
 }
 
 TEST_F (test_vector, r_list_to_vector)
@@ -78,5 +73,5 @@ TEST_F (test_vector, r_list_to_vector)
                          r_int_to_sexp (2),
                          r_int_to_sexp (3));
 
-    EXPECT_TRUE (r_equal_p (r, expected, actual));
+    EXPECT_TRUE (equal_p (expected, actual));
 }

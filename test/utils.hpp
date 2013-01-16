@@ -2,6 +2,7 @@
 #define __ROSE_TEST_UTILS_HPP__
 
 #include "detail/compile.h"
+#include "rose/eq.h"
 #include "rose/port.h"
 #include "rose/reader.h"
 #include "rose/state.h"
@@ -69,6 +70,27 @@ protected:
         rsexp out = r_open_output_string (r);
         r_port_write (r, out, obj);
         return r_string_to_cstr (r_get_output_string (r, out));
+    }
+
+    testing::AssertionResult eq_p (rsexp lhs, rsexp rhs)
+    {
+        return r_eq_p (r, lhs, rhs)
+               ? testing::AssertionSuccess ()
+               : testing::AssertionFailure ();
+    }
+
+    testing::AssertionResult eqv_p (rsexp lhs, rsexp rhs)
+    {
+        return r_eqv_p (r, lhs, rhs)
+               ? testing::AssertionSuccess ()
+               : testing::AssertionFailure ();
+    }
+
+    testing::AssertionResult equal_p (rsexp lhs, rsexp rhs)
+    {
+        return r_equal_p (r, lhs, rhs)
+               ? testing::AssertionSuccess ()
+               : testing::AssertionFailure ();
     }
 };
 
