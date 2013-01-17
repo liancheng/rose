@@ -29,7 +29,6 @@ test = env.SConscript(dirs='test',
                       exports=['env', 'rose_lib'],
                       variant_dir='build/test/')
 
-env.Install(target='lib/', source=rose_lib)
 env.Install(target='bin/', source=rsi_bin)
 
 # vim:ft=python
