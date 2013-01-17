@@ -1,4 +1,5 @@
 #include "detail/env.h"
+#include "detail/primitive.h"
 #include "detail/read.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
@@ -341,7 +342,7 @@ static rsexp read_simple_datum (Reader* reader)
             break;
 
         case TKN_NUMBER:
-            datum = r_string_to_number (reader->r, text);
+            datum = r_cstr_to_number (reader->r, text);
             break;
 
         case TKN_CHARACTER:

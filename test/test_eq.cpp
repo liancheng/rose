@@ -37,14 +37,14 @@ TEST_F (test_eqv_p, small_int)
 
 TEST_F (test_eqv_p, fixnum)
 {
-    EXPECT_TRUE (eqv_p (r_string_to_number (r, "1/2"),
-                        r_string_to_number (r, "2/4")));
+    EXPECT_TRUE (eqv_p (r_cstr_to_number (r, "1/2"),
+                        r_cstr_to_number (r, "2/4")));
 }
 
 TEST_F (test_eqv_p, flonum)
 {
-    EXPECT_TRUE (eqv_p (r_string_to_number (r, "#i1/2"),
-                        r_string_to_number (r, "0.5")));
+    EXPECT_TRUE (eqv_p (r_cstr_to_number (r, "#i1/2"),
+                        r_cstr_to_number (r, "0.5")));
 }
 
 TEST_F (test_equal_p, list)
