@@ -1,5 +1,6 @@
 #include "detail/env.h"
 #include "detail/port.h"
+#include "detail/primitive.h"
 #include "detail/state.h"
 #include "rose/error.h"
 #include "rose/gc.h"
@@ -724,39 +725,24 @@ RTypeInfo port_type = {
     }
 };
 
-void port_init_primitives (RState* r, rsexp* env)
-{
-    bind_primitive_x (r, env, "current-input-port",
-                      np_current_input_port, 0, 0, FALSE);
-    bind_primitive_x (r, env, "current-output-port",
-                      np_current_output_port, 0, 0, FALSE);
-    bind_primitive_x (r, env, "current-error-port",
-                      np_current_error_port, 0, 0, FALSE);
-
-    bind_primitive_x (r, env, "set-current-input-port!",
-                      np_set_current_input_port_x, 1, 0, FALSE);
-    bind_primitive_x (r, env, "set-current-output-port!",
-                      np_set_current_output_port_x, 1, 0, FALSE);
-    bind_primitive_x (r, env, "set-current-error-port!",
-                      np_set_current_error_port_x, 1, 0, FALSE);
-
-    bind_primitive_x (r, env, "open-input-string",
-                      np_open_input_string, 1, 0, FALSE);
-    bind_primitive_x (r, env, "open-output-string",
-                      np_open_output_string, 0, 0, FALSE);
-    bind_primitive_x (r, env, "get-output-string",
-                      np_get_output_string, 1, 0, FALSE);
-
-    bind_primitive_x (r, env, "input-port?",
-                      np_input_port_p, 1, 0, FALSE);
-    bind_primitive_x (r, env, "output-port?",
-                      np_output_port_p, 1, 0, FALSE);
-
-    bind_primitive_x (r, env, "port?",      np_port_p,     1, 0, FALSE);
-    bind_primitive_x (r, env, "display",    np_display,    1, 1, FALSE);
-    bind_primitive_x (r, env, "write",      np_write,      1, 1, FALSE);
-    bind_primitive_x (r, env, "newline",    np_newline,    0, 1, FALSE);
-    bind_primitive_x (r, env, "read-char",  np_read_char,  0, 1, FALSE);
-    bind_primitive_x (r, env, "write-char", np_write_char, 1, 1, FALSE);
-    bind_primitive_x (r, env, "close-port", np_close_port, 1, 1, FALSE);
-}
+RPrimitiveDesc port_primitives [] = {
+    { "current-input-port",       np_current_input_port,        0, 0, FALSE },
+    { "current-output-port",      np_current_output_port,       0, 0, FALSE },
+    { "current-error-port",       np_current_error_port,        0, 0, FALSE },
+    { "set-current-input-port!",  np_set_current_input_port_x,  1, 0, FALSE },
+    { "set-current-output-port!", np_set_current_output_port_x, 1, 0, FALSE },
+    { "set-current-error-port!",  np_set_current_error_port_x,  1, 0, FALSE },
+    { "open-input-string",        np_open_input_string,         1, 0, FALSE },
+    { "open-output-string",       np_open_output_string,        0, 0, FALSE },
+    { "get-output-string",        np_get_output_string,         1, 0, FALSE },
+    { "input-port?",              np_input_port_p,              1, 0, FALSE },
+    { "output-port?",             np_output_port_p,             1, 0, FALSE },
+    { "port?",                    np_port_p,                    1, 0, FALSE },
+    { "display",                  np_display,                   1, 1, FALSE },
+    { "write",                    np_write,                     1, 1, FALSE },
+    { "newline",                  np_newline,                   0, 1, FALSE },
+    { "read-char",                np_read_char,                 0, 1, FALSE },
+    { "write-char",               np_write_char,                1, 1, FALSE },
+    { "close-port",               np_close_port,                1, 1, FALSE },
+    { NULL },
+};

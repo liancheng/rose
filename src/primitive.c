@@ -1,5 +1,5 @@
+#include "detail/primitive.h"
 #include "detail/state.h"
-#include "rose/primitive.h"
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/port.h"
@@ -8,16 +8,14 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#define PRIMITIVE_FIELDS\
-        rsexp name;\
-        RPrimitiveFunc func;\
-        rsize required;\
-        rsize optional;\
-        rbool rest_p;
-
 struct RPrimitive {
     R_OBJECT_HEADER
-    PRIMITIVE_FIELDS
+
+    rsexp name;
+    RPrimitiveFunc func;
+    rsize required;
+    rsize optional;
+    rbool rest_p;
 };
 
 #define primitive_to_sexp(obj)   (r_cast (rsexp, (obj)))

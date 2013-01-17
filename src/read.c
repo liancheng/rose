@@ -460,7 +460,7 @@ rsexp np_read (RState* r, rsexp args)
     return r_read (reader);
 }
 
-void read_init_primitives (RState* r, rsexp* env)
-{
-    bind_primitive_x (r, env, "read", np_read, 0, 1, FALSE);
-}
+RPrimitiveDesc read_primitives [] = {
+    { "read", np_read, 0, 1, FALSE },
+    { NULL }
+};

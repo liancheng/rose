@@ -1,8 +1,24 @@
+#include "detail/primitive.h"
+#include "rose/env.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/pair.h"
-#include "rose/primitive.h"
 #include "rose/symbol.h"
+
+static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc* desc)
+{
+    rsexp name;
+    rsexp prim;
+
+    for (; desc->name; ++desc) {
+        name = r_intern (r, desc->name);
+        prim = r_primitive_new (r, desc->name, desc->func, desc->required,
+                                desc->optional, desc->rest_p);
+        env = r_env_bind_x (r, env, name, prim);
+    }
+
+    return env;
+}
 
 rsexp env_extend (RState* r, rsexp env, rsexp vars, rsexp vals)
 {
@@ -84,32 +100,25 @@ rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
     return env;
 }
 
-void bind_primitive_x (RState* r,
-                       rsexp* env,
-                       rconstcstring name,
-                       RPrimitiveFunc func,
-                       rsize required,
-                       rsize optional,
-                       rbool rest_p)
-{
-    rsexp name_id = r_intern (r, name);
-    *env = r_env_bind_x (r, *env, name_id,
-            r_primitive_new (r, name, func, required, optional, rest_p));
-}
-
-void pair_init_primitives (RState* r, rsexp* env);
-void port_init_primitives (RState* r, rsexp* env);
-void math_init_primitives (RState* r, rsexp* env);
-void read_init_primitives (RState* r, rsexp* env);
+extern RPrimitiveDesc gc_primitives [];
+extern RPrimitiveDesc math_primitives [];
+extern RPrimitiveDesc number_primitives [];
+extern RPrimitiveDesc pair_primitives [];
+extern RPrimitiveDesc port_primitives [];
+extern RPrimitiveDesc read_primitives [];
+extern RPrimitiveDesc string_primitives [];
 
 rsexp default_env (RState* r)
 {
     rsexp env = r_empty_env (r);
 
-    pair_init_primitives (r, &env);
-    port_init_primitives (r, &env);
-    math_init_primitives (r, &env);
-    read_init_primitives (r, &env);
+    env = init_primitives (r, env, gc_primitives);
+    env = init_primitives (r, env, math_primitives);
+    env = init_primitives (r, env, number_primitives);
+    env = init_primitives (r, env, pair_primitives);
+    env = init_primitives (r, env, port_primitives);
+    env = init_primitives (r, env, read_primitives);
+    env = init_primitives (r, env, string_primitives);
 
     return env;
 }

@@ -1,4 +1,5 @@
 #include "detail/env.h"
+#include "detail/primitive.h"
 #include "detail/state.h"
 #include "detail/sexp.h"
 #include "rose/bytevector.h"
@@ -419,31 +420,29 @@ rsexp np_list_ref (RState* r, rsexp args)
     return r_list_ref (r, list, r_uint_from_sexp (k));
 }
 
-void pair_init_primitives (RState* r, rsexp* env)
-{
-    bind_primitive_x (r, env, "cons",     np_cons,      2, 0, FALSE);
-    bind_primitive_x (r, env, "pair?",    np_pair_p,    1, 0, FALSE);
-    bind_primitive_x (r, env, "null?",    np_null_p,    1, 0, FALSE);
-    bind_primitive_x (r, env, "car",      np_car,       1, 0, FALSE);
-    bind_primitive_x (r, env, "cdr",      np_cdr,       1, 0, FALSE);
-    bind_primitive_x (r, env, "set-car!", np_set_car_x, 2, 0, FALSE);
-    bind_primitive_x (r, env, "set-cdr!", np_set_cdr_x, 2, 0, FALSE);
-    bind_primitive_x (r, env, "list",     np_list,      0, 0, TRUE);
-    bind_primitive_x (r, env, "reverse",  np_reverse,   1, 0, FALSE);
-    bind_primitive_x (r, env, "reverse!", np_reverse_x, 1, 0, FALSE);
-    bind_primitive_x (r, env, "append!",  np_append_x,  2, 0, FALSE);
-    bind_primitive_x (r, env, "list-ref", np_list_ref,  2, 0, FALSE);
-}
-
 RTypeInfo pair_type = {
     .size = sizeof (RPair),
     .name = "pair",
     .ops = {
         .write = pair_write,
         .display = pair_display,
-        .eqv_p = NULL,
         .equal_p = pair_equal_p,
         .mark = pair_mark,
-        .finalize = NULL
     }
+};
+
+RPrimitiveDesc pair_primitives [] = {
+    { "cons",     np_cons,      2, 0, FALSE },
+    { "pair?",    np_pair_p,    1, 0, FALSE },
+    { "null?",    np_null_p,    1, 0, FALSE },
+    { "car",      np_car,       1, 0, FALSE },
+    { "cdr",      np_cdr,       1, 0, FALSE },
+    { "set-car!", np_set_car_x, 2, 0, FALSE },
+    { "set-cdr!", np_set_cdr_x, 2, 0, FALSE },
+    { "list",     np_list,      0, 0, TRUE },
+    { "reverse",  np_reverse,   1, 0, FALSE },
+    { "reverse!", np_reverse_x, 1, 0, FALSE },
+    { "append!",  np_append_x,  2, 0, FALSE },
+    { "list-ref", np_list_ref,  2, 0, FALSE },
+    { NULL }
 };

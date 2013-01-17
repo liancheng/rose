@@ -6,18 +6,11 @@
 
 R_BEGIN_DECLS
 
-rsexp env_extend      (RState* r,
-                       rsexp env,
-                       rsexp vars,
-                       rsexp vals);
-rsexp default_env     (RState* r);
-void bind_primitive_x (RState* r,
-                       rsexp* env,
-                       rconstcstring name,
-                       RPrimitiveFunc func,
-                       rsize required,
-                       rsize optional,
-                       rbool rest_p);
+rsexp env_extend  (RState* r,
+                   rsexp env,
+                   rsexp vars,
+                   rsexp vals);
+rsexp default_env (RState* r);
 
 R_END_DECLS
 
