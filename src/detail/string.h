@@ -19,4 +19,4 @@ struct RString {
 
 R_END_DECLS
 
-#endif  //  __ROSE_DETAIL_STRING_H__
+#endif /* __ROSE_DETAIL_STRING_H__ */

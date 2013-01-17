@@ -17,4 +17,4 @@ rsexp r_procedure_formals (rsexp obj);
 
 R_END_DECLS
 
-#endif  //  __ROSE_PROCEDURE_H__
+#endif /* __ROSE_PROCEDURE_H__ */

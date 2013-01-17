@@ -129,4 +129,4 @@ struct RObject {
 
 R_END_DECLS
 
-#endif  /* __ROSE_SEXP_H__ */
+#endif /* __ROSE_SEXP_H__ */

@@ -77,4 +77,4 @@ rsexp r_fold         (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_PAIR_H__ */
+#endif /* __ROSE_PAIR_H__ */

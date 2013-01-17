@@ -8,4 +8,4 @@
 #include <stdio.h>
 #include <gmp.h>
 
-#endif  //  __ROSE_GMP_H__
+#endif /* __ROSE_GMP_H__ */

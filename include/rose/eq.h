@@ -11,4 +11,4 @@ rbool r_equal_p (RState* r, rsexp lhs, rsexp rhs);
 
 R_END_DECLS
 
-#endif  /* __ROSE_EQ_H__ */
+#endif /* __ROSE_EQ_H__ */

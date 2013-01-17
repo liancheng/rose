@@ -21,4 +21,4 @@ struct Reader {
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_READER_H__ */
+#endif /* __ROSE_DETAIL_READER_H__ */

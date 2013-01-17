@@ -46,4 +46,4 @@ void r_gc_mark          (RState* r,
 
 R_END_DECLS
 
-#endif  //  __ROSE_MEMORY_H__
+#endif /* __ROSE_MEMORY_H__ */

@@ -27,4 +27,4 @@ void vm_finish (RState* r);
 
 R_END_DECLS
 
-#endif  //  __ROSE_DETAIL_VM_H__
+#endif /* __ROSE_DETAIL_VM_H__ */

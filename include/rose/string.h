@@ -34,4 +34,4 @@ rsexp         r_string_vprintf        (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_STRING_H__ */
+#endif /* __ROSE_STRING_H__ */

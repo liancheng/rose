@@ -21,4 +21,4 @@ rsexp r_env_assign_x (RState* r,
 
 R_END_DECLS
 
-#endif  //  __ROSE_ENV_H__
+#endif /* __ROSE_ENV_H__ */

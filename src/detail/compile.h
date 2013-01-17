@@ -48,4 +48,4 @@ R_BEGIN_DECLS
 
 R_END_DECLS
 
-#endif  //  __ROSE_DETAIL_COMPILE_H__
+#endif /* __ROSE_DETAIL_COMPILE_H__ */

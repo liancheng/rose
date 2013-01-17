@@ -31,4 +31,4 @@ rsexp int_to_sexp (rint n);
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_NUMBER_H__ */
+#endif /* __ROSE_DETAIL_NUMBER_H__ */

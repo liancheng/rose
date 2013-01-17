@@ -43,4 +43,4 @@ rsexp invert_flo (RState* r, rsexp num);
 
 R_END_DECLS
 
-#endif // __ROSE_DETAIL_MATH_H__
+#endif /* __ROSE_DETAIL_MATH_H__ */

@@ -75,4 +75,4 @@ void  init_builtin_type (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_STATE_H__ */
+#endif /* __ROSE_DETAIL_STATE_H__ */

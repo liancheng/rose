@@ -12,4 +12,4 @@ typedef QUEX_TYPE_TOKEN_ID rtokenid;
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_LEXER_H__ */
+#endif /* __ROSE_DETAIL_LEXER_H__ */

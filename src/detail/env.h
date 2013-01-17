@@ -14,4 +14,4 @@ rsexp default_env (RState* r);
 
 R_END_DECLS
 
-#endif  //  __ROSE_DETAIL_ENV_H__
+#endif /* __ROSE_DETAIL_ENV_H__ */

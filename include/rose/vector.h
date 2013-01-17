@@ -27,4 +27,4 @@ rsexp r_vector_to_list (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_VECTOR_H__ */
+#endif /* __ROSE_VECTOR_H__ */

@@ -17,4 +17,4 @@ rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs);
 
 R_END_DECLS
 
-#endif // __ROSE_MATH_H__
+#endif /* __ROSE_MATH_H__ */

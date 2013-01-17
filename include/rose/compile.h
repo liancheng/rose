@@ -13,4 +13,4 @@ rsexp r_compile_from_port (RState* r,
 
 R_END_DECLS
 
-#endif  //  __ROSE_COMPILE_H__
+#endif /* __ROSE_COMPILE_H__ */

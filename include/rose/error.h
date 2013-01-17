@@ -88,4 +88,4 @@ void r_raise (RState* r);
 
 R_END_DECLS
 
-#endif  /* __ROSE_ERROR_H__ */
+#endif /* __ROSE_ERROR_H__ */

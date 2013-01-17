@@ -17,4 +17,4 @@ rsexp r_eval_from_cstr   (RState* r,
 
 R_END_DECLS
 
-#endif  //  __ROSE_VM_H__
+#endif /*  __ROSE_VM_H__ */

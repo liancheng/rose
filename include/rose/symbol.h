@@ -18,4 +18,4 @@ rconstcstring r_symbol_name       (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_SYMBOL_H__ */
+#endif /* __ROSE_SYMBOL_H__ */

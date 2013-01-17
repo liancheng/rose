@@ -39,4 +39,4 @@ void r_match_args       (RState* r,
 
 R_END_DECLS
 
-#endif  //  __ROSE_PRIMITIVE_H__
+#endif /* __ROSE_PRIMITIVE_H__ */

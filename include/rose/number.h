@@ -50,4 +50,4 @@ rsexp r_inexact_to_exact    (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_NUMBER_H__ */
+#endif /* __ROSE_NUMBER_H__ */

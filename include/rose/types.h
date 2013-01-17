@@ -59,4 +59,4 @@ typedef ssize_t         rssize;
 
 R_END_DECLS
 
-#endif  /* __ROSE_TYPES_H__ */
+#endif /* __ROSE_TYPES_H__ */

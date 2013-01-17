@@ -28,4 +28,4 @@ rsexp r_number_read        (RNumberReader* reader,
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_NUMBER_READER_H__ */
+#endif /* __ROSE_DETAIL_NUMBER_READER_H__ */

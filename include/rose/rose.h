@@ -22,4 +22,4 @@
 #include "rose/vector.h"
 #include "rose/vm.h"
 
-#endif  //  __ROSE_ROSE_H__
+#endif /* __ROSE_ROSE_H__ */

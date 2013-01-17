@@ -48,4 +48,4 @@ void     gc_finish         (RState* r);
 
 R_END_DECLS
 
-#endif  //  __ROSE_DETAIL_GC_H__
+#endif /* __ROSE_DETAIL_GC_H__ */

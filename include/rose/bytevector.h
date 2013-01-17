@@ -23,4 +23,4 @@ rsexp r_list_to_bytevector  (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_BYTEVECTOR_H__ */
+#endif /* __ROSE_BYTEVECTOR_H__ */

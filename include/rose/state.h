@@ -17,4 +17,4 @@ void    r_state_free (RState* r);
 
 R_END_DECLS
 
-#endif  /* __ROSE_STATE_H__ */
+#endif /* __ROSE_STATE_H__ */

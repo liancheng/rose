@@ -13,4 +13,4 @@ rsexp    r_opaque_new (RState* r,
 rbool    r_opaque_p   (rsexp obj);
 rpointer r_opaque_get (rsexp obj);
 
-#endif  //  __ROSE_OPAQUE_H__
+#endif /* __ROSE_OPAQUE_H__ */

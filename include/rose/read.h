@@ -14,4 +14,4 @@ rsexp r_read_from_string (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_READER_H__ */
+#endif /* __ROSE_READER_H__ */

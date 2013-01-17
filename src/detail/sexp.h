@@ -45,4 +45,4 @@ RTypeInfo* r_type_info (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_SEXP_H__ */
+#endif /* __ROSE_DETAIL_SEXP_H__ */
