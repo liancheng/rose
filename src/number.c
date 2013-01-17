@@ -120,7 +120,7 @@ rbool r_flonum_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_FLONUM;
 }
 
-rsexp r_string_to_number (RState* r, rconstcstring text)
+rsexp r_cstr_to_number (RState* r, rconstcstring text)
 {
     RNumberReader reader;
     rsexp res;
