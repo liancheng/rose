@@ -1,7 +1,10 @@
+#include "detail/primitive.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
 #include "detail/string.h"
 #include "rose/gc.h"
+#include "rose/number.h"
+#include "rose/pair.h"
 #include "rose/port.h"
 
 #include <assert.h>
@@ -175,4 +178,27 @@ RTypeInfo string_type = {
         .equal_p = r_string_equal_p,
         .finalize = string_finalize
     }
+};
+
+rsexp np_string_p (RState* r, rsexp args)
+{
+    return r_bool_to_sexp (r_string_p (r_car (args)));
+}
+
+rsexp np_string_length (RState* r, rsexp args)
+{
+    rsexp obj = r_car (args);
+
+    if (!r_string_p (obj)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, r_car (obj));
+        return R_FAILURE;
+    }
+
+    return r_uint_to_sexp (r_string_length (obj));
+}
+
+RPrimitiveDesc string_primitives [] = {
+    { "string?",       np_string_p,      1, 0, FALSE },
+    { "string-length", np_string_length, 1, 0, FALSE },
+    { NULL }
 };
