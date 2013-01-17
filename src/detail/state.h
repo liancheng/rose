@@ -15,7 +15,7 @@ R_BEGIN_DECLS
 /* Records various execution state of the ROSE interpreter. */
 struct RState {
     /* State of the garbage collector */
-    RGcState gc;
+    RGc gc;
 
     /* State of the virtual machine */
     RVm vm;

@@ -1,7 +1,7 @@
-#include "detail/primitive.h"
 #include "rose/error.h"
 #include "rose/number.h"
 #include "rose/pair.h"
+#include "rose/primitive.h"
 
 static rsexp np_cons (RState* r, rsexp args)
 {

@@ -1,8 +1,8 @@
-#include "detail/primitive.h"
 #include "rose/env.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/pair.h"
+#include "rose/primitive.h"
 #include "rose/symbol.h"
 
 static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc* desc)

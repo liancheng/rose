@@ -1,8 +1,8 @@
 #include "detail/gc.h"
-#include "detail/primitive.h"
 #include "detail/state.h"
-#include "rose/number.h"
 #include "rose/io.h"
+#include "rose/number.h"
+#include "rose/primitive.h"
 
 static rsexp np_gc_enable (RState* r, rsexp args)
 {
@@ -44,7 +44,7 @@ static rsexp np_gc_arena_index (RState* r, rsexp args)
 
 static rsexp np_gc_dump_live_objects (RState* r, rsexp args)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
     RObject* obj = gc->chrono_list;
 
     while (obj) {
@@ -57,7 +57,7 @@ static rsexp np_gc_dump_live_objects (RState* r, rsexp args)
 
 static rsexp np_gc_dump_arena (RState* r, rsexp args)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
     rsize i;
 
     for (i = 0; i < gc->arena_index; ++i)

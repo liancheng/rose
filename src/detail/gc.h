@@ -13,9 +13,9 @@ typedef enum {
 }
 RGcColor;
 
-typedef struct RGcState RGcState;
+typedef struct RGc RGc;
 
-struct RGcState {
+struct RGc {
     rbool     enabled;
 
     rsexp*    arena;

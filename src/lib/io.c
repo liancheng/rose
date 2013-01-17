@@ -1,7 +1,7 @@
-#include "detail/primitive.h"
 #include "rose/error.h"
 #include "rose/io.h"
 #include "rose/pair.h"
+#include "rose/primitive.h"
 
 static rsexp np_write (RState* r, rsexp args)
 {

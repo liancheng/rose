@@ -1,6 +1,6 @@
-#include "detail/primitive.h"
 #include "rose/error.h"
 #include "rose/io.h"
+#include "rose/primitive.h"
 #include "rose/read.h"
 
 static rsexp np_read (RState* r, rsexp args)

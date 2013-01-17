@@ -1,10 +1,10 @@
 #include "detail/math.h"
-#include "detail/primitive.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
+#include "rose/primitive.h"
 
 static rsexp np_add (RState* r, rsexp args)
 {

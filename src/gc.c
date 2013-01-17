@@ -22,6 +22,13 @@
 #define gc_paint_gray(obj)  ((obj)->gc_color = R_GC_COLOR_GRAY)
 #define gc_paint_black(obj) ((obj)->gc_color = R_GC_COLOR_BLACK)
 
+typedef enum {
+    GC_STEP_NONE,
+    GC_STEP_MARK,
+    GC_STEP_SWEEP
+}
+RGcStep;
+
 #ifndef NDEBUG
 
 static inline rbool valid_boxed_type_p (RTypeTag tag)
@@ -33,7 +40,7 @@ static inline rbool valid_boxed_type_p (RTypeTag tag)
 
 static inline void gc_scope_protect (RState* r, RObject* obj)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     assert (valid_boxed_type_p (obj->type_tag));
 
@@ -49,7 +56,7 @@ static inline void gc_scope_protect (RState* r, RObject* obj)
 
 static inline void gc_prepend_to_gray_list (RState* r, RObject* obj)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     obj->gray_next = gc->gray_list;
     gc->gray_list = obj;
@@ -57,7 +64,7 @@ static inline void gc_prepend_to_gray_list (RState* r, RObject* obj)
 
 static inline void gc_prepend_to_chrono_list (RState* r, RObject* obj)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     obj->chrono_next = gc->chrono_list;
     gc->chrono_list = obj;
@@ -75,7 +82,7 @@ static inline void gc_mark (RState* r, RObject* obj)
 static inline void gc_mark_arena (RState* r)
 {
     rsize i;
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     for (i = 0u; i < gc->arena_index; ++i)
         r_gc_mark (r, gc->arena [i]);
@@ -115,7 +122,7 @@ static inline void gc_mark_children (RState* r, RObject* obj)
 static inline void gc_mark_phase (RState* r)
 {
     RObject*  obj;
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     while (gc->gray_list) {
         obj = gc->gray_list;
@@ -126,7 +133,7 @@ static inline void gc_mark_phase (RState* r)
 
 static inline void gc_sweep_phase (RState* r)
 {
-    RGcState* gc;
+    RGc* gc;
     RObject** head;
     RObject* obj;
 
@@ -153,7 +160,7 @@ static inline void gc_sweep_phase (RState* r)
 
 void gc_init (RState* r)
 {
-    RGcState* gc = &r->gc;
+    RGc* gc = &r->gc;
 
     gc->enabled = FALSE;
 
@@ -232,6 +239,11 @@ void r_full_gc (RState* r)
     }
 }
 
+rsize incremental_gc (RState* r)
+{
+    return 0u;
+}
+
 rpointer r_realloc (RState* r, rpointer ptr, rsize size)
 {
     rpointer res = r->alloc_fn (r->alloc_aux, ptr, size);
@@ -266,7 +278,7 @@ void r_free (RState* r, rpointer ptr)
 
 RObject* r_object_alloc (RState* r, RTypeTag type_tag)
 {
-    RGcState* gc;
+    RGc* gc;
     RTypeInfo* type;
     RObject* obj;
 

@@ -1,6 +1,6 @@
-#include "detail/primitive.h"
 #include "rose/number.h"
 #include "rose/pair.h"
+#include "rose/primitive.h"
 
 static rsexp np_number_p (RState* r, rsexp args)
 {
