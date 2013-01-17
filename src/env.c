@@ -104,7 +104,7 @@ extern RPrimitiveDesc gc_primitives [];
 extern RPrimitiveDesc math_primitives [];
 extern RPrimitiveDesc number_primitives [];
 extern RPrimitiveDesc pair_primitives [];
-extern RPrimitiveDesc port_primitives [];
+extern RPrimitiveDesc io_primitives [];
 extern RPrimitiveDesc read_primitives [];
 extern RPrimitiveDesc string_primitives [];
 
@@ -113,10 +113,10 @@ rsexp default_env (RState* r)
     rsexp env = r_empty_env (r);
 
     env = init_primitives (r, env, gc_primitives);
+    env = init_primitives (r, env, io_primitives);
     env = init_primitives (r, env, math_primitives);
     env = init_primitives (r, env, number_primitives);
     env = init_primitives (r, env, pair_primitives);
-    env = init_primitives (r, env, port_primitives);
     env = init_primitives (r, env, read_primitives);
     env = init_primitives (r, env, string_primitives);
 

@@ -4,6 +4,8 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+#include <stdarg.h>
+
 R_BEGIN_DECLS
 
 rsexp         r_string_new            (RState* r,

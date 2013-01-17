@@ -1,8 +1,8 @@
 #include "detail/primitive.h"
 #include "detail/state.h"
+#include "rose/io.h"
 #include "rose/number.h"
 #include "rose/pair.h"
-#include "rose/port.h"
 #include "rose/vm.h"
 
 #include <assert.h>

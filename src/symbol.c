@@ -1,6 +1,6 @@
 #include "detail/state.h"
 #include "rose/gc.h"
-#include "rose/port.h"
+#include "rose/io.h"
 #include "rose/symbol.h"
 
 #include <glib.h>

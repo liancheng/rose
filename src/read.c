@@ -1,15 +1,12 @@
-#include "detail/env.h"
-#include "detail/primitive.h"
 #include "detail/read.h"
 #include "detail/state.h"
 #include "rose/bytevector.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/io.h"
 #include "rose/number.h"
 #include "rose/opaque.h"
 #include "rose/pair.h"
-#include "rose/port.h"
-#include "rose/primitive.h"
 #include "rose/read.h"
 #include "rose/string.h"
 #include "rose/vector.h"
@@ -445,23 +442,3 @@ rsexp r_read_from_string (RState* r, rconstcstring input)
 
     return r_read (reader);
 }
-
-rsexp np_read (RState* r, rsexp args)
-{
-    rsexp port;
-    rsexp reader;
-
-    r_match_args (r, args, 0, 1, FALSE, &port);
-
-    if (r_undefined_p (port))
-        port = r_current_input_port (r);
-
-    ensure (reader = r_reader_new (r, port));
-
-    return r_read (reader);
-}
-
-RPrimitiveDesc read_primitives [] = {
-    { "read", np_read, 0, 1, FALSE },
-    { NULL }
-};

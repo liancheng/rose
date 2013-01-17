@@ -1,7 +1,7 @@
 #include "detail/state.h"
 #include "rose/gc.h"
+#include "rose/io.h"
 #include "rose/opaque.h"
-#include "rose/port.h"
 #include "rose/sexp.h"
 
 #include <assert.h>

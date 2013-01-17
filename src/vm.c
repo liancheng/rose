@@ -5,7 +5,7 @@
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/pair.h"
-#include "rose/port.h"
+#include "rose/io.h"
 #include "rose/primitive.h"
 #include "rose/procedure.h"
 #include "rose/sexp.h"

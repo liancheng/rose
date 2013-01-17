@@ -1,5 +1,5 @@
-#ifndef __ROSE_PORT_H__
-#define __ROSE_PORT_H__
+#ifndef __ROSE_IO_H__
+#define __ROSE_IO_H__
 
 #include "rose/sexp.h"
 #include "rose/state.h"
@@ -85,4 +85,4 @@ rsexp    r_display                   (RState* r,
 
 R_END_DECLS
 
-#endif  /* __ROSE_PORT_H__ */
+#endif /* __ROSE_IO_H__ */

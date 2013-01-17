@@ -1,7 +1,7 @@
 #include "utils.hpp"
 
 #include "rose/eq.h"
-#include "rose/port.h"
+#include "rose/io.h"
 #include "rose/string.h"
 
 class test_output_string_port : public fixture_base {

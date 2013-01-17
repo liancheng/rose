@@ -10,6 +10,16 @@ typedef rsexp (*RPrimitiveFunc) (RState*, rsexp);
 
 typedef struct RPrimitive RPrimitive;
 
+typedef struct RPrimitiveDesc RPrimitiveDesc;
+
+struct RPrimitiveDesc {
+    rconstcstring name;
+    RPrimitiveFunc func;
+    rsize required;
+    rsize optional;
+    rbool rest_p;
+};
+
 rsexp r_primitive_new   (RState* r,
                          rconstcstring name,
                          RPrimitiveFunc func,

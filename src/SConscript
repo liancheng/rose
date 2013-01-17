@@ -20,6 +20,7 @@ lex_src = env.Quex(source='lexer.qx',
 
 rose_lib = env.StaticLibrary(target='rose',
                              source=[Glob('*.c'),
+                                     Glob('lib/*.c'),
                                      Glob('quex/*.c')])
 
 env.Depends(target=rose_lib, dependency=lex_src)

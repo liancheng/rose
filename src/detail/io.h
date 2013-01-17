@@ -1,8 +1,8 @@
-#ifndef __ROSE_DETAIL_PORT_H__
-#define __ROSE_DETAIL_PORT_H__
+#ifndef __ROSE_DETAIL_IO_H__
+#define __ROSE_DETAIL_IO_H__
 
 #include "detail/sexp.h"
-#include "rose/port.h"
+#include "rose/io.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -27,4 +27,4 @@ FILE* port_to_stream (rsexp port);
 
 R_END_DECLS
 
-#endif  /* __ROSE_DETAIL_PORT_H__ */
+#endif /* __ROSE_DETAIL_IO_H__ */

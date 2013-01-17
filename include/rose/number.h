@@ -3,6 +3,7 @@
 
 #include "rose/gmp.h"
 #include "rose/sexp.h"
+#include "rose/state.h"
 
 #include <limits.h>
 

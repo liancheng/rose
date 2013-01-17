@@ -5,9 +5,9 @@
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/io.h"
 #include "rose/number.h"
 #include "rose/pair.h"
-#include "rose/port.h"
 
 #include <assert.h>
 #include <stdio.h>

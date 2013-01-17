@@ -5,7 +5,7 @@
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/pair.h"
-#include "rose/port.h"
+#include "rose/io.h"
 #include "rose/string.h"
 #include "rose/vector.h"
 

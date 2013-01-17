@@ -2,8 +2,8 @@
 #include "detail/sexp.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/io.h"
 #include "rose/number.h"
-#include "rose/port.h"
 
 #include <gc/gc.h>
 
