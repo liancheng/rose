@@ -130,6 +130,7 @@ static inline void gc_sweep_phase (RState* r)
     RObject* obj;
 
     gc = &r->gc;
+    gc->n_live_after_mark = 0u;
 
     for (head = &gc->chrono_list; *head; ) {
         obj = *head;
