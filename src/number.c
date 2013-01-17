@@ -205,8 +205,14 @@ rsexp r_flonum_new (RState* r, double real, double imag)
     return flonum_to_sexp (flonum);
 }
 
+rsexp int_to_sexp (rint n)
+{
+    return (n << R_SMI_BITS) | R_TAG_SMI;
+}
+
 rsexp r_int_to_sexp (rint n)
 {
+    assert (R_SMI_MIN <= n && n <= R_SMI_MAX);
     return (n << R_SMI_BITS) | R_TAG_SMI;
 }
 

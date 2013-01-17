@@ -27,6 +27,8 @@ RFlonum;
 #define flonum_to_sexp(flonum)  ((rsexp) (flonum))
 #define flonum_from_sexp(obj)   ((RFlonum*) (obj))
 
+rsexp int_to_sexp (rint n);
+
 R_END_DECLS
 
 #endif  /* __ROSE_DETAIL_NUMBER_H__ */
