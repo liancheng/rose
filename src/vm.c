@@ -28,19 +28,14 @@ static inline rsexp continuation (RState* r, rsexp stack)
     return r_procedure_new (r, code, R_NULL, r_list (r, 1, var));
 }
 
-static inline rsexp call_frame (RState* r,
-                         rsexp ret,
-                         rsexp env,
-                         rsexp args,
-                         rsexp stack)
+static inline rsexp call_frame (RState* r, rsexp ret, rsexp env,
+                                rsexp args, rsexp stack)
 {
     return r_list (r, 4, ret, env, args, stack);
 }
 
 static inline rsexp apply_primitive (RState* r, RVm* vm)
 {
-    r_gc_scope_open (r);
-
     vm->value = r_primitive_apply (r, vm->value, vm->args);
     vm->next = emit_return (r);
 
@@ -60,14 +55,14 @@ static inline rsexp apply (RState* r, RVm* vm)
     vm->env = env_extend (r, env, formals, vm->args);
     vm->args = R_NULL;
 
-    r_gc_scope_open (r);
-
     return vm->value;
 }
 
 static inline rsexp exec_apply (RState* r, RVm* vm)
 {
     rsexp res;
+
+    r_gc_scope_open (r);
 
     if (r_procedure_p (vm->value)) {
         res = apply (r, vm);
@@ -89,7 +84,7 @@ exit:
 static inline rsexp exec_arg (RState* r, RVm* vm)
 {
     rsexp args;
-    
+
     ensure (args = r_cons (r, vm->value, vm->args));
 
     vm->args = args;
@@ -257,6 +252,8 @@ void vm_init (RState* r)
 {
     RVm* vm = &r->vm;
 
+    r_gc_scope_open (r);
+
     vm->args   = R_UNDEFINED;
     vm->env    = default_env (r);
     vm->stack  = R_NULL;
@@ -279,6 +276,8 @@ void vm_init (RState* r)
     install_instruction_executor (r, vm, r->i.refer,      exec_refer);
     install_instruction_executor (r, vm, r->i.restore_cc, exec_restore_cc);
     install_instruction_executor (r, vm, r->i.return_,    exec_return);
+
+    r_gc_scope_close (r);
 }
 
 void vm_finish (RState* r)
