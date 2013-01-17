@@ -1,6 +1,8 @@
 #include "detail/env.h"
 #include "detail/math.h"
 #include "detail/number.h"
+#include "detail/primitive.h"
+#include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/pair.h"
@@ -67,14 +69,27 @@ exit:
     return quot;
 }
 
-static rsexp np_modulo (RState* r, rsexp args)
-{
-    return r_modulo (r, r_car (args), r_cadr (args));
-}
-
 static rsexp np_num_eq_p (RState* r, rsexp args)
 {
-    return r_num_eq_p (r, r_car (args), r_cadr (args));
+    rsexp car;
+    rsexp res;
+
+    if (r_null_p (args))
+        return R_TRUE;
+
+    car = r_car (args);
+    args = r_cdr (args);
+
+    while (!r_null_p (args)) {
+        res = r_num_eq_p (r, car, r_car (args));
+
+        if (!r_eq_p (r, res, R_TRUE))
+            return res;
+
+        args = r_cdr (args);
+    }
+
+    return R_TRUE;
 }
 
 rsexp negate_smi (RState* r, rsexp num)
@@ -125,7 +140,7 @@ rbool smi_sum_overflow_p (int lhs, int rhs, int sum)
     if ((lhs > 0 && sum < lhs) || (lhs < 0 && sum > rhs))
         return TRUE;
 
-    return sum != r_int_from_sexp (r_int_to_sexp (sum));
+    return sum != r_int_from_sexp (int_to_sexp (sum));
 }
 
 rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs)
@@ -305,7 +320,7 @@ rsexp r_minus (RState* r, rsexp lhs, rsexp rhs)
 rbool smi_product_overflow_p (int lhs, int rhs, int prod)
 {
     return (prod / lhs != rhs)
-        || (prod != r_int_from_sexp (r_int_to_sexp (prod)));
+        || (prod != r_int_from_sexp (int_to_sexp (prod)));
 }
 
 /* lhs is neither 0 nor 1 */
@@ -594,28 +609,45 @@ rsexp r_divide (RState* r, rsexp lhs, rsexp rhs)
     return r_multiply (r, lhs, tmp);
 }
 
-rsexp r_modulo (RState* r, rsexp lhs, rsexp rhs)
-{
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-
-    return r_int_to_sexp (r_int_from_sexp (lhs) % r_int_from_sexp (rhs));
-}
-
 rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
+    rsexp inexact;
 
-    return r_bool_to_sexp (lhs == rhs);
+    if (r_small_int_p (lhs))
+        return r_bool_to_sexp (lhs == rhs);
+
+    if (r_fixnum_p (lhs)) {
+        if (r_small_int_p (rhs))
+            return R_FALSE;
+
+        if (r_fixnum_p (rhs))
+            return r_bool_to_sexp (r_eqv_p (r, lhs, rhs));
+
+        if (r_flonum_p (rhs)) {
+            ensure (inexact = r_exact_to_inexact (r, lhs));
+            return r_bool_to_sexp (r_eqv_p (r, inexact, rhs));
+        }
+
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, rhs);
+
+        return R_FAILURE;
+    }
+
+    if (r_flonum_p (lhs)) {
+        ensure (inexact = r_exact_to_inexact (r, rhs));
+        return r_bool_to_sexp (r_eqv_p (r, lhs, inexact));
+    }
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, lhs);
+
+    return R_FAILURE;
 }
 
-void math_init_primitives (RState* r, rsexp* env)
-{
-    bind_primitive_x (r, env, "+",      np_add,         0, 0, TRUE);
-    bind_primitive_x (r, env, "-",      np_minus,       1, 0, TRUE);
-    bind_primitive_x (r, env, "*",      np_multiply,    1, 0, TRUE);
-    bind_primitive_x (r, env, "/",      np_divide,      1, 0, TRUE);
-    bind_primitive_x (r, env, "=",      np_num_eq_p,    2, 0, FALSE);
-    bind_primitive_x (r, env, "modulo", np_modulo,      2, 0, FALSE);
-}
+RPrimitiveDesc math_primitives [] = {
+    { "+", np_add,      0, 0, TRUE },
+    { "-", np_minus,    1, 0, TRUE },
+    { "*", np_multiply, 0, 0, TRUE },
+    { "/", np_divide,   1, 0, TRUE },
+    { "=", np_num_eq_p, 0, 0, TRUE },
+    { NULL }
+};
