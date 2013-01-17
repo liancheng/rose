@@ -39,12 +39,8 @@ static rbool validate_arity (RState* r, RPrimitive* prim, rsexp args)
              length <= prim->required + prim->optional;
 }
 
-static void r_vmatch_args (RState* r,
-                           rsexp args,
-                           rsize required,
-                           rsize optional,
-                           rbool rest_p,
-                           va_list va)
+static void r_vmatch_args (RState* r, rsexp args, rsize required,
+                           rsize optional, rbool rest_p, va_list va)
 {
     rsize i;
 
@@ -65,12 +61,8 @@ static void r_vmatch_args (RState* r,
             }
 }
 
-rsexp r_primitive_new (RState* r,
-                       rconstcstring name,
-                       RPrimitiveFunc func,
-                       rsize required,
-                       rsize optional,
-                       rbool rest_p)
+rsexp r_primitive_new (RState* r, rconstcstring name, RPrimitiveFunc func,
+                       rsize required, rsize optional, rbool rest_p)
 {
     RPrimitive* prim = r_object_new (r, RPrimitive, R_TAG_PRIMITIVE);
 
@@ -89,11 +81,6 @@ rbool r_primitive_p (rsexp obj)
 }
 
 static rsexp primitive_write (RState* r, rsexp port, rsexp obj)
-{
-    return r_port_write (r, port, primitive_from_sexp (obj)->name);
-}
-
-static rsexp primitive_display (RState* r, rsexp port, rsexp obj)
 {
     return r_port_format (r, port, "#<primitive:~s>",
                           primitive_from_sexp (obj)->name);
@@ -138,7 +125,7 @@ RTypeInfo primitive_type = {
     .name = "primitive",
     .ops = {
         .write = primitive_write,
-        .display = primitive_display,
+        .display = primitive_write,
         .mark = primitive_mark
     }
 };
