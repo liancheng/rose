@@ -1,5 +1,3 @@
-(set-current-output-port! (current-error-port))
-
 ((lambda (yin)
    ((lambda (yang)
       (yin yang))
