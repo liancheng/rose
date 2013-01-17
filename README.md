@@ -1,8 +1,8 @@
 # Overview
 
-As the name suggests, ROSE is an Obscure Scheme Evaluator.
+As the name suggests, ROSE is an Obscure Scheme Evaluator.  Please refer to the [Wiki pages][wiki] for details.
 
-Please refer to the [Wiki pages][wiki] for details.
+**NOTE** ROSE is still in an very early stage, the interpreter is barely runnable, many features required by R5RS are missing.
 
 ## How to build ROSE on Ubuntu
 
