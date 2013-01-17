@@ -131,6 +131,17 @@ rsexp r_cstr_to_number (RState* r, rconstcstring text)
     return res;
 }
 
+rsexp r_string_to_number (RState* r, rsexp text)
+{
+    RNumberReader reader;
+    rsexp res;
+
+    r_number_reader_init (r, &reader);
+    res = r_number_read (&reader, r_string_to_cstr (text));
+
+    return res;
+}
+
 rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
 {
     RFixnum* fixnum;

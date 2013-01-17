@@ -10,6 +10,8 @@ R_BEGIN_DECLS
 
 rsexp r_cstr_to_number      (RState* r,
                              rconstcstring text);
+rsexp r_string_to_number    (RState* r,
+                             rsexp text);
 rsexp r_flonum_new          (RState* r,
                              double real,
                              double imag);
