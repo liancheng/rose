@@ -737,12 +737,9 @@ static rsexp read_number (RNumberReader* reader)
         double r;
         double i;
 
-        if (fix_exactness (reader, real, imag, &r, &i)) {
-            ensure_or_goto (res = r_fixnum_new (reader->r, real, imag), clear);
-            res = r_fixnum_normalize (res);
-        }
-        else
-            res = r_flonum_new (reader->r, r, i);
+        res = fix_exactness (reader, real, imag, &r, &i)
+            ? r_fixnum_new (reader->r, real, imag)
+            : r_flonum_new (reader->r, r, i);
 
         goto clear;
     }

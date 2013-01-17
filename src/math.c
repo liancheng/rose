@@ -224,10 +224,7 @@ rsexp add_fix_smi (RState* r, rsexp lhs, rsexp rhs)
                     mpq_numref (fix_lhs->real),
                     r_cast (ruint, -smi_rhs));
 
-    ensure_or_goto (res = r_fixnum_new (r, real_sum, fix_lhs->imag), exit);
-    res = r_fixnum_normalize (res);
-
-exit:
+    res = r_fixnum_new (r, real_sum, fix_lhs->imag);
     mpq_clear (real_sum);
 
     return res;
@@ -249,10 +246,6 @@ rsexp add_fix_fix (RState* r, rsexp lhs, rsexp rhs)
     mpq_add (imag_sum, fix_lhs->imag, fix_rhs->imag);
 
     res = r_fixnum_new (r, real_sum, imag_sum);
-
-    if (!r_failure_p (res))
-        res = r_fixnum_normalize (res);
-
     mpq_clears (real_sum, imag_sum, NULL);
 
     return res;
@@ -431,10 +424,7 @@ rsexp multiply_fix_smi (RState* r, rsexp lhs, rsexp rhs)
     mpq_mul (prod_real, fix_lhs->real, mpq_rhs);
     mpq_mul (prod_imag, fix_lhs->imag, mpq_rhs);
 
-    ensure_or_goto (res = r_fixnum_new (r, prod_real, prod_imag), exit);
-    res = r_fixnum_normalize (res);
-
-exit:
+    res = r_fixnum_new (r, prod_real, prod_imag);
     mpq_clears (prod_real, prod_imag, mpq_rhs, NULL);
 
     return res;
@@ -463,10 +453,7 @@ rsexp multiply_fix_fix (RState* r, rsexp lhs, rsexp rhs)
     mpq_mul (tmp2, fix_lhs->imag, fix_rhs->real);
     mpq_add (prod_real, tmp1, tmp2);
 
-    ensure_or_goto (res = r_fixnum_new (r, prod_real, prod_imag), exit);
-    res = r_fixnum_normalize (res);
-
-exit:
+    res = r_fixnum_new (r, prod_real, prod_imag);
     mpq_clears (prod_real, prod_imag, tmp1, tmp2, NULL);
 
     return res;
@@ -558,10 +545,7 @@ rsexp invert_fix (RState* r, rsexp num)
     mpq_neg (tmp2, tmp2);
 
 result:
-    ensure_or_goto (res = r_fixnum_new (r, tmp1, tmp2), exit);
-    res = r_fixnum_normalize (res);
-
-exit:
+    res = r_fixnum_new (r, tmp1, tmp2);
     mpq_clears (tmp1, tmp2, tmp3, NULL);
 
     return res;

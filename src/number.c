@@ -145,6 +145,12 @@ rsexp r_string_to_number (RState* r, rsexp text)
 rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
 {
     RFixnum* fixnum;
+    rsexp res;
+
+    res = try_small_int (real, imag);
+
+    if (!r_false_p (res))
+        return res;
 
     fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
 
