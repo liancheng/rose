@@ -236,6 +236,45 @@ rbool r_exact_p (rsexp obj)
     return r_small_int_p (obj) || r_fixnum_p (obj);
 }
 
+rsexp r_exact_to_inexact (RState* r, rsexp num)
+{
+    if (r_small_int_p (num) || r_flonum_p (num))
+        return r_flonum_new (r, r_cast (double, r_int_from_sexp (num)), 0.);
+
+    if (r_fixnum_p (num))
+        return r_flonum_new (r, mpq_get_d (fixnum_from_sexp (num)->real),
+                                mpq_get_d (fixnum_from_sexp (num)->imag));
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, num);
+
+    return R_FAILURE;
+}
+
+rsexp r_inexact_to_exact (RState* r, rsexp num)
+{
+    mpq_t real;
+    mpq_t imag;
+    rsexp res;
+
+    if (r_small_int_p (num) || r_fixnum_p (num))
+        return num;
+
+    if (!r_flonum_p (num)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, num);
+        return R_FAILURE;
+    }
+
+    mpq_inits (real, imag, NULL);
+
+    mpq_set_d (real, flonum_from_sexp (num)->real);
+    mpq_set_d (imag, flonum_from_sexp (num)->imag);
+    res = r_fixnum_new (r, real, imag);
+
+    mpq_clears (real, imag, NULL);
+
+    return res;
+}
+
 RTypeInfo fixnum_type = {
     .size = sizeof (RFixnum),
     .name = "fixnum",
