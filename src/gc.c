@@ -1,9 +1,11 @@
 #include "detail/gc.h"
+#include "detail/primitive.h"
 #include "detail/sexp.h"
 #include "detail/state.h"
 #include "detail/vm.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/number.h"
 #include "rose/port.h"
 
 #include <assert.h>
@@ -319,3 +321,78 @@ void r_object_free (RState* r, RObject* obj)
 
     r_free (r, obj);
 }
+
+rsexp np_gc_enable (RState* r, rsexp args)
+{
+    gc_enable (r);
+    return R_UNSPECIFIED;
+}
+
+rsexp np_gc_disable (RState* r, rsexp args)
+{
+    gc_disable (r);
+    return R_UNSPECIFIED;
+}
+
+rsexp np_gc_enabled_p (RState* r, rsexp args)
+{
+    return r_bool_to_sexp (gc_enabled_p (r));
+}
+
+rsexp np_full_gc (RState* r, rsexp args)
+{
+    r_full_gc (r);
+    return R_UNSPECIFIED;
+}
+
+rsexp np_gc_live_object_count (RState* r, rsexp args)
+{
+    return r_int_to_sexp (r->gc.n_live);
+}
+
+rsexp np_gc_arena_size (RState* r, rsexp args)
+{
+    return r_int_to_sexp (r->gc.arena_size);
+}
+
+rsexp np_gc_arena_index (RState* r, rsexp args)
+{
+    return r_int_to_sexp (r->gc.arena_index);
+}
+
+rsexp np_gc_dump_live_objects (RState* r, rsexp args)
+{
+    RGcState* gc = &r->gc;
+    RObject* obj = gc->chrono_list;
+
+    while (obj) {
+        r_format (r, "~s~%", object_to_sexp (obj));
+        obj = obj->chrono_next;
+    }
+
+    return R_UNSPECIFIED;
+}
+
+rsexp np_gc_dump_arena (RState* r, rsexp args)
+{
+    RGcState* gc = &r->gc;
+    rsize i;
+
+    for (i = 0; i < gc->arena_index; ++i)
+        r_format (r, "~s~%", gc->arena [i]);
+
+    return R_UNSPECIFIED;
+}
+
+RPrimitiveDesc gc_primitives [] = {
+    { "gc-enable",            np_gc_enable,            0, 0, FALSE },
+    { "gc-disable",           np_gc_disable,           0, 0, FALSE },
+    { "gc-enabled?",          np_gc_enabled_p,         0, 0, FALSE },
+    { "full-gc",              np_full_gc,              0, 0, FALSE },
+    { "gc-live-object-count", np_gc_live_object_count, 0, 0, FALSE },
+    { "gc-arena-size",        np_gc_arena_size,        0, 0, FALSE },
+    { "gc-arena-index",       np_gc_arena_index,       0, 0, FALSE },
+    { "gc-dump-live-objects", np_gc_dump_live_objects, 0, 0, FALSE },
+    { "gc-dump-arena",        np_gc_dump_arena,        0, 0, FALSE },
+    { NULL }
+};
