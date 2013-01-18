@@ -44,23 +44,21 @@ static rsexp np_gc_arena_index (RState* r, rsexp args)
 
 static rsexp np_gc_dump_live_objects (RState* r, rsexp args)
 {
-    RGc* gc = &r->gc;
-    RObject* obj = gc->chrono_list;
+    RGc* gc;
+    RObject* obj;
 
-    while (obj) {
+    for (gc = &r->gc, obj = gc->chrono_list; obj; obj = obj->chrono_next)
         r_format (r, "~s~%", object_to_sexp (obj));
-        obj = obj->chrono_next;
-    }
 
     return R_UNSPECIFIED;
 }
 
 static rsexp np_gc_dump_arena (RState* r, rsexp args)
 {
-    RGc* gc = &r->gc;
+    RGc* gc;
     rsize i;
 
-    for (i = 0; i < gc->arena_index; ++i)
+    for (gc = &r->gc, i = 0; i < gc->arena_index; ++i)
         r_format (r, "~s~%", gc->arena [i]);
 
     return R_UNSPECIFIED;

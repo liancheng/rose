@@ -36,7 +36,7 @@ RTypeInfo* r_type_info (RState* r,
 
 #define STATIC_OBJECT_HEADER(tag)\
         .type_tag = (tag),\
-        .gc_color = R_GC_COLOR_BLACK,\
+        .gc_color = GC_COLOR_BLACK,\
         .gray_next = NULL,\
         .chrono_next = NULL,
 

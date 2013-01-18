@@ -7,9 +7,9 @@
 R_BEGIN_DECLS
 
 typedef enum {
-    R_GC_COLOR_WHITE,
-    R_GC_COLOR_GRAY,
-    R_GC_COLOR_BLACK
+    GC_COLOR_WHITE,
+    GC_COLOR_GRAY,
+    GC_COLOR_BLACK
 }
 RGcColor;
 

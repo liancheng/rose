@@ -14,20 +14,13 @@
 #define GC_ARENA_CHUNK_SIZE     1024
 #define GC_DEFAULT_THRESHOLD    1024
 
-#define gc_white_p(obj)     ((obj)->gc_color == R_GC_COLOR_WHITE)
-#define gc_gray_p(obj)      ((obj)->gc_color == R_GC_COLOR_GRAY)
-#define gc_black_p(obj)     ((obj)->gc_color == R_GC_COLOR_BLACK)
+#define gc_white_p(obj) ((obj)->gc_color == GC_COLOR_WHITE)
+#define gc_gray_p(obj)  ((obj)->gc_color == GC_COLOR_GRAY)
+#define gc_black_p(obj) ((obj)->gc_color == GC_COLOR_BLACK)
 
-#define gc_paint_white(obj) ((obj)->gc_color = R_GC_COLOR_WHITE)
-#define gc_paint_gray(obj)  ((obj)->gc_color = R_GC_COLOR_GRAY)
-#define gc_paint_black(obj) ((obj)->gc_color = R_GC_COLOR_BLACK)
-
-typedef enum {
-    GC_STEP_NONE,
-    GC_STEP_MARK,
-    GC_STEP_SWEEP
-}
-RGcStep;
+#define gc_paint_white(obj) ((obj)->gc_color = GC_COLOR_WHITE)
+#define gc_paint_gray(obj)  ((obj)->gc_color = GC_COLOR_GRAY)
+#define gc_paint_black(obj) ((obj)->gc_color = GC_COLOR_BLACK)
 
 #ifndef NDEBUG
 
@@ -237,11 +230,6 @@ void r_full_gc (RState* r)
         gc_mark_phase (r);
         gc_sweep_phase (r);
     }
-}
-
-rsize incremental_gc (RState* r)
-{
-    return 0u;
 }
 
 rpointer r_realloc (RState* r, rpointer ptr, rsize size)

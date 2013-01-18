@@ -156,8 +156,8 @@ static inline rsexp exec_frame (RState* r, RVm* vm)
     rsexp ret = r_cadr (vm->next);
 
     vm->stack = call_frame (r, ret, vm->env, vm->args, vm->stack);
-    vm->args  = R_NULL;
-    vm->next  = r_caddr (vm->next);
+    vm->args = R_NULL;
+    vm->next = r_caddr (vm->next);
 
     return vm->value;
 }
@@ -184,7 +184,7 @@ static inline rsexp exec_restore_cc (RState* r, RVm* vm)
     rsexp var = r_caddr (vm->next);
 
     vm->value = r_car (r_env_lookup (r, vm->env, var));
-    vm->next  = emit_return (r);
+    vm->next = emit_return (r);
     vm->stack = stack;
 
     return vm->value;
@@ -192,9 +192,9 @@ static inline rsexp exec_restore_cc (RState* r, RVm* vm)
 
 static inline rsexp exec_return (RState* r, RVm* vm)
 {
-    vm->next  = pop (vm);
-    vm->env   = pop (vm);
-    vm->args  = pop (vm);
+    vm->next = pop (vm);
+    vm->env = pop (vm);
+    vm->args = pop (vm);
     vm->stack = r_car (vm->stack);
 
     r_gc_scope_close (r);
