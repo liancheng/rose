@@ -37,7 +37,8 @@ After the building process, you may find the ROSE interpreter executable `rsi` u
     #<unspecified>
     $
     $ ./bin/rsi test/script/factorial.scm
-    3628800
+    42 ; your input
+    1405006117752879898543142606244511569936384000000000
     $
 
 [wiki]: https://github.com/liancheng/rose/wiki
