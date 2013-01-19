@@ -34,12 +34,17 @@ After the building process, you may find the ROSE interpreter executable `rsi` u
     (display "hello world\n")
     ^D
     hello world
-    #<unspecified>
-    $
+
+Here is the factorial example (input is read from the terminal):
+
     $ ./bin/rsi test/script/factorial.scm
-    42 ; your input
+    42
     1405006117752879898543142606244511569936384000000000
-    $
+
+You may also try the famous yin-yang script:
+
+    $ ./bin/rsi test/script/yin-yang.scm
+    @*@**@***@****@*****@******@*******...
 
 [wiki]: https://github.com/liancheng/rose/wiki
 [quex]: http://quex.sourceforge.net
