@@ -13,6 +13,7 @@ int main (int argc, char* argv[])
 
     if (!r) {
         fprintf (stderr, "ROSE interpreter initialization failed.\n");
+        exit_code = EXIT_FAILURE;
         goto exit;
     }
 
@@ -28,7 +29,6 @@ int main (int argc, char* argv[])
         goto clean;
     }
 
-    r_format (r, "~s~%", result);
     exit_code = EXIT_SUCCESS;
 
 clean:
