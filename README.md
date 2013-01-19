@@ -41,7 +41,7 @@ Here is the factorial example (input is read from the terminal):
     42
     1405006117752879898543142606244511569936384000000000
 
-You may also try the famous yin-yang script:
+You may also try the famous [yin-yang][yin-yang] script:
 
     $ ./bin/rsi test/script/yin-yang.scm
     @*@**@***@****@*****@******@*******...
@@ -52,3 +52,4 @@ You may also try the famous yin-yang script:
 [glib]: http://developer.gnome.org/glib/
 [gmp]: http://gmplib.org/
 [gtest]: http://code.google.com/p/googletest/
+[yin-yang]: http://yinwang0.wordpress.com/2012/07/27/yin-yang-puzzle/
