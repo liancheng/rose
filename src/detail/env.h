@@ -8,7 +8,7 @@ R_BEGIN_DECLS
 
 rsexp env_extend  (RState* r,
                    rsexp env,
-                   rsexp vars,
+                   rsexp formals,
                    rsexp vals);
 rsexp default_env (RState* r);
 
