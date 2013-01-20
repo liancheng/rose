@@ -1,6 +1,8 @@
 #include "rose/rose.h"
 
+#include <libgen.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int main (int argc, char* argv[])
 {
@@ -16,6 +18,11 @@ int main (int argc, char* argv[])
         exit_code = EXIT_FAILURE;
         goto exit;
     }
+
+    chdir (dirname (argv [0]));
+    chdir ("../");
+
+    r_eval_from_file (r, "src/lib/init.scm");
 
     port = (argc > 1)
          ? r_open_input_file (r, argv [1])
