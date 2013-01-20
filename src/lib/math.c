@@ -66,7 +66,8 @@ exit:
     return quot;
 }
 
-static rsexp np_num_eq_p (RState* r, rsexp args)
+static rsexp np_num_cmp_loop (RState* r, rsexp args,
+                              rsexp (*cmp) (RState*, rsexp, rsexp))
 {
     rsexp car;
     rsexp res;
@@ -78,22 +79,52 @@ static rsexp np_num_eq_p (RState* r, rsexp args)
     args = r_cdr (args);
 
     while (!r_null_p (args)) {
-        res = r_num_eq_p (r, car, r_car (args));
+        res = cmp (r, car, r_car (args));
 
-        if (!r_eq_p (r, res, R_TRUE))
+        if (res != R_TRUE)
             return res;
 
+        car = r_car (args);
         args = r_cdr (args);
     }
 
-    return R_TRUE;
+    return res;
+}
+
+static rsexp np_num_eq_p (RState* r, rsexp args)
+{
+    return np_num_cmp_loop (r, args, r_num_eq_p);
+}
+
+static rsexp np_num_lt_p (RState* r, rsexp args)
+{
+    return np_num_cmp_loop (r, args, r_num_lt_p);
+}
+
+static rsexp np_num_le_p (RState* r, rsexp args)
+{
+    return np_num_cmp_loop (r, args, r_num_le_p);
+}
+
+static rsexp np_num_gt_p (RState* r, rsexp args)
+{
+    return np_num_cmp_loop (r, args, r_num_gt_p);
+}
+
+static rsexp np_num_ge_p (RState* r, rsexp args)
+{
+    return np_num_cmp_loop (r, args, r_num_ge_p);
 }
 
 RPrimitiveDesc math_primitives [] = {
-    { "+", np_add,      0, 0, TRUE },
-    { "-", np_minus,    1, 0, TRUE },
-    { "*", np_multiply, 0, 0, TRUE },
-    { "/", np_divide,   1, 0, TRUE },
-    { "=", np_num_eq_p, 0, 0, TRUE },
+    { "+",  np_add,      0, 0, TRUE },
+    { "*",  np_multiply, 0, 0, TRUE },
+    { "-",  np_minus,    1, 0, TRUE },
+    { "/",  np_divide,   1, 0, TRUE },
+    { "=",  np_num_eq_p, 0, 0, TRUE },
+    { "<",  np_num_lt_p, 0, 0, TRUE },
+    { "<=", np_num_le_p, 0, 0, TRUE },
+    { ">",  np_num_gt_p, 0, 0, TRUE },
+    { ">=", np_num_ge_p, 0, 0, TRUE },
     { NULL }
 };

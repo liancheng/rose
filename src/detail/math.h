@@ -9,7 +9,7 @@ rsexp negate_smi (RState* r, rsexp num);
 rsexp negate_flo (RState* r, rsexp num);
 rsexp negate_fix (RState* r, rsexp num);
 
-rbool smi_sum_overflow_p (int lhs, int rhs, int sum);
+rbool smi_sum_overflow_p (rint lhs, rint rhs, rint sum);
 
 rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs);
 rsexp add_smi_any (RState* r, rsexp lhs, rsexp rhs);
@@ -23,7 +23,7 @@ rsexp add_fix_fix (RState* r, rsexp lhs, rsexp rhs);
 rsexp add_fix_flo (RState* r, rsexp lhs, rsexp rhs);
 rsexp add_fix_any (RState* r, rsexp lhs, rsexp rhs);
 
-rbool smi_product_overflow_p (int lhs, int rhs, int sum);
+rbool smi_product_overflow_p (rint lhs, rint rhs, rint sum);
 
 rsexp multiply_smi_smi (RState* r, rsexp lhs, rsexp rhs);
 rsexp multiply_smi_any (RState* r, rsexp lhs, rsexp rhs);

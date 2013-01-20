@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include "detail/math.h"
+#include "detail/number.h"
 #include "rose/eq.h"
 #include "rose/number.h"
 
@@ -10,7 +11,7 @@ class test_addition : public test_math {};
 TEST_F (test_math, fixnum_normalization)
 {
     {
-        rsexp n = r_smi_to_fixnum (r, R_ONE);
+        rsexp n = smi_to_fixnum (r, R_ONE);
         EXPECT_TRUE (r_fixnum_p (n));
         EXPECT_TRUE (r_small_int_p (r_fixnum_normalize (n)));
     }

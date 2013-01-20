@@ -14,3 +14,8 @@ double r_cos (double x)
 {
     return cos (x);
 }
+
+double r_ceil (double x)
+{
+    return ceil (x);
+}

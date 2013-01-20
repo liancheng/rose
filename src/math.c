@@ -23,6 +23,7 @@ rsexp negate_fix (RState* r, rsexp num)
     rsexp res;
 
     fixnum = fixnum_from_sexp (num);
+
     mpq_init (real);
     mpq_set (real, fixnum->real);
     mpq_neg (real, real);
@@ -53,14 +54,14 @@ rbool smi_sum_overflow_p (int lhs, int rhs, int sum)
     if ((lhs > 0 && sum < lhs) || (lhs < 0 && sum > rhs))
         return TRUE;
 
-    return sum != r_int_from_sexp (int_to_sexp (sum));
+    return sum != r_int_from_sexp (r_int_to_sexp (sum));
 }
 
 rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs)
 {
-    int smi_lhs;
-    int smi_rhs;
-    int smi_sum;
+    rint smi_lhs;
+    rint smi_rhs;
+    rint smi_sum;
     rsexp tmp;
 
     smi_lhs = r_int_from_sexp (lhs);
@@ -70,7 +71,7 @@ rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs)
     if (!smi_sum_overflow_p (smi_lhs, smi_rhs, smi_sum))
         return r_int_to_sexp (smi_sum);
     else {
-        ensure (tmp = r_smi_to_fixnum (r, smi_lhs));
+        ensure (tmp = smi_to_fixnum (r, lhs));
         return add_fix_smi (r, tmp, rhs);
     }
 }
@@ -233,7 +234,7 @@ rsexp r_minus (RState* r, rsexp lhs, rsexp rhs)
 rbool smi_product_overflow_p (int lhs, int rhs, int prod)
 {
     return (prod / lhs != rhs)
-        || (prod != r_int_from_sexp (int_to_sexp (prod)));
+        || (prod != r_int_from_sexp (r_int_to_sexp (prod)));
 }
 
 /* lhs is neither 0 nor 1 */
@@ -257,7 +258,7 @@ rsexp multiply_smi_smi (RState* r, rsexp lhs, rsexp rhs)
     if (!smi_product_overflow_p (smi_lhs, smi_rhs, smi_prod))
         return r_int_to_sexp (smi_prod);
     else {
-        ensure (tmp = r_smi_to_fixnum (r, smi_lhs));
+        ensure (tmp = smi_to_fixnum (r, smi_lhs));
         return multiply_fix_smi (r, tmp, rhs);
     }
 }
@@ -391,8 +392,10 @@ rsexp multiply_fix_flo (RState* r, rsexp lhs, rsexp rhs)
 {
     RFixnum* fix_lhs = fixnum_from_sexp (lhs);
     RFlonum* flo_rhs = flonum_from_sexp (rhs);
+
     double lhs_real = mpq_get_d (fix_lhs->real);
     double lhs_imag = mpq_get_d (fix_lhs->imag);
+
     double prod_real = lhs_real * flo_rhs->real + lhs_imag * flo_rhs->imag;
     double prod_imag = lhs_real * flo_rhs->imag + lhs_imag * flo_rhs->real;
 
@@ -526,8 +529,23 @@ rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs)
 {
     rsexp inexact;
 
-    if (r_small_int_p (lhs))
-        return r_bool_to_sexp (lhs == rhs);
+    if (r_small_int_p (lhs)) {
+        if (r_flonum_p (rhs)) {
+            RFlonum* flonum = flonum_from_sexp (rhs);
+
+            if (flonum->imag)
+                return R_FALSE;
+
+            return r_cast (double, r_int_from_sexp (lhs)) == flonum->real;
+        }
+
+        if (r_small_int_p (rhs))
+            return r_bool_to_sexp (lhs == rhs);
+
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, rhs);
+
+        return R_FAILURE;
+    }
 
     if (r_fixnum_p (lhs)) {
         if (r_small_int_p (rhs))
@@ -554,4 +572,65 @@ rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs)
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, lhs);
 
     return R_FAILURE;
+}
+
+rsexp r_num_cmp_helper (RState* r, rsexp lhs, rsexp rhs,
+                        double* lhs_real, double* rhs_real)
+{
+    rsexp flo_lhs;
+    rsexp flo_rhs;
+
+    ensure (flo_lhs = r_exact_to_inexact (r, lhs));
+    ensure (flo_rhs = r_exact_to_inexact (r, rhs));
+
+    if (!r_real_p (flo_lhs)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, lhs);
+        return R_FAILURE;
+    }
+
+    if (!r_real_p (flo_rhs)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, rhs);
+        return R_FAILURE;
+    }
+
+    *lhs_real = flonum_from_sexp (flo_lhs)->real;
+    *rhs_real = flonum_from_sexp (flo_rhs)->real;
+
+    return R_UNSPECIFIED;
+}
+
+rsexp r_num_lt_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    double lhs_real;
+    double rhs_real;
+
+    ensure (r_num_cmp_helper (r, lhs, rhs, &lhs_real, &rhs_real));
+    return r_bool_to_sexp (lhs_real < rhs_real);
+}
+
+rsexp r_num_le_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    double lhs_real;
+    double rhs_real;
+
+    ensure (r_num_cmp_helper (r, lhs, rhs, &lhs_real, &rhs_real));
+    return r_bool_to_sexp (lhs_real <= rhs_real);
+}
+
+rsexp r_num_gt_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    double lhs_real;
+    double rhs_real;
+
+    ensure (r_num_cmp_helper (r, lhs, rhs, &lhs_real, &rhs_real));
+    return r_bool_to_sexp (lhs_real > rhs_real);
+}
+
+rsexp r_num_ge_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    double lhs_real;
+    double rhs_real;
+
+    ensure (r_num_cmp_helper (r, lhs, rhs, &lhs_real, &rhs_real));
+    return r_bool_to_sexp (lhs_real >= rhs_real);
 }

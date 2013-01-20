@@ -7,6 +7,7 @@ R_BEGIN_DECLS
 
 double r_sin (double);
 double r_cos (double);
+double r_ceil (double);
 
 R_END_DECLS
 

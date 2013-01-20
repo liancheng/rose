@@ -14,6 +14,10 @@ rsexp r_invert   (RState* r, rsexp num);
 rsexp r_divide   (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_modulo   (RState* r, rsexp lhs, rsexp rhs);
 rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs);
+rsexp r_num_lt_p (RState* r, rsexp lhs, rsexp rhs);
+rsexp r_num_le_p (RState* r, rsexp lhs, rsexp rhs);
+rsexp r_num_gt_p (RState* r, rsexp lhs, rsexp rhs);
+rsexp r_num_ge_p (RState* r, rsexp lhs, rsexp rhs);
 
 R_END_DECLS
 

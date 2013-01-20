@@ -9,32 +9,32 @@
 
 R_BEGIN_DECLS
 
-rsexp r_cstr_to_number      (RState* r,
-                             rconstcstring text);
-rsexp r_string_to_number    (RState* r,
-                             rsexp text);
-rsexp r_flonum_new          (RState* r,
-                             double real,
-                             double imag);
-rbool r_flonum_p            (rsexp obj);
-rsexp r_fixnum_new          (RState* r,
-                             mpq_t real,
-                             mpq_t imag);
-rsexp r_fixreal_new         (RState* r,
-                             mpq_t real);
+rsexp r_cstr_to_number      (RState* r, rconstcstring text);
+rsexp r_string_to_number    (RState* r, rsexp text);
+
+rsexp r_flonum_new          (RState* r, double real, double imag);
+rsexp r_floreal_new         (RState* r, double real, double imag);
+rsexp r_fixnum_new          (RState* r, mpq_t real, mpq_t imag);
+rsexp r_fixreal_new         (RState* r, mpq_t real);
+rsexp r_fixint_new          (RState* r, rint real);
+rsexp r_fixuint_new         (RState* r, ruint real);
+
 rsexp r_fixnum_normalize    (rsexp obj);
-rsexp r_smi_to_fixnum       (RState* r,
-                             rsexp num);
-rbool r_fixnum_p            (rsexp obj);
+
 rsexp r_int_to_sexp         (rint n);
 rint  r_int_from_sexp       (rsexp obj);
+
+rbool r_flonum_p            (rsexp obj);
+rbool r_fixnum_p            (rsexp obj);
 rbool r_byte_p              (rsexp obj);
 rbool r_number_p            (rsexp obj);
+rbool r_integer_p           (rsexp obj);
+rbool r_real_p              (rsexp obj);
 rbool r_exact_p             (rsexp obj);
-rsexp r_exact_to_inexact    (RState* r,
-                             rsexp num);
-rsexp r_inexact_to_exact    (RState* r,
-                             rsexp num);
+rbool r_inexact_p           (rsexp obj);
+
+rsexp r_exact_to_inexact    (RState* r, rsexp num);
+rsexp r_inexact_to_exact    (RState* r, rsexp num);
 
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
