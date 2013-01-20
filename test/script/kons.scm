@@ -13,4 +13,6 @@
 
 (define x (kons 1 2))
 
-(kdr x)
+(display (kar x))
+(write-char #\space)
+(display (kdr x))
