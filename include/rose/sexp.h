@@ -46,7 +46,6 @@ typedef rword rsexp;
 
 typedef enum {
     /* Immediate types */
-    R_TAG_RESERVED      = 0x01,     /* #b001 */
     R_TAG_CHAR          = 0x02,     /* #b010 */
     R_TAG_SMI           = 0x03,     /* #b011 */
     R_TAG_SMI_EVEN      = 0x03,     /* #b011 */
