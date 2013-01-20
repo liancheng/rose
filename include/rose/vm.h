@@ -14,6 +14,8 @@ rsexp r_eval_from_string (RState* r,
                           rsexp input);
 rsexp r_eval_from_cstr   (RState* r,
                           rconstcstring input);
+rsexp r_eval_from_file   (RState* r,
+                          rconstcstring path);
 
 R_END_DECLS
 

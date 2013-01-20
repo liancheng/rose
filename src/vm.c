@@ -327,3 +327,8 @@ rsexp r_eval_from_cstr (RState* r, rconstcstring input)
 {
     return r_eval_from_string (r, r_string_new (r, input));
 }
+
+rsexp r_eval_from_file (RState* r, rconstcstring path)
+{
+    return r_eval_from_port (r, r_open_input_file (r, path));
+}
