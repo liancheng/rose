@@ -31,7 +31,7 @@ ERROR_DESC (R_ERR_GRP_RUNTIME,
 
 ERROR_DESC (R_ERR_GRP_RUNTIME,
             R_ERR_WRONG_ARG_NUM,
-            "wrong number of arguments to ~s")
+            "wrong number of arguments")
 
 ERROR_DESC (R_ERR_GRP_RUNTIME,
             R_ERR_WRONG_TYPE_ARG,
@@ -39,7 +39,7 @@ ERROR_DESC (R_ERR_GRP_RUNTIME,
 
 ERROR_DESC (R_ERR_GRP_MISC,
             R_ERR_NOT_IMPLEMENTED,
-            "~s not implemented")
+            "~s is not implemented yet")
 
 ERROR_DESC (R_ERR_GRP_MISC,
             R_ERR_UNKNOWN,
