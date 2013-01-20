@@ -20,11 +20,11 @@ static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc* desc)
     return env;
 }
 
-rsexp env_extend (RState* r, rsexp env, rsexp vars, rsexp vals)
+rsexp env_extend (RState* r, rsexp env, rsexp formals, rsexp vals)
 {
-    rsexp rib;
-    ensure (rib = r_cons (r, vars, vals));
-    return r_cons (r, rib, env);
+    rsexp frame;
+    ensure (frame = r_cons (r, formals, vals));
+    return r_cons (r, frame, env);
 }
 
 rsexp r_env_lookup (RState* r, rsexp env, rsexp var)
