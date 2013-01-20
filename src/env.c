@@ -64,13 +64,6 @@ rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
         return env_extend (r, env, vars, vals);
     }
 
-    vals = r_env_lookup (r, env, var);
-
-    if (!r_undefined_p (vals)) {
-        r_set_car_x (vals, val);
-        return env;
-    }
-
     ensure (vars = r_cons (r, var, r_car (r_car (env))));
     ensure (vals = r_cons (r, val, r_cdr (r_car (env))));
     ensure (frame = r_cons (r, vars, vals));
