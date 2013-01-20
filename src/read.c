@@ -358,6 +358,10 @@ static rsexp read_simple_datum (Reader* reader)
             datum = read_bytevector (reader);
             break;
 
+        case TKN_TERMINATION:
+            datum = R_EOF;
+            break;
+
         default:
             datum = R_FAILURE;
             goto exit;

@@ -8,6 +8,11 @@ protected:
     }
 };
 
+TEST_F (test_reader, comment)
+{
+    EXPECT_STREQ ("#<eof>", from ("#; 1 "));
+}
+
 TEST_F (test_reader, boolean)
 {
     EXPECT_STREQ ("#t", from ("#t "));
