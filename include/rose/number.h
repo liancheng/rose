@@ -40,7 +40,6 @@ rsexp r_inexact_to_exact    (RState* r, rsexp num);
 #define R_SMI_MAX               ((1 << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
 #define R_SMI_MIN               (-R_SMI_MAX - 1)
 
-#define r_inexact_p(obj)        (r_flonum_p (obj))
 #define r_small_int_p(obj)      (((obj) & R_SMI_MASK) == R_TAG_SMI)
 
 #define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rint, (obj))))

@@ -26,6 +26,7 @@ extern RTypeInfo vector_type;
 
 extern RTypeInfo fixreal_type;
 extern RTypeInfo floreal_type;
+extern RTypeInfo complex_type;
 
 static void init_reserved_words (RState* r)
 {
@@ -77,6 +78,7 @@ static void init_builtin_types (RState* r)
     r->builtin_types [R_TAG_VECTOR]        = vector_type;
     r->builtin_types [R_TAG_FIXREAL]       = fixreal_type;
     r->builtin_types [R_TAG_FLOREAL]       = floreal_type;
+    r->builtin_types [R_TAG_COMPLEX]       = complex_type;
 }
 
 static void init_std_ports (RState* r)

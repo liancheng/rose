@@ -1,3 +1,4 @@
+#include "detail/finer_number.h"
 #include "detail/io.h"
 #include "detail/math_workaround.h"
 #include "detail/number.h"
@@ -246,7 +247,8 @@ rbool r_byte_p (rsexp obj)
 
 rbool r_number_p (rsexp obj)
 {
-    return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj);
+    return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj)
+        || r_fixreal_p (obj) || r_floreal_p (obj) || r_complex_p (obj);
 }
 
 rbool r_integer_p (rsexp obj)
@@ -277,6 +279,16 @@ rbool r_integer_p (rsexp obj)
         return (imag == 0.) && r_ceil (real) == real;
     }
 
+    if (r_fixreal_p (obj)) {
+        mpq_t* value = &fixreal_from_sexp (obj)->value;
+        return mpz_cmp_si (mpq_denref (*value), 1) == 0;
+    }
+
+    if (r_floreal_p (obj)) {
+        double value = floreal_from_sexp (obj)->value;
+        return r_ceil (value) == value;
+    }
+
     return FALSE;
 }
 
@@ -295,12 +307,32 @@ rbool r_real_p (rsexp obj)
         return imag == 0.;
     }
 
+    if (r_fixreal_p (obj) || r_floreal_p (obj))
+        return TRUE;
+
     return FALSE;
 }
 
 rbool r_exact_p (rsexp obj)
 {
-    return r_small_int_p (obj) || r_fixnum_p (obj);
+    if (r_small_int_p (obj) || r_fixnum_p (obj) || r_fixreal_p (obj))
+        return TRUE;
+
+    if (r_complex_p (obj))
+        return r_exact_p (r_real_part (obj));
+
+    return FALSE;
+}
+
+rbool r_inexact_p (rsexp obj)
+{
+    if (r_floreal_p (obj))
+        return TRUE;
+
+    if (r_complex_p (obj))
+        return r_inexact_p (r_real_part (obj));
+
+    return FALSE;
 }
 
 rsexp r_exact_to_inexact (RState* r, rsexp num)

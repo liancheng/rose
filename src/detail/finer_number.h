@@ -31,9 +31,11 @@ struct RComplex {
 
 #define fixreal_to_sexp(n)      (r_cast (rsexp, n))
 #define floreal_to_sexp(n)      (r_cast (rsexp, n))
+#define complex_to_sexp(n)      (r_cast (rsexp, n))
 
 #define fixreal_from_sexp(n)    (r_cast (RFixreal*, n))
 #define floreal_from_sexp(n)    (r_cast (RFloreal*, n))
+#define complex_from_sexp(n)    (r_cast (RComplex*, n))
 
 rsexp smi_to_fixreal (RState* r, rsexp num);
 

@@ -4,16 +4,10 @@
 #include "detail/number.h"
 #include "rose/string.h"
 
-class test_number_reader : public fixture_base {};
-class test_fixreal       : public fixture_base {};
-class test_floreal       : public fixture_base {};
-
-TEST_F (test_number_reader, string_to_number)
-{
-    EXPECT_TRUE (r_exact_p (r_cstr_to_number (r, "#e1e128")));
-    EXPECT_TRUE (r_exact_p (r_cstr_to_number (r, "1/2")));
-    EXPECT_TRUE (r_exact_p (r_cstr_to_number (r, "#e1.2")));
-}
+class test_fixreal : public fixture_base {};
+class test_floreal : public fixture_base {};
+class test_complex : public fixture_base {};
+class test_number  : public fixture_base {};
 
 TEST_F (test_fixreal, r_fixreal_new)
 {
@@ -54,4 +48,49 @@ TEST_F (test_floreal, r_floreal_new)
     EXPECT_FALSE (r_failure_p (actual));
     EXPECT_TRUE (r_floreal_p (actual));
     EXPECT_TRUE (floreal_from_sexp (actual)->value == 1.5);
+}
+
+TEST_F (test_complex, r_complex_new)
+{
+    {
+        rsexp actual = r_complex_new (r, R_ZERO, r_floreal_new (r, 1.));
+        EXPECT_TRUE (r_failure_p (actual));
+    }
+
+    {
+        rsexp actual = r_complex_new (r, r_floreal_new (r, 1.), R_ZERO);
+        EXPECT_TRUE (r_failure_p (actual));
+    }
+
+    {
+        rsexp real = r_floreal_new (r, 1.);
+        rsexp imag = r_floreal_new (r, 0.);
+        rsexp actual = r_complex_new (r, real, imag);
+
+        EXPECT_TRUE (r_floreal_p (actual));
+        EXPECT_TRUE (r_inexact_p (actual));
+        EXPECT_TRUE (r_real_p (actual));
+    }
+
+    {
+        rsexp real = r_fixreal_new_si (r, 2, 4);
+        rsexp imag = r_fixreal_new_si (r, 0, 1);
+        rsexp actual = r_complex_new (r, real, imag);
+
+        EXPECT_TRUE (r_fixreal_p (actual));
+        EXPECT_TRUE (r_exact_p (actual));
+        EXPECT_TRUE (r_real_p (actual));
+    }
+}
+
+TEST_F (test_number, r_zero_p)
+{
+    EXPECT_TRUE (r_zero_p (R_ZERO));
+    EXPECT_TRUE (r_zero_p (r_floreal_new (r, 0.)));
+    EXPECT_TRUE (r_zero_p (smi_to_fixreal (r, R_ZERO)));
+
+    EXPECT_FALSE (r_zero_p (R_ONE));
+    EXPECT_FALSE (r_zero_p (r_fixreal_new_si (r, 1, 1)));
+    EXPECT_FALSE (r_zero_p (r_floreal_new (r, 1.)));
+    EXPECT_FALSE (r_zero_p (r_complex_new (r, R_ZERO, R_ONE)));
 }
