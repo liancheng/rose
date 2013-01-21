@@ -7,24 +7,27 @@
 
 R_BEGIN_DECLS
 
-typedef struct {
+typedef struct RFixreal RFixreal;
+
+struct RFixreal {
     R_OBJECT_HEADER
     mpq_t value;
-}
-RFixreal;
+};
 
-typedef struct {
+typedef struct RFloreal RFloreal;
+
+struct RFloreal {
     R_OBJECT_HEADER
     double value;
-}
-RFloreal;
+};
 
-typedef struct {
+typedef struct RComplex RComplex;
+
+struct RComplex {
     R_OBJECT_HEADER
     rsexp real;
     rsexp imag;
-}
-RComplex;
+};
 
 #define fixreal_to_sexp(n)      (r_cast (rsexp, n))
 #define floreal_to_sexp(n)      (r_cast (rsexp, n))
