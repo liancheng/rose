@@ -21,6 +21,31 @@ typedef struct {
 }
 RFlonum;
 
+typedef struct {
+    R_OBJECT_HEADER
+    rsexp real;
+    rsexp imag;
+}
+RComplex;
+
+typedef struct {
+    R_OBJECT_HEADER
+    mpq_t value;
+}
+RFixreal;
+
+typedef struct {
+    R_OBJECT_HEADER
+    double value;
+}
+RFloreal;
+
+#define fixreal_to_sexp(n)      (r_cast (rsexp, n))
+#define floreal_to_sexp(n)      (r_cast (rsexp, n))
+
+#define fixreal_from_sexp(n)    (r_cast (RFixreal*, n))
+#define floreal_from_sexp(n)    (r_cast (RFloreal*, n))
+
 #define fixnum_to_sexp(fixnum)  ((rsexp) (fixnum))
 #define fixnum_from_sexp(obj)   ((RFixnum*) (obj))
 
@@ -29,6 +54,8 @@ RFlonum;
 
 /** Converts a small integer to a non-normalized fixnum */
 rsexp smi_to_fixnum (RState* r, rsexp num);
+
+rsexp smi_to_fixreal (RState* r, rsexp num);
 
 R_END_DECLS
 

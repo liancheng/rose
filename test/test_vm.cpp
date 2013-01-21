@@ -55,11 +55,7 @@ TEST_F (test_vm, factorial)
 {
     EXPECT_TRUE (eq_p (R_UNSPECIFIED,
                        run_script ("script/factorial.scm",
-                                   "100\n")));
+                                   "10\n")));
 
-    EXPECT_STREQ ("9332621544394415268169923885626670049071"
-                  "5968264381621468592963895217599993229915"
-                  "6089414639761565182862536979208272237582"
-                  "51185210916864000000000000000000000000\n",
-                  get_output ());
+    EXPECT_STREQ ("3628800\n", get_output ());
 }

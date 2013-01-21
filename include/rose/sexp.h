@@ -67,9 +67,12 @@ typedef enum {
     R_TAG_FIXNUM        = 0x11,
     R_TAG_FLONUM        = 0x12,
     R_TAG_OPAQUE        = 0x13,
+    R_TAG_FIXREAL       = 0x14,
+    R_TAG_FLOREAL       = 0x15,
+    R_TAG_COMPLEX       = 0x16,
 
     /* End mark */
-    R_TAG_MAX           = 0x14
+    R_TAG_MAX           = 0x17
 }
 RTypeTag;
 

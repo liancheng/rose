@@ -187,17 +187,6 @@ rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
     return fixnum_to_sexp (fixnum);
 }
 
-rsexp r_fixreal_new (RState* r, mpq_t real)
-{
-    RFixnum* fixnum = fixnum_new (r);
-
-    if (!fixnum)
-        return R_FAILURE;
-
-    mpq_set (fixnum->real, real);
-    return r_fixnum_normalize (fixnum_to_sexp (fixnum));
-}
-
 rsexp r_fixint_new (RState* r, rint real)
 {
     RFixnum* fixnum;
@@ -403,5 +392,72 @@ RTypeInfo flonum_type = {
         .display = write_flonum,
         .eqv_p = flonum_eqv_p,
         .equal_p = flonum_eqv_p,
+    }
+};
+
+/* ========================================================================== */
+
+static rsexp write_fixreal (RState* r, rsexp port, rsexp obj)
+{
+    RFixreal* n = fixreal_from_sexp (obj);
+    FILE* stream = port_to_stream (port);
+
+    if (0 == mpq_out_str (stream, 10, n->value)) {
+        r_error_code (r, R_ERR_UNKNOWN);
+        return R_FAILURE;
+    }
+
+    return R_UNSPECIFIED;
+}
+
+static rbool fixreal_eqv_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    RFixreal* lhs_num = fixreal_from_sexp (lhs);
+    RFixreal* rhs_num = fixreal_from_sexp (rhs);
+
+    return mpq_cmp (lhs_num->value, rhs_num->value) == 0;
+}
+
+static void fixreal_finalize (RState* r, RObject* obj)
+{
+    RFixreal* n = fixreal_from_sexp (obj);
+    mpq_clear (n->value);
+}
+
+rsexp r_fixreal_new (RState* r, mpq_t value)
+{
+    RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    mpq_init (obj->value);
+    mpq_set (obj->value, value);
+
+    return fixreal_to_sexp (obj);
+}
+
+rsexp r_fixreal_new_si (RState* r, rint value)
+{
+    RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    mpq_init (obj->value);
+    mpq_set_si (obj->value, value, 1);
+
+    return fixreal_to_sexp (obj);
+}
+
+RTypeInfo fixreal_type = {
+    .size = sizeof (RFixreal),
+    .name = "fixreal",
+    .ops = {
+        .write = write_fixreal,
+        .display = write_fixreal,
+        .eqv_p = fixreal_eqv_p,
+        .equal_p = fixreal_eqv_p,
+        .finalize = fixreal_finalize
     }
 };
