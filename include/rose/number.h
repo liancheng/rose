@@ -13,11 +13,13 @@ rsexp r_cstr_to_number      (RState* r, rconstcstring text);
 rsexp r_string_to_number    (RState* r, rsexp text);
 
 rsexp r_flonum_new          (RState* r, double real, double imag);
-rsexp r_floreal_new         (RState* r, double real, double imag);
 rsexp r_fixnum_new          (RState* r, mpq_t real, mpq_t imag);
-rsexp r_fixreal_new         (RState* r, mpq_t real);
 rsexp r_fixint_new          (RState* r, rint real);
 rsexp r_fixuint_new         (RState* r, ruint real);
+
+rsexp r_fixreal_new         (RState* r, mpq_t value);
+rsexp r_fixreal_new_si      (RState* r, rint num, rint den);
+rsexp r_floreal_new         (RState* r, double real);
 
 rsexp r_fixnum_normalize    (rsexp obj);
 

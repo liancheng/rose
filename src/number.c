@@ -437,7 +437,7 @@ rsexp r_fixreal_new (RState* r, mpq_t value)
     return fixreal_to_sexp (obj);
 }
 
-rsexp r_fixreal_new_si (RState* r, rint value)
+rsexp r_fixreal_new_si (RState* r, rint num, rint den)
 {
     RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
 
@@ -445,7 +445,32 @@ rsexp r_fixreal_new_si (RState* r, rint value)
         return R_FAILURE;
 
     mpq_init (obj->value);
-    mpq_set_si (obj->value, value, 1);
+    mpq_set_si (obj->value, num, den);
+
+    return fixreal_to_sexp (obj);
+}
+
+static rsexp write_floreal (RState* r, rsexp port, rsexp obj)
+{
+    return r_port_printf (r, port, "%f", floreal_from_sexp (obj)->value);
+}
+
+static rbool floreal_eqv_p (RState* r, rsexp lhs, rsexp rhs)
+{
+    RFloreal* lhs_num = floreal_from_sexp (lhs);
+    RFloreal* rhs_num = floreal_from_sexp (rhs);
+
+    return lhs_num->value == rhs_num->value;
+}
+
+rsexp r_floreal_new (RState* r, double value)
+{
+    RFloreal* obj = r_object_new (r, RFloreal, R_TAG_FLOREAL);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    obj->value = value;
 
     return fixreal_to_sexp (obj);
 }
@@ -459,5 +484,16 @@ RTypeInfo fixreal_type = {
         .eqv_p = fixreal_eqv_p,
         .equal_p = fixreal_eqv_p,
         .finalize = fixreal_finalize
+    }
+};
+
+RTypeInfo floreal_type = {
+    .size = sizeof (RFloreal),
+    .name = "floreal",
+    .ops = {
+        .write = write_floreal,
+        .display = write_floreal,
+        .eqv_p = floreal_eqv_p,
+        .equal_p = floreal_eqv_p
     }
 };
