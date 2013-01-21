@@ -17,10 +17,6 @@ rsexp r_fixnum_new          (RState* r, mpq_t real, mpq_t imag);
 rsexp r_fixint_new          (RState* r, rint real);
 rsexp r_fixuint_new         (RState* r, ruint real);
 
-rsexp r_fixreal_new         (RState* r, mpq_t value);
-rsexp r_fixreal_new_si      (RState* r, rint num, rint den);
-rsexp r_floreal_new         (RState* r, double real);
-
 rsexp r_fixnum_normalize    (rsexp obj);
 
 rsexp r_int_to_sexp         (rint n);
