@@ -433,6 +433,7 @@ rsexp r_fixreal_new (RState* r, mpq_t value)
 
     mpq_init (obj->value);
     mpq_set (obj->value, value);
+    mpq_canonicalize (obj->value);
 
     return fixreal_to_sexp (obj);
 }
@@ -446,6 +447,7 @@ rsexp r_fixreal_new_si (RState* r, rint num, rint den)
 
     mpq_init (obj->value);
     mpq_set_si (obj->value, num, den);
+    mpq_canonicalize (obj->value);
 
     return fixreal_to_sexp (obj);
 }

@@ -1,6 +1,7 @@
 #include "utils.hpp"
 
 #include "detail/number.h"
+#include "rose/string.h"
 
 class test_number_reader : public fixture_base {};
 class test_fixreal       : public fixture_base {};
@@ -15,21 +16,24 @@ TEST_F (test_number_reader, string_to_number)
 
 TEST_F (test_fixreal, r_fixreal_new)
 {
-    mpq_t value;
-    mpq_init (value);
+    mpq_t init;
 
-    mpq_set_si (value, 2, 3);
-    EXPECT_FALSE (r_failure_p (r_fixreal_new (r, value)));
+    mpq_init (init);
+    mpq_set_si (init, 6, 4);
 
-    mpq_clear (value);
+    rsexp actual = r_fixreal_new (r, init);
+    EXPECT_FALSE (r_failure_p (actual));
+    EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
+
+    mpq_clear (init);
 }
 
 TEST_F (test_fixreal, r_fixreal_new_si)
 {
-    rsexp actual = r_fixreal_new_si (r, 3, 2);
+    rsexp actual = r_fixreal_new_si (r, 6, 4);
 
     EXPECT_FALSE (r_failure_p (actual));
-    EXPECT_TRUE (mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2) == 0);
+    EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
 }
 
 TEST_F (test_floreal, r_floreal_new)
