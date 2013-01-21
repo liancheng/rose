@@ -115,7 +115,7 @@ rsexp smi_to_fixnum (RState* r, rsexp smi)
     rsexp res;
 
     mpq_init (real);
-    mpq_set_si (real, smi, 1);
+    mpq_set_si (real, r_int_from_sexp (smi), 1);
 
     fixnum = fixnum_new (r);
 

@@ -49,7 +49,7 @@ rsexp r_negate (RState* r, rsexp num)
     return R_FAILURE;
 }
 
-rbool smi_sum_overflow_p (int lhs, int rhs, int sum)
+rbool smi_sum_overflow_p (rint lhs, rint rhs, rint sum)
 {
     if ((lhs > 0 && sum < lhs) || (lhs < 0 && sum > rhs))
         return TRUE;
@@ -59,21 +59,10 @@ rbool smi_sum_overflow_p (int lhs, int rhs, int sum)
 
 rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs)
 {
-    rint smi_lhs;
-    rint smi_rhs;
-    rint smi_sum;
     rsexp tmp;
 
-    smi_lhs = r_int_from_sexp (lhs);
-    smi_rhs = r_int_from_sexp (rhs);
-    smi_sum = smi_lhs + smi_rhs;
-
-    if (!smi_sum_overflow_p (smi_lhs, smi_rhs, smi_sum))
-        return r_int_to_sexp (smi_sum);
-    else {
-        ensure (tmp = smi_to_fixnum (r, lhs));
-        return add_fix_smi (r, tmp, rhs);
-    }
+    ensure (tmp = smi_to_fixnum (r, lhs));
+    return add_fix_smi (r, tmp, rhs);
 }
 
 rsexp add_smi_any (RState* r, rsexp lhs, rsexp rhs)
@@ -231,7 +220,7 @@ rsexp r_minus (RState* r, rsexp lhs, rsexp rhs)
     return r_add (r, lhs, neg_rhs);
 }
 
-rbool smi_product_overflow_p (int lhs, int rhs, int prod)
+rbool smi_product_overflow_p (rint lhs, rint rhs, rint prod)
 {
     return (prod / lhs != rhs)
         || (prod != r_int_from_sexp (r_int_to_sexp (prod)));
@@ -240,9 +229,6 @@ rbool smi_product_overflow_p (int lhs, int rhs, int prod)
 /* lhs is neither 0 nor 1 */
 rsexp multiply_smi_smi (RState* r, rsexp lhs, rsexp rhs)
 {
-    int smi_lhs;
-    int smi_rhs;
-    int smi_prod;
     rsexp tmp;
 
     if (rhs == R_ZERO)
@@ -251,16 +237,8 @@ rsexp multiply_smi_smi (RState* r, rsexp lhs, rsexp rhs)
     if (rhs == R_ONE)
         return lhs;
 
-    smi_lhs = r_int_from_sexp (lhs);
-    smi_rhs = r_int_from_sexp (rhs);
-    smi_prod = smi_lhs * smi_rhs;
-
-    if (!smi_product_overflow_p (smi_lhs, smi_rhs, smi_prod))
-        return r_int_to_sexp (smi_prod);
-    else {
-        ensure (tmp = smi_to_fixnum (r, smi_lhs));
-        return multiply_fix_smi (r, tmp, rhs);
-    }
+    ensure (tmp = smi_to_fixnum (r, lhs));
+    return multiply_fix_smi (r, tmp, rhs);
 }
 
 rsexp multiply_smi_any (RState* r, rsexp lhs, rsexp rhs)
