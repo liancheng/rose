@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/liancheng/rose.png)](https://travis-ci.org/liancheng/rose)
+
 # Overview
 
 As the name suggests, ROSE is an Obscure Scheme Evaluator.  Please refer to the [Wiki pages][wiki] for details.
