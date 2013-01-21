@@ -427,6 +427,12 @@ rsexp r_fixreal_new_si (RState* r, rint num, rint den)
     return fixreal_to_sexp (obj);
 }
 
+rsexp smi_to_fixreal (RState* r, rsexp n)
+{
+    assert (r_small_int_p (n));
+    return r_fixreal_new_si (r, r_int_from_sexp (n), 1);
+}
+
 static rsexp write_floreal (RState* r, rsexp port, rsexp obj)
 {
     return r_port_printf (r, port, "%f", floreal_from_sexp (obj)->value);
