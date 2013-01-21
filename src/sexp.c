@@ -5,8 +5,6 @@
 #include "rose/io.h"
 #include "rose/number.h"
 
-#include <gc/gc.h>
-
 static rsexp write_special_const (RState* r, rsexp port, rsexp obj)
 {
     static rconstcstring str[] = {
