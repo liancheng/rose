@@ -28,6 +28,14 @@ TEST_F (test_fixreal, r_fixreal_new)
     mpq_clear (init);
 }
 
+TEST_F (test_fixreal, write_fixreal)
+{
+    rsexp port = r_open_output_string (r);
+    r_port_write (r, port, r_fixreal_new_si (r, 6, 4));
+    EXPECT_TRUE (equal_p (r_string_new (r, "3/2"),
+                          r_get_output_string (r, port)));
+}
+
 TEST_F (test_fixreal, r_fixreal_new_si)
 {
     rsexp actual = r_fixreal_new_si (r, 6, 4);
