@@ -92,6 +92,16 @@ rsexp r_floreal_new (RState* r, double value)
     return fixreal_to_sexp (obj);
 }
 
+rbool r_fixreal_p (rsexp obj)
+{
+    return r_type_tag (obj) == R_TAG_FIXREAL;
+}
+
+rbool r_floreal_p (rsexp obj)
+{
+    return r_type_tag (obj) == R_TAG_FLOREAL;
+}
+
 RTypeInfo fixreal_type = {
     .size = sizeof (RFixreal),
     .name = "fixreal",

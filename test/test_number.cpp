@@ -24,9 +24,19 @@ TEST_F (test_fixreal, r_fixreal_new)
 
     rsexp actual = r_fixreal_new (r, init);
     EXPECT_FALSE (r_failure_p (actual));
+    EXPECT_TRUE (r_fixreal_p (actual));
     EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
 
     mpq_clear (init);
+}
+
+TEST_F (test_fixreal, r_fixreal_new_si)
+{
+    rsexp actual = r_fixreal_new_si (r, 6, 4);
+
+    EXPECT_FALSE (r_failure_p (actual));
+    EXPECT_TRUE (r_fixreal_p (actual));
+    EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
 }
 
 TEST_F (test_fixreal, write_fixreal)
@@ -37,18 +47,11 @@ TEST_F (test_fixreal, write_fixreal)
                           r_get_output_string (r, port)));
 }
 
-TEST_F (test_fixreal, r_fixreal_new_si)
-{
-    rsexp actual = r_fixreal_new_si (r, 6, 4);
-
-    EXPECT_FALSE (r_failure_p (actual));
-    EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
-}
-
 TEST_F (test_floreal, r_floreal_new)
 {
     rsexp actual = r_floreal_new (r, 1.5);
 
     EXPECT_FALSE (r_failure_p (actual));
+    EXPECT_TRUE (r_floreal_p (actual));
     EXPECT_TRUE (floreal_from_sexp (actual)->value == 1.5);
 }
