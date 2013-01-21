@@ -108,31 +108,6 @@ static RFixnum* fixnum_new (RState* r)
     return fixnum;
 }
 
-rsexp smi_to_fixnum (RState* r, rsexp smi)
-{
-    mpq_t real;
-    RFixnum* fixnum;
-    rsexp res;
-
-    mpq_init (real);
-    mpq_set_si (real, r_int_from_sexp (smi), 1);
-
-    fixnum = fixnum_new (r);
-
-    if (!fixnum) {
-        res = R_FAILURE;
-        goto exit;
-    }
-
-    mpq_set (fixnum->real, real);
-    res = fixnum_to_sexp (fixnum);
-
-exit:
-    mpq_clear (real);
-
-    return res;
-}
-
 rbool r_fixnum_p (rsexp obj)
 {
     return r_type_tag (obj) == R_TAG_FIXNUM;

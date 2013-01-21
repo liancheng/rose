@@ -52,9 +52,6 @@ RFloreal;
 #define flonum_to_sexp(flonum)  ((rsexp) (flonum))
 #define flonum_from_sexp(obj)   ((RFlonum*) (obj))
 
-/** Converts a small integer to a non-normalized fixnum */
-rsexp smi_to_fixnum (RState* r, rsexp num);
-
 rsexp smi_to_fixreal (RState* r, rsexp num);
 
 R_END_DECLS
