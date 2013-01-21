@@ -10,3 +10,4 @@ before_script:
   - sudo apt-get install libgmp3-dev
   - sudo apt-get install libglib2.0-dev
   - git submodule update --init --recursive
+
