@@ -4,7 +4,7 @@
 
 As the name suggests, ROSE is an Obscure Scheme Evaluator.  Please refer to the [Wiki pages][wiki] for details.
 
-**NOTE**: ROSE is still in an very early stage, the interpreter is barely runnable, many features required by R5RS are missing.
+**NOTE**: ROSE is still in an very early stage, currently the interpreter is barely runnable.  Although ROSE aims to be [R7RS][r7rs] compatible, many features required by [R5RS][r5rs] are still missing.
 
 ## How to build ROSE on Ubuntu
 
@@ -49,6 +49,8 @@ You may also try the famous [yin-yang][yin-yang] script:
     @*@**@***@****@*****@******@*******...
 
 [wiki]: https://github.com/liancheng/rose/wiki
+[r7rs]: http://scheme-reports.org/2012/process1.html
+[r5rs]: http://www.schemers.org/Documents/Standards/R5RS/
 [quex]: http://quex.sourceforge.net
 [scons]: http://www.scons.org
 [glib]: http://developer.gnome.org/glib/
