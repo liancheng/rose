@@ -53,18 +53,18 @@ TEST_F (test_floreal, r_floreal_new)
 TEST_F (test_complex, r_complex_new)
 {
     {
-        rsexp actual = r_complex_new (r, R_ZERO, r_floreal_new (r, 1.));
+        rsexp actual = r_complex_new (r, R_ZERO, r->flo_one);
         EXPECT_TRUE (r_failure_p (actual));
     }
 
     {
-        rsexp actual = r_complex_new (r, r_floreal_new (r, 1.), R_ZERO);
+        rsexp actual = r_complex_new (r, r->flo_one, R_ZERO);
         EXPECT_TRUE (r_failure_p (actual));
     }
 
     {
-        rsexp real = r_floreal_new (r, 1.);
-        rsexp imag = r_floreal_new (r, 0.);
+        rsexp real = r->flo_one;
+        rsexp imag = r->flo_zero;
         rsexp actual = r_complex_new (r, real, imag);
 
         EXPECT_TRUE (r_floreal_p (actual));
@@ -86,11 +86,27 @@ TEST_F (test_complex, r_complex_new)
 TEST_F (test_number, r_zero_p)
 {
     EXPECT_TRUE (r_zero_p (R_ZERO));
-    EXPECT_TRUE (r_zero_p (r_floreal_new (r, 0.)));
+    EXPECT_TRUE (r_zero_p (r->flo_zero));
     EXPECT_TRUE (r_zero_p (smi_to_fixreal (r, R_ZERO)));
 
     EXPECT_FALSE (r_zero_p (R_ONE));
     EXPECT_FALSE (r_zero_p (r_fixreal_new_si (r, 1, 1)));
-    EXPECT_FALSE (r_zero_p (r_floreal_new (r, 1.)));
+    EXPECT_FALSE (r_zero_p (r->flo_one));
     EXPECT_FALSE (r_zero_p (r_complex_new (r, R_ZERO, R_ONE)));
+}
+
+TEST_F (test_number, r_sign)
+{
+    EXPECT_EQ (1, r_sign (R_ZERO));
+    EXPECT_EQ (1, r_sign (r->flo_zero));
+    EXPECT_EQ (1, r_sign (R_ONE));
+
+    EXPECT_EQ (-1, r_sign (r_fixreal_new_si (r, -1, 1)));
+    EXPECT_EQ (-1, r_sign (r_int_to_sexp (-1)));
+}
+
+TEST_F (test_number, r_real_p)
+{
+    EXPECT_TRUE (r_real_p (R_ZERO));
+    EXPECT_TRUE (r_real_p (R_ONE));
 }

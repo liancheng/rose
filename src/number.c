@@ -279,15 +279,11 @@ rbool r_integer_p (rsexp obj)
         return (imag == 0.) && r_ceil (real) == real;
     }
 
-    if (r_fixreal_p (obj)) {
-        mpq_t* value = &fixreal_from_sexp (obj)->value;
-        return mpz_cmp_si (mpq_denref (*value), 1) == 0;
-    }
+    if (r_fixreal_p (obj))
+        return mpz_cmp_si (mpq_denref (fixreal_value (obj)), 1) == 0;
 
-    if (r_floreal_p (obj)) {
-        double value = floreal_from_sexp (obj)->value;
-        return r_ceil (value) == value;
-    }
+    if (r_floreal_p (obj))
+        return r_ceil (floreal_value (obj)) == floreal_value (obj);
 
     return FALSE;
 }
@@ -319,7 +315,7 @@ rbool r_exact_p (rsexp obj)
         return TRUE;
 
     if (r_complex_p (obj))
-        return r_exact_p (r_real_part (obj));
+        return r_exact_p (complex_real (obj));
 
     return FALSE;
 }
@@ -330,7 +326,7 @@ rbool r_inexact_p (rsexp obj)
         return TRUE;
 
     if (r_complex_p (obj))
-        return r_inexact_p (r_real_part (obj));
+        return r_inexact_p (complex_real (obj));
 
     return FALSE;
 }

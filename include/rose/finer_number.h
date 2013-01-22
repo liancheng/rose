@@ -18,12 +18,11 @@ rbool r_floreal_p      (rsexp obj);
 
 rsexp r_complex_new    (RState* r, rsexp real, rsexp imag);
 rbool r_complex_p      (rsexp obj);
+rsexp r_real_part      (RState* r, rsexp n);
+rsexp r_imag_part      (RState* r, rsexp n);
 
 rbool r_zero_p         (rsexp n);
 rint  r_sign           (rsexp n);
-
-rsexp r_real_part      (rsexp n);
-rsexp r_imag_part      (rsexp n);
 
 R_END_DECLS
 

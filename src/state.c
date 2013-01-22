@@ -1,7 +1,9 @@
 #include "detail/gc.h"
 #include "detail/io.h"
 #include "detail/state.h"
+#include "rose/finer_number.h"
 #include "rose/gc.h"
+#include "rose/string.h"
 
 #include <assert.h>
 #include <string.h>
@@ -55,6 +57,18 @@ static void init_reserved_words (RState* r)
     r->i.return_           = r_intern (r, "return");
 }
 
+static void init_oom_error (RState* r)
+{
+    rsexp message = r_string_new (r, "out of memory");
+    r->oom_error = r_error_new (r, message, R_NULL);
+}
+
+static void init_const_number (RState* r)
+{
+    r->flo_zero = r_floreal_new (r, 0.);
+    r->flo_one = r_floreal_new (r, 1.);
+}
+
 static void init_builtin_types (RState* r)
 {
     /* Immediate types */
@@ -86,6 +100,14 @@ static void init_std_ports (RState* r)
     r->current_input_port  = r_stdin_port  (r);
     r->current_output_port = r_stdout_port (r);
     r->current_error_port  = r_stderr_port (r);
+}
+
+static void init_global_objects (RState* r)
+{
+    init_oom_error (r);
+    init_const_number (r);
+    init_reserved_words (r);
+    init_std_ports (r);
 }
 
 static rpointer default_alloc_fn (rpointer aux, rpointer ptr, rsize size)
@@ -126,8 +148,7 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
     gc_init (r);
 
     init_builtin_types (r);
-    init_reserved_words (r);
-    init_std_ports (r);
+    init_global_objects (r);
 
     vm_init (r);
     gc_enable (r);

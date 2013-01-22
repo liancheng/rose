@@ -33,6 +33,11 @@ struct RState {
     rsexp current_output_port;
     rsexp current_error_port;
 
+    /* Global constants */
+    rsexp oom_error;
+    rsexp flo_zero;
+    rsexp flo_one;
+
     /* Interned keyword symbols */
     struct {
         rsexp quote;

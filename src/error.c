@@ -28,20 +28,6 @@ static RErrorDesc error_desc [] = {
 #undef ERROR_DESC
 };
 
-#define OOM_MESSAGE "out of memory"
-
-static RString oom_message = {
-    STATIC_OBJECT_HEADER (R_TAG_STRING)
-    .data = OOM_MESSAGE,
-    .length = sizeof (OOM_MESSAGE)
-};
-
-static RError oom_error = {
-    STATIC_OBJECT_HEADER (R_TAG_ERROR)
-    .message = string_to_sexp (&oom_message),
-    .irritants = R_NULL
-};
-
 #define error_from_sexp(obj) (r_cast (RError*, (obj)))
 #define error_to_sexp(error) (r_cast (rsexp, (error)))
 
@@ -231,7 +217,7 @@ rsexp r_inherit_errno_x (RState* r, rint errnum)
 
 void r_error_no_memory (RState* r)
 {
-    r_set_last_error_x (r, error_to_sexp (&oom_error));
+    r_set_last_error_x (r, r->oom_error);
 }
 
 RTypeInfo error_type = {
