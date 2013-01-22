@@ -32,6 +32,7 @@ TEST_F (test_compile, quotation)
 {
     EXPECT_STREQ (expected ("(constant x (halt))"), actual ("'x "));
     EXPECT_STREQ (expected ("(constant x (halt))"), actual ("(quote x)"));
+    EXPECT_STREQ (expected ("#<failure>"), actual ("(quote)"));
 }
 
 TEST_F (test_compile, sequence)
@@ -46,6 +47,9 @@ TEST_F (test_compile, assignment)
     EXPECT_STREQ
         (expected ("(constant 1 (assign x (halt)))"),
          actual ("(set! x 1)"));
+
+    EXPECT_STREQ (expected ("#<failure>"), actual ("(set!)"));
+    EXPECT_STREQ (expected ("#<failure>"), actual ("(set! #t 1)"));
 }
 
 TEST_F (test_compile, variable_definition)
@@ -53,6 +57,9 @@ TEST_F (test_compile, variable_definition)
     EXPECT_STREQ
         (expected ("(constant 1 (bind x (halt)))"),
          actual ("(define x 1)"));
+
+    EXPECT_STREQ (expected ("#<failure>"), actual ("(define)"));
+    EXPECT_STREQ (expected ("#<failure>"), actual ("(define x 1 2)"));
 }
 
 TEST_F (test_compile, procedure_definition)
