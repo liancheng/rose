@@ -15,14 +15,25 @@ test = env.Program(target='test',
                    source=[env.Glob('*.cpp'),
                            File(GTEST_DIR + '/src/gtest-all.cc')])
 
+run_source = [test[0]]
+
+if ARGUMENTS.get('coverage', 0):
+    lcov_reset = env.LCov(target='lcov-reset',
+                          source=[test],
+                          LCOVRESET=True,
+                          LCOVDIR='.',
+                          LCOVBASEDIR='#/')
+
+    run_source = [test[0], lcov_reset]
+
 run = env.Command(target='unit-test',
-                  source=test[0],
+                  source=run_source,
                   action=test[0].abspath)
 
 if ARGUMENTS.get('coverage', 0):
     env.GenHtml(target=Dir('html'),
                 source=env.LCov(target='coverage.info',
-                                source=run,
+                                source=[test, run, lcov_reset],
                                 LCOVDIR='.',
                                 LCOVBASEDIR='#/'))
 

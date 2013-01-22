@@ -15,8 +15,11 @@ class LCovExecutableNotFound(ToolLCovWarning):
 
 
 def lcov_generator(source, target, env, for_signature):
-    cmd = ['lcov --capture']
-    cmd += ['--output-file', target[0].abspath]
+    if 'LCOVRESET' in env:
+        cmd = ['lcov --zerocounters']
+    else:
+        cmd = ['lcov --capture']
+        cmd += ['--output-file', target[0].abspath]
 
     if 'LCOVDIR' in env:
         cmd += ['--directory', str(Dir(env['LCOVDIR']))]
