@@ -196,7 +196,7 @@ rsexp r_real_part (RState* r, rsexp n)
 
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
 
-    return FALSE;
+    return R_FAILURE;
 }
 
 rsexp r_imag_part (RState* r, rsexp n)
