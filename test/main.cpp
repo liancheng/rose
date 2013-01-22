@@ -1,3 +1,5 @@
+#include "utils.hpp"
+
 #include <gtest/gtest.h>
 #include <mcheck.h>
 
@@ -7,6 +9,8 @@
 #include <iostream>
 
 using namespace std;
+
+bool fixture_base::fail_alloc = false;
 
 int main (int argc, char* argv[])
 {

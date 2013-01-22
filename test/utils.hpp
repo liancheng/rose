@@ -16,7 +16,7 @@ protected:
 
     virtual void SetUp ()
     {
-        r = r_state_open ();
+        r = r_state_new (alloc_fn, NULL);
     }
 
     virtual void TearDown ()
@@ -92,6 +92,41 @@ protected:
                ? testing::AssertionSuccess ()
                : testing::AssertionFailure ();
     }
+
+    class allocator_disruptor {
+    public:
+        allocator_disruptor ()
+        {
+            fail_alloc = true;
+        }
+
+        ~allocator_disruptor ()
+        {
+            fail_alloc = false;
+        }
+    };
+
+private:
+    static bool fail_alloc;
+
+    static rpointer alloc_fn (rpointer aux, rpointer ptr, rsize size)
+    {
+        assert (!(ptr == 0 && size == 0u));
+
+        if (fail_alloc)
+            return NULL;
+
+        if (0 == size) {
+            free (ptr);
+            return NULL;
+        }
+
+        if (NULL == ptr)
+            return malloc (size);
+
+        return realloc (ptr, size);
+    }
+
 };
 
-#endif  //  __ROSE_TEST_UTILS_HPP__
+#endif // __ROSE_TEST_UTILS_HPP__
