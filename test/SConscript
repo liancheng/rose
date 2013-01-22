@@ -15,8 +15,19 @@ test = env.Program(target='test',
                    source=[env.Glob('*.cpp'),
                            File(GTEST_DIR + '/src/gtest-all.cc')])
 
-env.Command(target='unit-test',
-            source=test[0],
-            action=test[0].abspath)
+run = env.Command(target='unit-test',
+                  source=test[0],
+                  action=test[0].abspath)
 
-# vim:ft=python
+if ARGUMENTS.get('coverage', 0):
+    env.GenHtml(target=Dir('html'),
+                source=env.LCov(target='coverage.info',
+                                source=run,
+                                LCOVDIR='.',
+                                LCOVBASEDIR='#/'))
+
+    env.Clean(test,
+              [env.Dir('html'),
+               env.File('test.gcno')])
+
+# vim:ft=python ts=4 sw=4 sts=4 et
