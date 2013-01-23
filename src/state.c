@@ -92,7 +92,8 @@ static void init_builtin_types (RState* r)
     r->builtin_types [R_TAG_VECTOR]        = vector_type;
     r->builtin_types [R_TAG_FIXREAL]       = fixreal_type;
     r->builtin_types [R_TAG_FLOREAL]       = floreal_type;
-    r->builtin_types [R_TAG_COMPLEX]       = complex_type;
+    r->builtin_types [R_TAG_FIX_COMPLEX]   = complex_type;
+    r->builtin_types [R_TAG_FLO_COMPLEX]   = complex_type;
 }
 
 static void init_std_ports (RState* r)

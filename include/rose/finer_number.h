@@ -18,6 +18,8 @@ rbool r_floreal_p      (rsexp obj);
 
 rsexp r_complex_new    (RState* r, rsexp real, rsexp imag);
 rbool r_complex_p      (rsexp obj);
+rbool r_fixcomplex_p   (rsexp obj);
+rbool r_flocomplex_p   (rsexp obj);
 rsexp r_real_part      (RState* r, rsexp n);
 rsexp r_imag_part      (RState* r, rsexp n);
 

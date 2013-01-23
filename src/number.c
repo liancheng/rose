@@ -311,24 +311,17 @@ rbool r_real_p (rsexp obj)
 
 rbool r_exact_p (rsexp obj)
 {
-    if (r_small_int_p (obj) || r_fixnum_p (obj) || r_fixreal_p (obj))
-        return TRUE;
-
-    if (r_complex_p (obj))
-        return r_exact_p (complex_real (obj));
-
-    return FALSE;
+    return r_small_int_p (obj)
+        || r_fixnum_p (obj)
+        || r_fixreal_p (obj)
+        || r_fixcomplex_p (obj);
 }
 
 rbool r_inexact_p (rsexp obj)
 {
-    if (r_floreal_p (obj))
-        return TRUE;
-
-    if (r_complex_p (obj))
-        return r_inexact_p (complex_real (obj));
-
-    return FALSE;
+    return r_flonum_p (obj)
+        || r_floreal_p (obj)
+        || r_flocomplex_p (obj);
 }
 
 rsexp r_exact_to_inexact (RState* r, rsexp num)

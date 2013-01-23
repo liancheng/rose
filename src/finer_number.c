@@ -68,6 +68,47 @@ static void fixreal_finalize (RState* r, RObject* obj)
     mpq_clear (r_cast (RFixreal*, obj)->value);
 }
 
+static inline rsexp complex_new (RState* r,
+                                 RTypeTag tag,
+                                 rsexp real,
+                                 rsexp imag)
+{
+    RComplex* obj;
+
+    if (r_zero_p (imag))
+        return real;
+
+    obj = r_object_new (r, RComplex, tag);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    obj->real = real;
+    obj->imag = imag;
+
+    return complex_to_sexp (obj);
+}
+
+static inline rsexp fixcomplex_new (RState* r, rsexp real, rsexp imag)
+{
+    if (!r_exact_p (imag)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, imag);
+        return R_FAILURE;
+    }
+
+    return complex_new (r, R_TAG_FIX_COMPLEX, real, imag);
+}
+
+static inline rsexp flocomplex_new (RState* r, rsexp real, rsexp imag)
+{
+    if (!r_inexact_p (imag)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, imag);
+        return R_FAILURE;
+    }
+
+    return complex_new (r, R_TAG_FLO_COMPLEX, real, imag);
+}
+
 rsexp smi_to_fixreal (RState* r, rsexp n)
 {
     assert (r_small_int_p (n));
@@ -116,30 +157,15 @@ rsexp r_floreal_new (RState* r, double value)
 
 rsexp r_complex_new (RState* r, rsexp real, rsexp imag)
 {
-    RComplex* obj;
+    if (r_exact_p (real))
+        return fixcomplex_new (r, real, imag);
 
-     if (r_exact_p (real) && !r_exact_p (imag)) {
-         r_error_code (r, R_ERR_WRONG_TYPE_ARG, imag);
-         return R_FAILURE;
-     }
+    if (r_inexact_p (real))
+        return flocomplex_new (r, real, imag);
 
-     if (r_inexact_p (real) && !r_inexact_p (imag)) {
-         r_error_code (r, R_ERR_WRONG_TYPE_ARG, imag);
-         return R_FAILURE;
-     }
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, real);
 
-    if (r_zero_p (imag))
-        return real;
-
-    obj = r_object_new (r, RComplex, R_TAG_COMPLEX);
-
-    if (obj == NULL)
-        return R_FAILURE;
-
-    obj->real = real;
-    obj->imag = imag;
-
-    return complex_to_sexp (obj);
+    return R_FAILURE;
 }
 
 rbool r_fixreal_p (rsexp obj)
@@ -152,9 +178,19 @@ rbool r_floreal_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_FLOREAL;
 }
 
+rbool r_fixcomplex_p (rsexp obj)
+{
+    return r_type_tag (obj) == R_TAG_FIX_COMPLEX;
+}
+
+rbool r_flocomplex_p (rsexp obj)
+{
+    return r_type_tag (obj) == R_TAG_FLO_COMPLEX;
+}
+
 rbool r_complex_p (rsexp obj)
 {
-    return r_type_tag (obj) == R_TAG_COMPLEX;
+    return r_fixcomplex_p (obj) || r_flocomplex_p (obj);
 }
 
 rbool r_zero_p (rsexp n)
