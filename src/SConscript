@@ -1,3 +1,4 @@
+Import('coverage')
 Import('env')
 
 env = env.Clone()
@@ -17,6 +18,10 @@ lex_src = env.Quex(source='lexer.qx',
                               '--token-id-prefix TKN_',
                               '--token-policy single',
                               '--token-memory-management-by-user'])
+
+if coverage:
+    env.AppendUnique(CCFLAGS=['-fprofile-arcs',
+                              '-ftest-coverage'])
 
 rose_lib = env.StaticLibrary(target='rose',
                              source=[Glob('*.c'),

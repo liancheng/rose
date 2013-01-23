@@ -1,4 +1,5 @@
-Import('env', 'rose_lib')
+Import('env')
+Import('rose_lib')
 
 env = env.Clone()
 env.Prepend(LIBS=[rose_lib])
