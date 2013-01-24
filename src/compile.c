@@ -4,7 +4,7 @@
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/io.h"
-#include "rose/finer_number.h"
+#include "rose/number.h"
 #include "rose/read.h"
 #include "rose/string.h"
 #include "rose/symbol.h"

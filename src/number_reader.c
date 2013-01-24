@@ -1,5 +1,5 @@
-#include "detail/finer_number.h"
 #include "detail/math_workaround.h"
+#include "detail/number.h"
 #include "detail/number_reader.h"
 #include "rose/error.h"
 #include "rose/gc.h"

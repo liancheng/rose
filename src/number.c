@@ -1,7 +1,7 @@
-#include "detail/finer_number.h"
 #include "detail/gc.h"
 #include "detail/io.h"
 #include "detail/math_workaround.h"
+#include "detail/number.h"
 #include "detail/number_reader.h"
 #include "detail/state.h"
 #include "rose/eq.h"

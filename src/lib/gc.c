@@ -1,7 +1,7 @@
 #include "detail/gc.h"
 #include "detail/state.h"
 #include "rose/io.h"
-#include "rose/finer_number.h"
+#include "rose/number.h"
 #include "rose/primitive.h"
 
 static rsexp np_gc_enable (RState* r, rsexp args)

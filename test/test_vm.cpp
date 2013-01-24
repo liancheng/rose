@@ -2,7 +2,7 @@
 
 #include "rose/eq.h"
 #include "rose/io.h"
-#include "rose/finer_number.h"
+#include "rose/number.h"
 #include "rose/vm.h"
 
 class test_vm : public fixture_base {

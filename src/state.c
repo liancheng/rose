@@ -1,8 +1,8 @@
 #include "detail/gc.h"
 #include "detail/io.h"
 #include "detail/state.h"
-#include "rose/finer_number.h"
 #include "rose/gc.h"
+#include "rose/number.h"
 #include "rose/string.h"
 
 #include <assert.h>
