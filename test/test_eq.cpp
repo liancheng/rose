@@ -1,7 +1,7 @@
 #include "utils.hpp"
 
 #include "rose/eq.h"
-#include "rose/number.h"
+#include "rose/finer_number.h"
 #include "rose/pair.h"
 #include "rose/string.h"
 #include "rose/symbol.h"

@@ -1,9 +1,8 @@
+#include "detail/finer_number.h"
 #include "detail/math_workaround.h"
-#include "detail/number.h"
 #include "detail/number_reader.h"
 #include "rose/error.h"
 #include "rose/gc.h"
-#include "rose/number.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -708,6 +707,28 @@ static rbool read_rect_complex (RNumberReader* reader,
         || reset (reader, pos);
 }
 
+rsexp make_fixcomplex (RState* r, mpq_t real, mpq_t imag)
+{
+    rsexp fix_real;
+    rsexp fix_imag;
+
+    ensure (fix_real = r_fixreal_new (r, real));
+    ensure (fix_imag = r_fixreal_new (r, imag));
+
+    return r_complex_new (r, fix_real, fix_imag);
+}
+
+rsexp make_flocomplex (RState* r, double real, double imag)
+{
+    rsexp flo_real;
+    rsexp flo_imag;
+
+    ensure (flo_real = r_floreal_new (r, real));
+    ensure (flo_imag = r_floreal_new (r, imag));
+
+    return r_complex_new (r, flo_real, flo_imag);
+}
+
 /**
  *  number
  *      : prefix? (polar_complex / rect_complex)
@@ -727,9 +748,9 @@ static rsexp read_number (RNumberReader* reader)
     read_prefix (reader);
 
     if (read_polar_complex (reader, &rho, &theta)) {
-        res = r_flonum_new (reader->r,
-                            rho * r_cos (theta),
-                            rho * r_sin (theta));
+        res = make_flocomplex (reader->r,
+                               rho * r_cos (theta),
+                               rho * r_sin (theta));
         goto clear;
     }
 
@@ -738,8 +759,8 @@ static rsexp read_number (RNumberReader* reader)
         double i;
 
         res = fix_exactness (reader, real, imag, &r, &i)
-            ? r_fixnum_new (reader->r, real, imag)
-            : r_flonum_new (reader->r, r, i);
+            ? make_fixcomplex (reader->r, real, imag)
+            : make_flocomplex (reader->r, r, i);
 
         goto clear;
     }

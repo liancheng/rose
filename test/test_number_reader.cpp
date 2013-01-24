@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-#include "rose/number.h"
+#include "rose/finer_number.h"
 
 class test_number_reader : public fixture_base {};
 

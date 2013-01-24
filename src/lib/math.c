@@ -2,7 +2,7 @@
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
-#include "rose/number.h"
+#include "rose/finer_number.h"
 #include "rose/pair.h"
 #include "rose/primitive.h"
 

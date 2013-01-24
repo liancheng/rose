@@ -3,7 +3,7 @@
 #include "rose/error.h"
 #include "rose/gc.h"
 #include "rose/io.h"
-#include "rose/number.h"
+#include "rose/finer_number.h"
 
 static rsexp write_special_const (RState* r, rsexp port, rsexp obj)
 {

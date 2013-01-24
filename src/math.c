@@ -1,5 +1,4 @@
 #include "detail/math.h"
-#include "detail/number.h"
 #include "detail/finer_number.h"
 #include "rose/eq.h"
 #include "rose/error.h"

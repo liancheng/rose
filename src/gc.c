@@ -5,7 +5,6 @@
 #include "rose/error.h"
 #include "rose/io.h"
 #include "rose/gc.h"
-#include "rose/number.h"
 
 #include <assert.h>
 #include <stdio.h>

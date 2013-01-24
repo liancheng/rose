@@ -32,8 +32,10 @@ typedef rword rsexp;
  *   - environment
  *   - port
  *   - error object
- *   - fixnum
- *   - flonum
+ *   - fixreal
+ *   - floreal
+ *   - fixcomplex
+ *   - flocomplex
  *
  * Immediate types:
  *
@@ -64,16 +66,14 @@ typedef enum {
     R_TAG_ENV           = 0x0e,
     R_TAG_PORT          = 0x0f,
     R_TAG_ERROR         = 0x10,
-    R_TAG_FIXNUM        = 0x11,
-    R_TAG_FLONUM        = 0x12,
-    R_TAG_OPAQUE        = 0x13,
-    R_TAG_FIXREAL       = 0x14,
-    R_TAG_FLOREAL       = 0x15,
-    R_TAG_FLO_COMPLEX   = 0x16,
-    R_TAG_FIX_COMPLEX   = 0x17,
+    R_TAG_OPAQUE        = 0x11,
+    R_TAG_FIXREAL       = 0x12,
+    R_TAG_FLOREAL       = 0x13,
+    R_TAG_FLO_COMPLEX   = 0x14,
+    R_TAG_FIX_COMPLEX   = 0x15,
 
     /* End mark */
-    R_TAG_MAX           = 0x18
+    R_TAG_MAX           = 0x16
 }
 RTypeTag;
 

@@ -1,7 +1,6 @@
 #include "utils.hpp"
 
 #include "rose/eq.h"
-#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/vector.h"
 

@@ -16,8 +16,6 @@ extern RTypeInfo symbol_type;
 
 extern RTypeInfo bytevector_type;
 extern RTypeInfo error_type;
-extern RTypeInfo fixnum_type;
-extern RTypeInfo flonum_type;
 extern RTypeInfo opaque_type;
 extern RTypeInfo pair_type;
 extern RTypeInfo port_type;
@@ -81,8 +79,6 @@ static void init_builtin_types (RState* r)
     /* Boxed types */
     r->builtin_types [R_TAG_BYTEVECTOR]    = bytevector_type;
     r->builtin_types [R_TAG_ERROR]         = error_type;
-    r->builtin_types [R_TAG_FIXNUM]        = fixnum_type;
-    r->builtin_types [R_TAG_FLONUM]        = flonum_type;
     r->builtin_types [R_TAG_OPAQUE]        = opaque_type;
     r->builtin_types [R_TAG_PAIR]          = pair_type;
     r->builtin_types [R_TAG_PORT]          = port_type;

@@ -4,7 +4,6 @@
 #include "detail/sexp.h"
 #include "rose/finer_number.h"
 #include "rose/gmp.h"
-#include "rose/number.h"
 
 R_BEGIN_DECLS
 

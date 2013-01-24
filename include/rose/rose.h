@@ -8,7 +8,7 @@
 #include "rose/gc.h"
 #include "rose/gmp.h"
 #include "rose/io.h"
-#include "rose/number.h"
+#include "rose/finer_number.h"
 #include "rose/opaque.h"
 #include "rose/pair.h"
 #include "rose/procedure.h"

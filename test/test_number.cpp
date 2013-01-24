@@ -1,7 +1,6 @@
 #include "utils.hpp"
 
 #include "detail/finer_number.h"
-#include "detail/number.h"
 #include "rose/string.h"
 
 class test_fixreal : public fixture_base {};

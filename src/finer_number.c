@@ -1,10 +1,13 @@
 #include "detail/finer_number.h"
 #include "detail/gc.h"
 #include "detail/io.h"
-#include "detail/number.h"
+#include "detail/math_workaround.h"
+#include "detail/number_reader.h"
 #include "detail/state.h"
 #include "rose/eq.h"
 #include "rose/error.h"
+#include "rose/gmp.h"
+#include "rose/string.h"
 
 #include <assert.h>
 
@@ -122,21 +125,6 @@ static inline rsexp floreal_to_fixreal (RState* r, rsexp n)
     return res;
 }
 
-static inline rsexp flonum_to_fixnum (RState* r, rsexp n)
-{
-    mpq_t real;
-    mpq_t imag;
-    rsexp res;
-
-    mpq_inits (real, imag, NULL);
-    mpq_set_d (real, flonum_real (n));
-    mpq_set_d (imag, flonum_imag (n));
-    res = r_fixnum_new (r, real, imag);
-    mpq_clears (real, imag, NULL);
-
-    return res;
-}
-
 static inline rsexp inexact_to_exact (RState* r, rsexp n)
 {
     rsexp real;
@@ -145,13 +133,10 @@ static inline rsexp inexact_to_exact (RState* r, rsexp n)
     if (r_floreal_p (n))
         return floreal_to_fixreal (r, n);
 
-    if (r_flocomplex_p (n)) {
-        ensure (real = floreal_to_fixreal (r, complex_real (n)));
-        ensure (imag = floreal_to_fixreal (r, complex_real (n)));
-        return r_complex_new (r, real, imag);
-    }
+    ensure (real = floreal_to_fixreal (r, complex_real (n)));
+    ensure (imag = floreal_to_fixreal (r, complex_real (n)));
 
-    return flonum_to_fixnum (r, n);
+    return r_complex_new (r, real, imag);
 }
 
 static inline rsexp smi_to_floreal (RState* r, rsexp n)
@@ -164,16 +149,16 @@ static inline rsexp fixreal_to_floreal (RState* r, rsexp n)
     return r_floreal_new (r, mpq_get_d (fixreal_value (n)));
 }
 
-static inline rsexp fixnum_to_flonum (RState* r, rsexp n)
-{
-    double real;
-    double imag;
-
-    real = mpq_get_d (fixnum_real (n));
-    imag = mpq_get_d (fixnum_imag (n));
-
-    return r_flonum_new (r, real, imag);
-}
+// static inline rsexp fixnum_to_flonum (RState* r, rsexp n)
+// {
+//     double real;
+//     double imag;
+// 
+//     real = mpq_get_d (fixnum_real (n));
+//     imag = mpq_get_d (fixnum_imag (n));
+// 
+//     return r_flonum_new (r, real, imag);
+// }
 
 static inline rsexp exact_to_inexact (RState* r, rsexp n)
 {
@@ -186,13 +171,33 @@ static inline rsexp exact_to_inexact (RState* r, rsexp n)
     if (r_fixreal_p (n))
         return fixreal_to_floreal (r, n);
 
-    if (r_fixcomplex_p (n)) {
-        ensure (real = fixreal_to_floreal (r, complex_real (n)));
-        ensure (imag = fixreal_to_floreal (r, complex_imag (n)));
-        return r_complex_new (r, real, imag);
-    }
+    ensure (real = fixreal_to_floreal (r, complex_real (n)));
+    ensure (imag = fixreal_to_floreal (r, complex_imag (n)));
 
-    return fixnum_to_flonum (r, n);
+    return r_complex_new (r, real, imag);
+}
+
+static inline rsexp fixreal_normalize (rsexp n)
+{
+    rint smi;
+
+    mpq_canonicalize (fixreal_value (n));
+
+    /* If the denominator is not 1... */
+    if (mpz_cmp_ui (mpq_denref (fixreal_value (n)), 1u) != 0)
+        return n;
+
+    /* If the number is too large (to fit into a signed int)... */
+    if (!mpz_fits_sint_p (mpq_numref (fixreal_value (n))))
+        return n;
+
+    smi = mpz_get_si (mpq_numref (fixreal_value (n)));
+
+    /* If the number doesn't fit into the range of small integers... */
+    if (smi > R_SMI_MAX || smi < R_SMI_MIN)
+        return n;
+
+    return r_int_to_sexp (smi);
 }
 
 rsexp smi_to_fixreal (RState* r, rsexp n)
@@ -210,9 +215,8 @@ rsexp r_fixreal_new (RState* r, mpq_t value)
 
     mpq_init (obj->value);
     mpq_set (obj->value, value);
-    mpq_canonicalize (obj->value);
 
-    return fixreal_to_sexp (obj);
+    return fixreal_normalize (fixreal_to_sexp (obj));
 }
 
 rsexp r_fixreal_new_si (RState* r, rint num, rint den)
@@ -370,6 +374,98 @@ rsexp r_inexact_to_exact (RState* r, rsexp n)
 
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
     return R_FAILURE;
+}
+
+rsexp r_cstr_to_number (RState* r, rconstcstring text)
+{
+    RNumberReader reader;
+    rsexp res;
+
+    r_number_reader_init (r, &reader);
+    res = r_number_read (&reader, text);
+
+    return res;
+}
+
+rsexp r_fixint_new (RState* r, rint real)
+{
+    return r_fixreal_new_si (r, real, 1);
+}
+
+rsexp r_fixuint_new (RState* r, ruint real)
+{
+    return r_fixreal_new_ui (r, real, 1);
+}
+
+rsexp r_string_to_number (RState* r, rsexp text)
+{
+    RNumberReader reader;
+    rsexp res;
+
+    r_number_reader_init (r, &reader);
+    res = r_number_read (&reader, r_string_to_cstr (text));
+
+    return res;
+}
+
+rbool r_byte_p (rsexp obj)
+{
+    if (!r_small_int_p (obj))
+        return FALSE;
+
+    rint i = r_int_from_sexp (obj);
+
+    return i >= 0 && i <= 255;
+}
+
+rbool r_number_p (rsexp obj)
+{
+    return r_exact_p (obj) || r_inexact_p (obj);
+}
+
+rbool r_integer_p (rsexp obj)
+{
+    if (r_small_int_p (obj))
+        return TRUE;
+
+    if (r_fixreal_p (obj))
+        return mpz_cmp_si (mpq_denref (fixreal_value (obj)), 1) == 0;
+
+    if (r_floreal_p (obj))
+        return r_ceil (floreal_value (obj)) == floreal_value (obj);
+
+    return FALSE;
+}
+
+rbool r_real_p (rsexp obj)
+{
+    return r_small_int_p (obj)
+        || r_fixreal_p (obj)
+        || r_floreal_p (obj);
+}
+
+rbool r_exact_p (rsexp obj)
+{
+    return r_small_int_p (obj)
+        || r_fixreal_p (obj)
+        || r_fixcomplex_p (obj);
+}
+
+rbool r_inexact_p (rsexp obj)
+{
+    return r_floreal_p (obj)
+        || r_flocomplex_p (obj);
+}
+
+rsexp r_int_to_sexp (rint n)
+{
+    return (n << R_SMI_BITS) | R_TAG_SMI;
+}
+
+rint r_int_from_sexp (rsexp obj)
+{
+    assert (r_small_int_p (obj));
+    return (r_cast (rint, obj)) >> R_SMI_BITS;
 }
 
 RTypeInfo fixreal_type = {
