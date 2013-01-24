@@ -149,17 +149,6 @@ static inline rsexp fixreal_to_floreal (RState* r, rsexp n)
     return r_floreal_new (r, mpq_get_d (fixreal_value (n)));
 }
 
-// static inline rsexp fixnum_to_flonum (RState* r, rsexp n)
-// {
-//     double real;
-//     double imag;
-// 
-//     real = mpq_get_d (fixnum_real (n));
-//     imag = mpq_get_d (fixnum_imag (n));
-// 
-//     return r_flonum_new (r, real, imag);
-// }
-
 static inline rsexp exact_to_inexact (RState* r, rsexp n)
 {
     rsexp real;
