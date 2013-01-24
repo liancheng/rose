@@ -31,9 +31,6 @@ rbool r_real_p              (rsexp obj);
 rbool r_exact_p             (rsexp obj);
 rbool r_inexact_p           (rsexp obj);
 
-rsexp r_exact_to_inexact    (RState* r, rsexp num);
-rsexp r_inexact_to_exact    (RState* r, rsexp num);
-
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
 #define R_SEXP_BITS             (sizeof (rsexp) * CHAR_BIT)

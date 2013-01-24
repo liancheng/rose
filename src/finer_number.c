@@ -109,6 +109,92 @@ static inline rsexp flocomplex_new (RState* r, rsexp real, rsexp imag)
     return complex_new (r, R_TAG_FLO_COMPLEX, real, imag);
 }
 
+static inline rsexp floreal_to_fixreal (RState* r, rsexp n)
+{
+    mpq_t real;
+    rsexp res;
+
+    mpq_init (real);
+    mpq_set_d (real, floreal_value (n));
+    res = r_fixreal_new (r, real);
+    mpq_clear (real);
+
+    return res;
+}
+
+static inline rsexp flonum_to_fixnum (RState* r, rsexp n)
+{
+    mpq_t real;
+    mpq_t imag;
+    rsexp res;
+
+    mpq_inits (real, imag, NULL);
+    mpq_set_d (real, flonum_real (n));
+    mpq_set_d (imag, flonum_imag (n));
+    res = r_fixnum_new (r, real, imag);
+    mpq_clears (real, imag, NULL);
+
+    return res;
+}
+
+static inline rsexp inexact_to_exact (RState* r, rsexp n)
+{
+    rsexp real;
+    rsexp imag;
+
+    if (r_floreal_p (n))
+        return floreal_to_fixreal (r, n);
+
+    if (r_flocomplex_p (n)) {
+        ensure (real = floreal_to_fixreal (r, complex_real (n)));
+        ensure (imag = floreal_to_fixreal (r, complex_real (n)));
+        return r_complex_new (r, real, imag);
+    }
+
+    return flonum_to_fixnum (r, n);
+}
+
+static inline rsexp smi_to_floreal (RState* r, rsexp n)
+{
+    return r_floreal_new (r, r_cast (double, r_int_from_sexp (n)));
+}
+
+static inline rsexp fixreal_to_floreal (RState* r, rsexp n)
+{
+    return r_floreal_new (r, mpq_get_d (fixreal_value (n)));
+}
+
+static inline rsexp fixnum_to_flonum (RState* r, rsexp n)
+{
+    double real;
+    double imag;
+
+    real = mpq_get_d (fixnum_real (n));
+    imag = mpq_get_d (fixnum_imag (n));
+
+    return r_flonum_new (r, real, imag);
+}
+
+static inline rsexp exact_to_inexact (RState* r, rsexp n)
+{
+    rsexp real;
+    rsexp imag;
+
+    if (r_small_int_p (n))
+        return smi_to_floreal (r, n);
+
+    if (r_fixreal_p (n))
+        return fixreal_to_floreal (r, n);
+
+    if (r_fixcomplex_p (n)) {
+        ensure (real = fixreal_to_floreal (r, complex_real (n)));
+        ensure (imag = fixreal_to_floreal (r, complex_imag (n)));
+        return r_complex_new (r, real, imag);
+    }
+
+    return fixnum_to_flonum (r, n);
+}
+
 rsexp smi_to_fixreal (RState* r, rsexp n)
 {
     assert (r_small_int_p (n));
@@ -143,6 +229,20 @@ rsexp r_fixreal_new_si (RState* r, rint num, rint den)
     return fixreal_to_sexp (obj);
 }
 
+rsexp r_fixreal_new_ui (RState* r, ruint num, ruint den)
+{
+    RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    mpq_init (obj->value);
+    mpq_set_ui (obj->value, num, den);
+    mpq_canonicalize (obj->value);
+
+    return fixreal_to_sexp (obj);
+}
+
 rsexp r_floreal_new (RState* r, double value)
 {
     RFloreal* obj = r_object_new (r, RFloreal, R_TAG_FLOREAL);
@@ -164,7 +264,6 @@ rsexp r_complex_new (RState* r, rsexp real, rsexp imag)
         return flocomplex_new (r, real, imag);
 
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, real);
-
     return R_FAILURE;
 }
 
@@ -195,8 +294,6 @@ rbool r_complex_p (rsexp obj)
 
 rbool r_zero_p (rsexp n)
 {
-    assert (r_number_p (n));
-
     if (r_small_int_p (n))
         return n == R_ZERO;
 
@@ -206,20 +303,25 @@ rbool r_zero_p (rsexp n)
     if (r_fixreal_p (n))
         return mpq_cmp_si (fixreal_value (n), 0, 1) == 0;
 
+    assert (r_complex_p (n) && "argument should be a number");
+
     return FALSE;
 }
 
 rint r_sign (rsexp n)
 {
-    assert (r_real_p (n));
-
     if (r_small_int_p (n))
         return r_int_from_sexp (n) >= 0 ? 1 : -1;
 
     if (r_fixreal_p (n))
         return mpq_cmp_si (fixreal_value (n), 0, 1) >= 0 ? 1 : -1;
 
-    return floreal_value (n) >= 0. ? 1 : -1;
+    if (r_floreal_p (n))
+        return floreal_value (n) >= 0. ? 1 : -1;
+
+    assert (FALSE && "argument should be a real number");
+
+    return 0;
 }
 
 rsexp r_real_part (RState* r, rsexp n)
@@ -231,7 +333,6 @@ rsexp r_real_part (RState* r, rsexp n)
         return complex_real (n);
 
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
-
     return R_FAILURE;
 }
 
@@ -244,7 +345,30 @@ rsexp r_imag_part (RState* r, rsexp n)
         return complex_imag (n);
 
     r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
+    return R_FAILURE;
+}
 
+rsexp r_exact_to_inexact (RState* r, rsexp n)
+{
+    if (r_inexact_p (n))
+        return n;
+
+    if (r_exact_p (n))
+        return exact_to_inexact (r, n);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
+    return R_FAILURE;
+}
+
+rsexp r_inexact_to_exact (RState* r, rsexp n)
+{
+    if (r_exact_p (n))
+        return n;
+
+    if (r_inexact_p (n))
+        return inexact_to_exact (r, n);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
     return R_FAILURE;
 }
 

@@ -2,8 +2,9 @@
 #define __ROSE_DETAIL_FINER_NUMBER_H__
 
 #include "detail/sexp.h"
-#include "rose/gmp.h"
 #include "rose/finer_number.h"
+#include "rose/gmp.h"
+#include "rose/number.h"
 
 R_BEGIN_DECLS
 

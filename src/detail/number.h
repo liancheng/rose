@@ -27,6 +27,15 @@ RFlonum;
 #define flonum_to_sexp(flonum)  ((rsexp) (flonum))
 #define flonum_from_sexp(obj)   ((RFlonum*) (obj))
 
+#define fixnum_real(n) (fixnum_from_sexp (n)->real)
+#define fixnum_imag(n) (fixnum_from_sexp (n)->imag)
+
+#define flonum_real(n) (flonum_from_sexp (n)->real)
+#define flonum_imag(n) (flonum_from_sexp (n)->imag)
+
+#define fixnum_real(n) (fixnum_from_sexp (n)->real)
+#define fixnum_imag(n) (fixnum_from_sexp (n)->imag)
+
 R_END_DECLS
 
 #endif /* __ROSE_DETAIL_NUMBER_H__ */

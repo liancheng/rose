@@ -11,19 +11,18 @@
 
 static rsexp write_fixnum (RState* r, rsexp port, rsexp obj)
 {
-    RFixnum* fixnum = fixnum_from_sexp (obj);
     FILE* stream = port_to_stream (port);
 
-    if (0 == mpq_out_str (stream, 10, fixnum->real)) {
+    if (0 == mpq_out_str (stream, 10, fixnum_real (obj))) {
         r_error_code (r, R_ERR_UNKNOWN);
         return R_FAILURE;
     }
 
-    if (0 != mpq_cmp_ui (fixnum->imag, 0u, 1u)) {
-        if (0 < mpq_cmp_ui (fixnum->imag, 0u, 1u))
+    if (0 != mpq_cmp_ui (fixnum_imag (obj), 0u, 1u)) {
+        if (0 < mpq_cmp_ui (fixnum_imag (obj), 0u, 1u))
             ensure (r_port_write_char (r, port, '+'));
 
-        mpq_out_str (stream, 10, fixnum->imag);
+        mpq_out_str (stream, 10, fixnum_imag (obj));
         ensure (r_port_write_char (r, port, 'i'));
     }
 
@@ -32,15 +31,13 @@ static rsexp write_fixnum (RState* r, rsexp port, rsexp obj)
 
 static rsexp write_flonum (RState* r, rsexp port, rsexp obj)
 {
-    RFlonum* flonum = flonum_from_sexp (obj);
+    ensure (r_port_printf (r, port, "%f", flonum_real (obj)));
 
-    ensure (r_port_printf (r, port, "%f", flonum->real));
-
-    if (flonum->imag != 0.) {
-        if (flonum->imag > 0.)
+    if (flonum_imag (obj) != 0.) {
+        if (flonum_imag (obj) > 0.)
             ensure (r_port_write_char (r, port, '+'));
 
-        ensure (r_port_printf (r, port, "%f", flonum->imag));
+        ensure (r_port_printf (r, port, "%f", flonum_imag (obj)));
         ensure (r_port_write_char (r, port, 'i'));
     }
 
@@ -96,17 +93,6 @@ static void fixnum_finalize (RState* r, RObject* obj)
 {
     RFixnum* fixnum = r_cast (RFixnum*, obj);
     mpq_clears (fixnum->real, fixnum->imag, NULL);
-}
-
-static RFixnum* fixnum_new (RState* r)
-{
-    RFixnum* fixnum = r_object_new (r, RFixnum, R_TAG_FIXNUM);
-
-    if (fixnum == NULL)
-        return NULL;
-
-    mpq_inits (fixnum->real, fixnum->imag, NULL);
-    return fixnum;
 }
 
 rbool r_fixnum_p (rsexp obj)
@@ -165,40 +151,12 @@ rsexp r_fixnum_new (RState* r, mpq_t real, mpq_t imag)
 
 rsexp r_fixint_new (RState* r, rint real)
 {
-    RFixnum* fixnum;
-    rsexp smi;
-
-    smi = r_int_to_sexp (real);
-
-    if (r_int_from_sexp (smi) == real)
-        return smi;
-
-    fixnum = fixnum_new (r);
-    if (!fixnum)
-        return R_FAILURE;
-
-    mpq_set_si (fixnum->real, real, 1);
-
-    return fixnum_to_sexp (fixnum);
+    return r_fixreal_new_si (r, real, 1);
 }
 
 rsexp r_fixuint_new (RState* r, ruint real)
 {
-    RFixnum* fixnum;
-    rsexp smi;
-
-    smi = r_uint_to_sexp (real);
-
-    if (r_uint_from_sexp (smi) == real)
-        return smi;
-
-    fixnum = fixnum_new (r);
-    if (!fixnum)
-        return R_FAILURE;
-
-    mpq_set_ui (fixnum->real, real, 1);
-
-    return fixnum_to_sexp (fixnum);
+    return r_fixreal_new_ui (r, real, 1);
 }
 
 rsexp r_fixnum_normalize (rsexp obj)
@@ -247,8 +205,7 @@ rbool r_byte_p (rsexp obj)
 
 rbool r_number_p (rsexp obj)
 {
-    return r_small_int_p (obj) || r_fixnum_p (obj) || r_flonum_p (obj)
-        || r_fixreal_p (obj) || r_floreal_p (obj) || r_complex_p (obj);
+    return r_exact_p (obj) || r_inexact_p (obj);
 }
 
 rbool r_integer_p (rsexp obj)
@@ -257,25 +214,18 @@ rbool r_integer_p (rsexp obj)
         return TRUE;
 
     if (r_fixnum_p (obj)) {
-        mpq_t* real;
-        mpq_t* imag;
-
-        real = &fixnum_from_sexp (obj)->real;
-        imag = &fixnum_from_sexp (obj)->imag;
-
-        if (mpz_cmp_si (mpq_denref (*real), 1) != 0)
+        if (mpz_cmp_si (mpq_denref (fixnum_real (obj)), 1) != 0)
             return FALSE;
 
-        if (mpz_cmp_si (mpq_numref (*imag), 0) != 0)
+        if (mpz_cmp_si (mpq_numref (fixnum_imag (obj)), 0) != 0)
             return FALSE;
 
         return TRUE;
     }
 
     if (r_flonum_p (obj)) {
-        double real = flonum_from_sexp (obj)->real;
-        double imag = flonum_from_sexp (obj)->imag;
-
+        double real = flonum_real (obj);
+        double imag = flonum_imag (obj);
         return (imag == 0.) && r_ceil (real) == real;
     }
 
@@ -293,13 +243,11 @@ rbool r_real_p (rsexp obj)
     if (r_small_int_p (obj))
         return TRUE;
 
-    if (r_fixnum_p (obj)) {
-        mpq_t* imag = &fixnum_from_sexp (obj)->imag;
-        return mpz_cmp_si (mpq_numref (*imag), 0) == 0;
-    }
+    if (r_fixnum_p (obj))
+        return mpz_cmp_si (mpq_numref (fixnum_imag (obj)), 0) == 0;
 
     if (r_flonum_p (obj)) {
-        double imag = flonum_from_sexp (obj)->imag;
+        double imag = flonum_imag (obj);
         return imag == 0.;
     }
 
@@ -322,50 +270,6 @@ rbool r_inexact_p (rsexp obj)
     return r_flonum_p (obj)
         || r_floreal_p (obj)
         || r_flocomplex_p (obj);
-}
-
-rsexp r_exact_to_inexact (RState* r, rsexp num)
-{
-    if (r_small_int_p (num))
-        return r_flonum_new (r, r_cast (double, r_int_from_sexp (num)), 0.);
-
-    if (r_flonum_p (num))
-        return num;
-
-    if (r_fixnum_p (num)) {
-        double real = mpq_get_d (fixnum_from_sexp (num)->real);
-        double imag = mpq_get_d (fixnum_from_sexp (num)->imag);
-        return r_flonum_new (r, real, imag);
-    }
-
-    r_error_code (r, R_ERR_WRONG_TYPE_ARG, num);
-
-    return R_FAILURE;
-}
-
-rsexp r_inexact_to_exact (RState* r, rsexp num)
-{
-    mpq_t real;
-    mpq_t imag;
-    rsexp res;
-
-    if (r_small_int_p (num) || r_fixnum_p (num))
-        return num;
-
-    if (!r_flonum_p (num)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, num);
-        return R_FAILURE;
-    }
-
-    mpq_inits (real, imag, NULL);
-
-    mpq_set_d (real, flonum_from_sexp (num)->real);
-    mpq_set_d (imag, flonum_from_sexp (num)->imag);
-    res = r_fixnum_new (r, real, imag);
-
-    mpq_clears (real, imag, NULL);
-
-    return res;
 }
 
 RTypeInfo fixnum_type = {
