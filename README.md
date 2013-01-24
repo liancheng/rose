@@ -17,10 +17,11 @@ ROSE depends on the following tools and libraries:
 *   [GLib][glib], the GNOME Library, v2.0 or newer
 *   [GMP][gmp], the GNU Multiple Precesion Arithmetic Library, v5.0.2 or newer
 *   [googletest][gtest], Google C++ Testing Framework, v1.6 or newer
+*   [LCOV][lcov], the LTP GCOV extension, v1.9 or newer
 
 Quex and googletest have already been included in the `external` directory.  All the other dependencies can be installed with the following command:
 
-    $ sudo aptitude install libgmp-dev libglib2.0-dev scons
+    $ sudo aptitude install libgmp-dev libglib2.0-dev scons lcov
 
 ### Build
 
@@ -29,6 +30,13 @@ Check out the code and run `scons` to build ROSE:
     $ git clone git://github.com/liancheng/rose.git
     $ cd rose
     $ scons
+
+To generate test coverage report, run:
+
+    $ scons -c coverage=1
+    $ scons coverage=1
+
+then check the HTML report from `build/test/html/index.html`.
 
 After the building process, you may find the ROSE interpreter executable `rsi` under `bin`:
 
@@ -56,4 +64,5 @@ You may also try the famous [yin-yang][yin-yang] script:
 [glib]: http://developer.gnome.org/glib/
 [gmp]: http://gmplib.org/
 [gtest]: http://code.google.com/p/googletest/
+[lcov]: http://ltp.sourceforge.net/coverage/lcov.php
 [yin-yang]: http://yinwang0.wordpress.com/2012/07/27/yin-yang-puzzle/
