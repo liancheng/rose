@@ -11,7 +11,7 @@
 
 #include <assert.h>
 
-static rsexp write_fixreal (RState* r, rsexp port, rsexp obj)
+static rsexp fixreal_write (RState* r, rsexp port, rsexp obj)
 {
     RFixreal* n = fixreal_from_sexp (obj);
     FILE* stream = port_to_stream (port);
@@ -24,12 +24,12 @@ static rsexp write_fixreal (RState* r, rsexp port, rsexp obj)
     return R_UNSPECIFIED;
 }
 
-static rsexp write_floreal (RState* r, rsexp port, rsexp obj)
+static rsexp floreal_write (RState* r, rsexp port, rsexp obj)
 {
     return r_port_printf (r, port, "%f", floreal_value (obj));
 }
 
-static rsexp write_complex (RState* r, rsexp port, rsexp obj)
+static rsexp complex_write (RState* r, rsexp port, rsexp obj)
 {
     ensure (r_port_write (r, port, complex_real (obj)));
 
@@ -472,8 +472,8 @@ RTypeInfo fixreal_type = {
     .size = sizeof (RFixreal),
     .name = "fixreal",
     .ops = {
-        .write = write_fixreal,
-        .display = write_fixreal,
+        .write = fixreal_write,
+        .display = fixreal_write,
         .eqv_p = fixreal_eqv_p,
         .equal_p = fixreal_eqv_p,
         .finalize = fixreal_finalize
@@ -484,8 +484,8 @@ RTypeInfo floreal_type = {
     .size = sizeof (RFloreal),
     .name = "floreal",
     .ops = {
-        .write = write_floreal,
-        .display = write_floreal,
+        .write = floreal_write,
+        .display = floreal_write,
         .eqv_p = floreal_eqv_p,
         .equal_p = floreal_eqv_p
     }
@@ -495,8 +495,8 @@ RTypeInfo complex_type = {
     .size = sizeof (RComplex),
     .name = "complex",
     .ops = {
-        .write = write_complex,
-        .display = write_complex,
+        .write = complex_write,
+        .display = complex_write,
         .eqv_p = complex_eqv_p,
         .equal_p = complex_eqv_p,
         .mark = complex_mark
