@@ -271,31 +271,6 @@ rsexp r_complex_new (RState* r, rsexp real, rsexp imag)
     return R_FAILURE;
 }
 
-rbool r_fixreal_p (rsexp obj)
-{
-    return r_type_tag (obj) == R_TAG_FIXREAL;
-}
-
-rbool r_floreal_p (rsexp obj)
-{
-    return r_type_tag (obj) == R_TAG_FLOREAL;
-}
-
-rbool r_fixcomplex_p (rsexp obj)
-{
-    return r_type_tag (obj) == R_TAG_FIX_COMPLEX;
-}
-
-rbool r_flocomplex_p (rsexp obj)
-{
-    return r_type_tag (obj) == R_TAG_FLO_COMPLEX;
-}
-
-rbool r_complex_p (rsexp obj)
-{
-    return r_fixcomplex_p (obj) || r_flocomplex_p (obj);
-}
-
 rbool r_zero_p (rsexp n)
 {
     if (r_small_int_p (n))
@@ -387,16 +362,6 @@ rsexp r_cstr_to_number (RState* r, rconstcstring text)
     return res;
 }
 
-rsexp r_fixint_new (RState* r, rint real)
-{
-    return r_fixreal_new_si (r, real, 1);
-}
-
-rsexp r_fixuint_new (RState* r, ruint real)
-{
-    return r_fixreal_new_ui (r, real, 1);
-}
-
 rsexp r_string_to_number (RState* r, rsexp text)
 {
     RNumberReader reader;
@@ -416,11 +381,6 @@ rbool r_byte_p (rsexp obj)
     rint i = r_int_from_sexp (obj);
 
     return i >= 0 && i <= 255;
-}
-
-rbool r_number_p (rsexp obj)
-{
-    return r_exact_p (obj) || r_inexact_p (obj);
 }
 
 rbool r_integer_p (rsexp obj)
