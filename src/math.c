@@ -165,6 +165,12 @@ rsexp r_add (RState* r, rsexp lhs, rsexp rhs)
     rsexp lhs_real, rhs_real, real;
     rsexp lhs_imag, rhs_imag, imag;
 
+    if (r_zero_p (lhs) && r_number_p (rhs))
+        return rhs;
+
+    if (r_zero_p (rhs) && r_number_p (lhs))
+        return lhs;
+
     ensure (lhs_real = r_real_part (r, lhs));
     ensure (rhs_real = r_real_part (r, rhs));
     ensure (lhs_imag = r_imag_part (r, lhs));
@@ -300,6 +306,18 @@ rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs)
     rsexp a, b, c, d;
     rsexp ac, bd, ad, bc;
     rsexp real, imag;
+
+    if (r_zero_p (lhs) && r_number_p (rhs))
+        return lhs;
+
+    if (r_zero_p (rhs) && r_number_p (lhs))
+        return rhs;
+
+    if (r_one_p (lhs) && r_number_p (rhs))
+        return rhs;
+
+    if (r_one_p (rhs) && r_number_p (lhs))
+        return lhs;
 
     ensure (a = r_real_part (r, lhs));
     ensure (b = r_imag_part (r, lhs));
