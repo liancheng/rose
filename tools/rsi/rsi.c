@@ -28,6 +28,12 @@ int main (int argc, char* argv[])
          ? r_open_input_file (r, argv [1])
          : r_current_input_port (r);
 
+    if (r_failure_p (port)) {
+        fprintf (stderr, "cannot open file %s\n", argv [1]);
+        exit_code = EXIT_FAILURE;
+        goto clean;
+    }
+
     result = r_eval_from_port (r, port);
 
     if (r_failure_p (result)) {
