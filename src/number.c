@@ -340,6 +340,22 @@ rbool r_zero_p (rsexp n)
     return FALSE;
 }
 
+rbool r_one_p (rsexp n)
+{
+    if (r_small_int_p (n))
+        return n == R_ONE;
+
+    if (r_floreal_p (n))
+        return floreal_value (n) == 1.;
+
+    if (r_fixreal_p (n))
+        return mpq_cmp_si (fixreal_value (n), 1, 1) == 0;
+
+    assert (r_complex_p (n) && "argument should be a number");
+
+    return FALSE;
+}
+
 rint r_sign (rsexp n)
 {
     if (r_small_int_p (n))

@@ -20,6 +20,8 @@ rsexp r_real_part      (RState* r, rsexp n);
 rsexp r_imag_part      (RState* r, rsexp n);
 
 rbool r_zero_p         (rsexp n);
+rbool r_one_p          (rsexp n);
+
 rbool r_byte_p         (rsexp obj);
 rbool r_integer_p      (rsexp obj);
 rbool r_real_p         (rsexp obj);
