@@ -139,11 +139,6 @@ static inline rsexp inexact_to_exact (RState* r, rsexp n)
     return r_complex_new (r, real, imag);
 }
 
-static inline rsexp smi_to_floreal (RState* r, rsexp n)
-{
-    return r_floreal_new (r, r_cast (double, r_int_from_sexp (n)));
-}
-
 static inline rsexp fixreal_to_floreal (RState* r, rsexp n)
 {
     return r_floreal_new (r, mpq_get_d (fixreal_value (n)));
@@ -166,36 +161,62 @@ static inline rsexp exact_to_inexact (RState* r, rsexp n)
     return r_complex_new (r, real, imag);
 }
 
-static inline rsexp fixreal_normalize (rsexp n)
+rsexp try_small_int (mpq_t n)
 {
     rint smi;
 
-    mpq_canonicalize (fixreal_value (n));
+    mpq_canonicalize (n);
 
     /* If the denominator is not 1... */
-    if (mpz_cmp_ui (mpq_denref (fixreal_value (n)), 1u) != 0)
-        return n;
+    if (mpz_cmp_ui (mpq_denref (n), 1u) != 0)
+        return R_FALSE;
 
     /* If the number is too large (to fit into a signed int)... */
-    if (!mpz_fits_sint_p (mpq_numref (fixreal_value (n))))
-        return n;
+    if (!mpz_fits_sint_p (mpq_numref (n)))
+        return R_FALSE;
 
-    smi = mpz_get_si (mpq_numref (fixreal_value (n)));
+    smi = mpz_get_si (mpq_numref (n));
 
     /* If the number doesn't fit into the range of small integers... */
     if (smi > R_SMI_MAX || smi < R_SMI_MIN)
-        return n;
+        return R_FALSE;
 
     return r_int_to_sexp (smi);
 }
 
-rsexp smi_to_fixreal (RState* r, rsexp n)
+rsexp try_small_int_si (rint num, rint den)
 {
-    assert (r_small_int_p (n));
-    return r_fixreal_new_si (r, r_int_from_sexp (n), 1);
+    if (num % den != 0)
+        return R_FALSE;
+
+    num /= den;
+
+    if (num > R_SMI_MAX || num < R_SMI_MIN)
+        return R_FALSE;
+
+    return r_int_to_sexp (num);
 }
 
-rsexp r_fixreal_new (RState* r, mpq_t value)
+rsexp try_small_int_ui (ruint num, ruint den)
+{
+    if (num % den != 0)
+        return R_FALSE;
+
+    num /= den;
+
+    if (num > R_SMI_MAX)
+        return R_FALSE;
+
+    return r_uint_to_sexp (num);
+}
+
+rsexp fixreal_normalize (rsexp n)
+{
+    rsexp res = try_small_int (fixreal_value (n));
+    return r_false_p (res) ? n : res;
+}
+
+rsexp smi_to_fixreal (RState* r, rsexp n)
 {
     RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
 
@@ -203,14 +224,49 @@ rsexp r_fixreal_new (RState* r, mpq_t value)
         return R_FAILURE;
 
     mpq_init (obj->value);
+    mpq_set_si (obj->value, r_int_from_sexp (n), 1);
+
+    return fixreal_to_sexp (obj);
+}
+
+rsexp smi_to_floreal (RState* r, rsexp n)
+{
+    double real = r_cast (double, r_int_from_sexp (n));
+    return r_floreal_new (r, real);
+}
+
+rsexp r_fixreal_new (RState* r, mpq_t value)
+{
+    rsexp smi;
+    RFixreal* obj;
+
+    smi = try_small_int (value);
+
+    if (!r_false_p (smi))
+        return smi;
+
+    obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+
+    if (obj == NULL)
+        return R_FAILURE;
+
+    mpq_init (obj->value);
     mpq_set (obj->value, value);
 
-    return fixreal_normalize (fixreal_to_sexp (obj));
+    return fixreal_to_sexp (obj);
 }
 
 rsexp r_fixreal_new_si (RState* r, rint num, rint den)
 {
-    RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+    rsexp smi;
+    RFixreal* obj;
+
+    smi = try_small_int_si (num, den);
+
+    if (!r_false_p (smi))
+        return smi;
+
+    obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
 
     if (obj == NULL)
         return R_FAILURE;
@@ -224,7 +280,15 @@ rsexp r_fixreal_new_si (RState* r, rint num, rint den)
 
 rsexp r_fixreal_new_ui (RState* r, ruint num, ruint den)
 {
-    RFixreal* obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
+    rsexp smi;
+    RFixreal* obj;
+
+    smi = try_small_int_ui (num, den);
+
+    if (!r_false_p (smi))
+        return smi;
+
+    obj = r_object_new (r, RFixreal, R_TAG_FIXREAL);
 
     if (obj == NULL)
         return R_FAILURE;
@@ -284,12 +348,8 @@ rint r_sign (rsexp n)
     if (r_fixreal_p (n))
         return mpq_cmp_si (fixreal_value (n), 0, 1) >= 0 ? 1 : -1;
 
-    if (r_floreal_p (n))
-        return floreal_value (n) >= 0. ? 1 : -1;
-
-    assert (FALSE && "argument should be a real number");
-
-    return 0;
+    assert (r_floreal_p (n));
+    return floreal_value (n) >= 0. ? 1 : -1;
 }
 
 rsexp r_real_part (RState* r, rsexp n)

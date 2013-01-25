@@ -159,7 +159,6 @@ TEST_F (test_number, r_zero_p)
 {
     EXPECT_TRUE (r_zero_p (R_ZERO));
     EXPECT_TRUE (r_zero_p (r->flo_zero));
-    EXPECT_TRUE (r_zero_p (smi_to_fixreal (r, R_ZERO)));
 
     EXPECT_FALSE (r_zero_p (R_ONE));
     EXPECT_FALSE (r_zero_p (r_fixreal_new_si (r, 1, 1)));
