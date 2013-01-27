@@ -37,6 +37,10 @@ ERROR_DESC (R_ERR_GRP_RUNTIME,
             R_ERR_WRONG_TYPE_ARG,
             "wrong type argument ~s")
 
+ERROR_DESC (R_ERR_GRP_RUNTIME,
+            R_ERR_DIV_BY_ZERO,
+            "division by zero")
+
 ERROR_DESC (R_ERR_GRP_MISC,
             R_ERR_NOT_IMPLEMENTED,
             "~s is not implemented yet")

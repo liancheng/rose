@@ -30,6 +30,9 @@ static inline rsexp negate_real (RState* r, rsexp n)
     if (r_small_int_p (n))
         return negate_smi (r, n);
 
+    if (r_floreal_p (n))
+        return negate_floreal (r, n);
+
     assert (r_fixreal_p (n));
     return negate_fixreal (r, n);
 }
@@ -333,6 +336,85 @@ rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs)
     ensure (imag = add_real (r, ad, bc));
 
     return r_complex_new (r, real, imag);
+}
+
+static inline rsexp invert_smi (RState* r, rsexp n)
+{
+    if (n == R_ONE)
+        return n;
+
+    return r_fixreal_new_si (r, 1, r_int_from_sexp (n));
+}
+
+static inline rsexp invert_fixreal (RState* r, rsexp n)
+{
+    rsexp inv;
+
+    ensure (inv = r_fixreal_new (r, fixreal_value (n)));
+    mpq_inv (fixreal_value (inv), fixreal_value (inv));
+
+    return inv;
+}
+
+static inline rsexp invert_floreal (RState* r, rsexp n)
+{
+    return r_floreal_new (r, 1. / floreal_value (n));
+}
+
+static inline rsexp invert_real (RState* r, rsexp n)
+{
+    if (r_small_int_p (n))
+        return invert_smi (r, n);
+
+    if (r_fixreal_p (n))
+        return invert_fixreal (r, n);
+
+    assert (r_floreal_p (n));
+    return invert_floreal (r, n);
+}
+
+static inline rsexp invert_complex (RState* r, rsexp n)
+{
+    rsexp a, b, a2, b2;
+    rsexp den, real, imag;
+
+    ensure (a = r_real_part (r, n));
+    ensure (b = r_imag_part (r, n));
+
+    ensure (a2 = multiply_real (r, a, a));
+    ensure (b2 = multiply_real (r, b, b));
+
+    ensure (den = add_real (r, a2, b2));
+    ensure (den = invert_real (r, den));
+
+    ensure (real = multiply_real (r, a, den));
+    ensure (imag = multiply_real (r, b, den));
+    ensure (imag = negate_real (r, imag));
+
+    return r_complex_new (r, real, imag);
+}
+
+rsexp r_invert (RState* r, rsexp n)
+{
+    if (r_zero_p (n)) {
+        r_error_code (r, R_ERR_DIV_BY_ZERO);
+        return R_FAILURE;
+    }
+
+    if (r_real_p (n))
+        return invert_real (r, n);
+
+    if (r_complex_p (n))
+        return invert_complex (r, n);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
+    return R_FAILURE;
+}
+
+rsexp r_divide (RState* r, rsexp lhs, rsexp rhs)
+{
+    ensure (rhs = r_invert (r, rhs));
+    return r_multiply (r, lhs, rhs);
 }
 
 rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs)
