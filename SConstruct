@@ -8,6 +8,10 @@ cc = environ.get('CC', 'gcc')
 cxx = environ.get('CXX', 'g++')
 coverage = ARGUMENTS.get('coverage', 0)
 
+if coverage:
+    cc = 'gcc'
+    cxx = 'g++'
+
 env = Environment(tools=['default', 'quex', 'lcov', 'genhtml'],
                   ENV=environ,
                   CC=cc,
