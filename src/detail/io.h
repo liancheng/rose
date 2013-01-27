@@ -2,6 +2,7 @@
 #define __ROSE_DETAIL_IO_H__
 
 #include "detail/sexp.h"
+#include "detail/sstream.h"
 #include "rose/io.h"
 
 #include <stdio.h>

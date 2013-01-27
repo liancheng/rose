@@ -42,7 +42,7 @@ rintw r_int_from_sexp (rsexp obj);
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
 #define R_SEXP_BITS             (sizeof (rsexp) * CHAR_BIT)
-#define R_SMI_MAX               ((1 << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
+#define R_SMI_MAX               ((1L << (R_SEXP_BITS - R_SMI_BITS - 1)) - 1)
 #define R_SMI_MIN               (-R_SMI_MAX - 1)
 
 #define r_small_int_p(obj)      (((obj) & R_SMI_MASK) == R_TAG_SMI)
