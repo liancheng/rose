@@ -261,7 +261,7 @@ static rsexp compile_procedure_definition (RState* r,
 
     r_gc_scope_open (r);
 
-    ensure_or_goto (bind = emit_bind (r, var, next), exit);
+    ensure_or_goto (code = bind = emit_bind (r, var, next), exit);
     ensure_or_goto (code = emit_return (r), exit);
     ensure_or_goto (code = compile_sequence (r, body, code), exit);
     ensure_or_goto (code = emit_close (r, formals, code, bind), exit);
