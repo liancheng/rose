@@ -1,7 +1,6 @@
 #include "utils.hpp"
 
 #include <gtest/gtest.h>
-#include <mcheck.h>
 
 #include <libgen.h>
 #include <unistd.h>
@@ -14,8 +13,6 @@ bool fixture_base::fail_alloc = false;
 
 int main (int argc, char* argv[])
 {
-    mtrace ();
-
     chdir (dirname (argv [0]));
     chdir ("../../test");
     testing::InitGoogleTest (&argc, argv);
