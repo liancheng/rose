@@ -58,6 +58,26 @@ static rsexp np_string_to_number (RState* r, rsexp args)
     return r_failure_p (res) ? R_FALSE : res;
 }
 
+static rsexp np_numerator (RState* r, rsexp args)
+{
+    return r_numerator (r, r_car (args));
+}
+
+static rsexp np_denominator (RState* r, rsexp args)
+{
+    return r_denominator (r, r_car (args));
+}
+
+static rsexp np_real_part (RState* r, rsexp args)
+{
+    return r_real_part (r, r_car (args));
+}
+
+static rsexp np_imag_part (RState* r, rsexp args)
+{
+    return r_imag_part (r, r_car (args));
+}
+
 RPrimitiveDesc number_primitives [] = {
     { "number?",        np_number_p,         1, 0, FALSE },
     { "complex?",       np_number_p,         1, 0, FALSE },
@@ -69,5 +89,9 @@ RPrimitiveDesc number_primitives [] = {
     { "exact->inexact", np_exact_to_inexact, 1, 0, FALSE },
     { "inexact->exact", np_inexact_to_exact, 1, 0, FALSE },
     { "string->number", np_string_to_number, 1, 1, FALSE },
+    { "numerator",      np_numerator,        1, 0, FALSE },
+    { "denominator",    np_denominator,      1, 0, FALSE },
+    { "real-part",      np_real_part,        1, 0, FALSE },
+    { "imag-part",      np_imag_part,        1, 0, FALSE },
     { NULL }
 };

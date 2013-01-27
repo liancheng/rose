@@ -15,6 +15,9 @@ rsexp r_fixreal_new_ui (RState* r, ruintw num, ruintw den);
 
 rsexp r_floreal_new    (RState* r, double value);
 
+rsexp r_numerator      (RState* r, rsexp n);
+rsexp r_denominator    (RState* r, rsexp n);
+
 rsexp r_complex_new    (RState* r, rsexp real, rsexp imag);
 rsexp r_real_part      (RState* r, rsexp n);
 rsexp r_imag_part      (RState* r, rsexp n);
@@ -29,6 +32,8 @@ rbool r_exact_p        (rsexp obj);
 rbool r_inexact_p      (rsexp obj);
 
 rintw r_sign           (rsexp n);
+rbool r_positive_p     (rsexp n);
+rbool r_negative_p     (rsexp n);
 
 rsexp r_exact_to_inexact (RState* r, rsexp num);
 rsexp r_inexact_to_exact (RState* r, rsexp num);

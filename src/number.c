@@ -368,6 +368,83 @@ rintw r_sign (rsexp n)
     return floreal_value (n) - 0.;
 }
 
+rbool r_positive_p (rsexp n)
+{
+    return r_sign (n) > 0;
+}
+
+rbool r_negative_p (rsexp n)
+{
+    return r_sign (n) < 0;
+}
+
+static rsexp fixreal_numerator (RState* r, rsexp n)
+{
+    rsexp num;
+
+    ensure (num = r_fixreal_new (r, fixreal_value (n)));
+    mpq_canonicalize (fixreal_value (num));
+    mpz_set_si (mpq_denref (fixreal_value (num)), 1);
+
+    return num;
+}
+
+static rsexp floreal_numerator (RState* r, rsexp n)
+{
+    rsexp fix;
+    ensure (fix = r_inexact_to_exact (r, n));
+    return fixreal_numerator (r, fix);
+}
+
+rsexp r_numerator (RState* r, rsexp n)
+{
+    if (r_small_int_p (n))
+        return n;
+
+    if (r_fixreal_p (n))
+        return fixreal_numerator (r, n);
+
+    if (r_floreal_p (n))
+        return floreal_numerator (r, n);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
+    return R_FAILURE;
+}
+
+static rsexp fixreal_denominator (RState* r, rsexp n)
+{
+    rsexp den;
+
+    ensure (den = r_fixreal_new (r, fixreal_value (n)));
+    mpq_inv (fixreal_value (den), fixreal_value (den));
+    mpq_canonicalize (fixreal_value (den));
+    mpz_set_si (mpq_denref (fixreal_value (den)), 1);
+
+    return den;
+}
+
+static rsexp floreal_denominator (RState* r, rsexp n)
+{
+    rsexp fix;
+    ensure (fix = r_inexact_to_exact (r, n));
+    return fixreal_denominator (r, fix);
+}
+
+rsexp r_denominator (RState* r, rsexp n)
+{
+    if (r_small_int_p (n))
+        return R_ONE;
+
+    if (r_fixreal_p (n))
+        return fixreal_denominator (r, n);
+
+    if (r_floreal_p (n))
+        return floreal_denominator (r, n);
+
+    r_error_code (r, R_ERR_WRONG_TYPE_ARG, n);
+    return R_FAILURE;
+}
+
 rsexp r_real_part (RState* r, rsexp n)
 {
     if (r_real_p (n))
