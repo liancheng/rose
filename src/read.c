@@ -16,13 +16,13 @@
 
 static rsexp read_datum (Reader* reader);
 
-static rint feed_lexer (Reader* reader)
+static rintw feed_lexer (Reader* reader)
 {
     RState* r;
     rcstring begin;
     rcstring line;
-    rint size;
-    rint len;
+    rintw size;
+    rintw len;
 
     QUEX_NAME (buffer_fill_region_prepare) (&reader->lexer);
 

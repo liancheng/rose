@@ -113,15 +113,15 @@ static inline rsexp add_fix_any (RState* r, rsexp lhs, rsexp rhs)
     return add_flo_fix (r, rhs, lhs);
 }
 
-static inline rbool smi_sum_overflow_p (rint lhs, rint rhs)
+static inline rbool smi_sum_overflow_p (rintw lhs, rintw rhs)
 {
-    rint sum = lhs + rhs;
+    rintw sum = lhs + rhs;
     return r_int_from_sexp (r_int_to_sexp (sum)) != sum;
 }
 
 static inline rsexp add_smi_smi (RState* r, rsexp lhs, rsexp rhs)
 {
-    rint smi_lhs, smi_rhs;
+    rintw smi_lhs, smi_rhs;
     rsexp fix_lhs, fix_rhs;
 
     smi_lhs = r_int_from_sexp (lhs);
@@ -249,9 +249,9 @@ static inline rsexp multiply_fix_any (RState* r, rsexp lhs, rsexp rhs)
     return multiply_flo_fix (r, rhs, lhs);
 }
 
-static inline rbool smi_product_overflow_p (rint lhs, rint rhs)
+static inline rbool smi_product_overflow_p (rintw lhs, rintw rhs)
 {
-    rint prod = lhs * rhs;
+    rintw prod = lhs * rhs;
 
     return prod / lhs != rhs
         || r_int_from_sexp (r_int_to_sexp (prod)) != prod;
@@ -259,7 +259,7 @@ static inline rbool smi_product_overflow_p (rint lhs, rint rhs)
 
 static inline rsexp multiply_smi_smi (RState* r, rsexp lhs, rsexp rhs)
 {
-    rint smi_lhs, smi_rhs, prod;
+    rintw smi_lhs, smi_rhs, prod;
     rsexp fix_lhs, fix_rhs;
 
     smi_lhs = r_int_from_sexp (lhs);

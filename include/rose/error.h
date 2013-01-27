@@ -53,7 +53,7 @@ rsexp r_set_last_error_x       (RState* r,
                                 rsexp error);
 rsexp r_clear_last_error_x     (RState* r);
 rsexp r_inherit_errno_x        (RState* r,
-                                rint errnum);
+                                rintw errnum);
 void r_error_no_memory         (RState* r);
 
 typedef struct RNestedJump RNestedJump;

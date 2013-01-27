@@ -81,7 +81,7 @@ typedef struct RObject RObject;
 
 #define R_OBJECT_HEADER\
         RTypeTag type_tag : 5;\
-        ruint    gc_color : 2;\
+        ruintw   gc_color : 2;\
         RObject* gray_next;\
         RObject* chrono_next;
 

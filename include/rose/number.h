@@ -10,8 +10,8 @@
 R_BEGIN_DECLS
 
 rsexp r_fixreal_new    (RState* r, mpq_t value);
-rsexp r_fixreal_new_si (RState* r, rint num, rint den);
-rsexp r_fixreal_new_ui (RState* r, ruint num, ruint den);
+rsexp r_fixreal_new_si (RState* r, rintw num, rintw den);
+rsexp r_fixreal_new_ui (RState* r, ruintw num, ruintw den);
 
 rsexp r_floreal_new    (RState* r, double value);
 
@@ -28,7 +28,7 @@ rbool r_real_p         (rsexp obj);
 rbool r_exact_p        (rsexp obj);
 rbool r_inexact_p      (rsexp obj);
 
-rint  r_sign           (rsexp n);
+rintw r_sign           (rsexp n);
 
 rsexp r_exact_to_inexact (RState* r, rsexp num);
 rsexp r_inexact_to_exact (RState* r, rsexp num);
@@ -36,8 +36,8 @@ rsexp r_inexact_to_exact (RState* r, rsexp num);
 rsexp r_cstr_to_number   (RState* r, rconstcstring text);
 rsexp r_string_to_number (RState* r, rsexp text);
 
-rsexp r_int_to_sexp   (rint n);
-rint  r_int_from_sexp (rsexp obj);
+rsexp r_int_to_sexp   (rintw n);
+rintw r_int_from_sexp (rsexp obj);
 
 #define R_ZERO                  r_int_to_sexp (0)
 #define R_ONE                   r_int_to_sexp (1)
@@ -56,8 +56,8 @@ rint  r_int_from_sexp (rsexp obj);
 
 #define r_number_p(obj)         (r_exact_p (obj) || r_inexact_p (obj))
 
-#define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rint, (obj))))
-#define r_uint_from_sexp(obj)   (r_cast (ruint, r_int_from_sexp ((obj))))
+#define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rintw, (obj))))
+#define r_uint_from_sexp(obj)   (r_cast (ruintw, r_int_from_sexp ((obj))))
 
 R_END_DECLS
 

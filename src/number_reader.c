@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 
-static rbool xdigit_to_uint (char ch, ruint* digit)
+static rbool xdigit_to_uint (char ch, ruintw* digit)
 {
     if ('0' <= ch && ch <= '9') {
         *digit = ch - '0';
@@ -27,9 +27,9 @@ static rbool xdigit_to_uint (char ch, ruint* digit)
     return FALSE;
 }
 
-static void apply_exponent (mpq_t real, rint exponent)
+static void apply_exponent (mpq_t real, rintw exponent)
 {
-    rint exp_sign = exponent < 0 ? -1 : 1;
+    rintw exp_sign = exponent < 0 ? -1 : 1;
     mpz_t pow_z;
     mpq_t pow_q;
 
@@ -38,7 +38,7 @@ static void apply_exponent (mpq_t real, rint exponent)
     mpz_init (pow_z);
     mpq_init (pow_q);
 
-    mpz_ui_pow_ui (pow_z, 10u, (ruint) exponent);
+    mpz_ui_pow_ui (pow_z, 10u, (ruintw) exponent);
     mpq_set_num (pow_q, pow_z);
 
     if (exp_sign < 0)
@@ -78,7 +78,7 @@ static rbool fix_exactness (RNumberReader* reader,
 static rsexp i_am_feeling_lucky (rconstcstring text)
 {
     rcstring end;
-    rint number = strtol (text, &end, 10);
+    rintw number = strtol (text, &end, 10);
 
     if ('\0' != *end || number > R_SMI_MAX || number < R_SMI_MIN)
         return R_FALSE;
@@ -195,7 +195,7 @@ static rbool read_prefix (RNumberReader* reader)
  *      / '-'
  *      ;
  */
-static rbool read_sign (RNumberReader* reader, rint* sign)
+static rbool read_sign (RNumberReader* reader, rintw* sign)
 {
     rconstcstring pos = mark (reader);
 
@@ -215,7 +215,7 @@ static rbool read_sign (RNumberReader* reader, rint* sign)
  *      / [0-9a-f]  { when (radix == 16) }
  *      ;
  */
-static rbool read_digit (RNumberReader* reader, ruint* digit)
+static rbool read_digit (RNumberReader* reader, ruintw* digit)
 {
     if (!xdigit_to_uint (lookahead (reader), digit))
         return FALSE;
@@ -231,7 +231,7 @@ static rbool read_digits (RNumberReader* reader, mpz_t digits)
 {
     rconstcstring pos = mark (reader);
 
-    ruint digit;
+    ruintw digit;
 
     if (!read_digit (reader, &digit))
         return reset (reader, pos);
@@ -309,10 +309,10 @@ clear:
  *      : [esfdl] sign digit+
  *      ;
  */
-static rbool read_suffix (RNumberReader* reader, rint* exponent)
+static rbool read_suffix (RNumberReader* reader, rintw* exponent)
 {
-    rint sign = 1;
-    ruint digit;
+    rintw sign = 1;
+    ruintw digit;
     rconstcstring pos;
 
     pos = mark (reader);
@@ -346,10 +346,10 @@ static rbool read_decimal_frac (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     mpz_t denom;
-    ruint digit;
-    ruint size;
+    ruintw digit;
+    ruintw size;
     rbool success;
-    rint exponent = 0;
+    rintw exponent = 0;
     rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
@@ -398,10 +398,10 @@ static rbool read_decimal_int_frac (RNumberReader* reader,
 {
     mpz_t numer;
     mpz_t denom;
-    ruint digit;
-    ruint size;
+    ruintw digit;
+    ruintw size;
     rbool success;
-    rint exponent = 0;
+    rintw exponent = 0;
     rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
@@ -447,7 +447,7 @@ static rbool read_decimal_uint (RNumberReader* reader, mpq_t ureal)
 {
     mpz_t numer;
     rbool success;
-    rint exponent = 0;
+    rintw exponent = 0;
     rconstcstring pos = mark (reader);
 
     mpq_set_ui (ureal, 0u, 1u);
@@ -551,7 +551,7 @@ static rbool read_ureal (RNumberReader* reader, mpq_t ureal)
  */
 static rbool read_real (RNumberReader* reader, mpq_t real)
 {
-    rint sign = 1;
+    rintw sign = 1;
     rconstcstring pos = mark (reader);
 
     read_sign (reader, &sign);
@@ -614,7 +614,7 @@ static rbool read_rect_ri (RNumberReader* reader,
                            mpq_t imag)
 {
     char i;
-    rint sign = 1;
+    rintw sign = 1;
     rconstcstring pos = mark (reader);
 
     if (!read_real (reader, real))
@@ -647,7 +647,7 @@ static rbool read_rect_i (RNumberReader* reader,
                           mpq_t imag)
 {
     char i;
-    rint sign = 1;
+    rintw sign = 1;
     rconstcstring pos = mark (reader);
 
     mpq_set_ui (real, 0u, 1u);

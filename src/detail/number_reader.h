@@ -18,7 +18,7 @@ struct RNumberReader {
 
     rtribool      exact;
     rtribool      decimal;
-    ruint         radix;
+    ruintw        radix;
 };
 
 void  r_number_reader_init (RState* r,

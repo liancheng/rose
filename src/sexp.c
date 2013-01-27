@@ -62,7 +62,7 @@ static rsexp display_char (RState* r, rsexp port, rsexp obj)
     return r_port_write_char (r, port, r_char_from_sexp (obj));
 }
 
-ruint r_type_tag (rsexp obj)
+ruintw r_type_tag (rsexp obj)
 {
     return r_boxed_p (obj)
            ? r_cast (RObject*, obj)->type_tag

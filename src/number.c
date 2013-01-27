@@ -163,7 +163,7 @@ static inline rsexp exact_to_inexact (RState* r, rsexp n)
 
 rsexp try_small_int (mpq_t n)
 {
-    rint smi;
+    rintw smi;
 
     mpq_canonicalize (n);
 
@@ -184,7 +184,7 @@ rsexp try_small_int (mpq_t n)
     return r_int_to_sexp (smi);
 }
 
-rsexp try_small_int_si (rint num, rint den)
+rsexp try_small_int_si (rintw num, rintw den)
 {
     if (num % den != 0)
         return R_FALSE;
@@ -197,7 +197,7 @@ rsexp try_small_int_si (rint num, rint den)
     return r_int_to_sexp (num);
 }
 
-rsexp try_small_int_ui (ruint num, ruint den)
+rsexp try_small_int_ui (ruintw num, ruintw den)
 {
     if (num % den != 0)
         return R_FALSE;
@@ -256,7 +256,7 @@ rsexp r_fixreal_new (RState* r, mpq_t value)
     return fixreal_to_sexp (obj);
 }
 
-rsexp r_fixreal_new_si (RState* r, rint num, rint den)
+rsexp r_fixreal_new_si (RState* r, rintw num, rintw den)
 {
     rsexp smi;
     RFixreal* obj;
@@ -278,7 +278,7 @@ rsexp r_fixreal_new_si (RState* r, rint num, rint den)
     return fixreal_to_sexp (obj);
 }
 
-rsexp r_fixreal_new_ui (RState* r, ruint num, ruint den)
+rsexp r_fixreal_new_ui (RState* r, ruintw num, ruintw den)
 {
     rsexp smi;
     RFixreal* obj;
@@ -356,7 +356,7 @@ rbool r_one_p (rsexp n)
     return FALSE;
 }
 
-rint r_sign (rsexp n)
+rintw r_sign (rsexp n)
 {
     if (r_small_int_p (n))
         return r_int_from_sexp (n) >= 0 ? 1 : -1;
@@ -443,7 +443,7 @@ rbool r_byte_p (rsexp obj)
     if (!r_small_int_p (obj))
         return FALSE;
 
-    rint i = r_int_from_sexp (obj);
+    rintw i = r_int_from_sexp (obj);
 
     return i >= 0 && i <= 255;
 }
@@ -482,15 +482,15 @@ rbool r_inexact_p (rsexp obj)
         || r_flocomplex_p (obj);
 }
 
-rsexp r_int_to_sexp (rint n)
+rsexp r_int_to_sexp (rintw n)
 {
     return (n << R_SMI_BITS) | R_TAG_SMI;
 }
 
-rint r_int_from_sexp (rsexp obj)
+rintw r_int_from_sexp (rsexp obj)
 {
     assert (r_small_int_p (obj));
-    return (r_cast (rint, obj)) >> R_SMI_BITS;
+    return (r_cast (rintw, obj)) >> R_SMI_BITS;
 }
 
 RTypeInfo fixreal_type = {

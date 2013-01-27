@@ -18,8 +18,8 @@ R_BEGIN_DECLS
 #define TRUE    (!FALSE)
 #define UNKNOWN (-1)
 
-typedef int             rint;
-typedef unsigned int    ruint;
+typedef intptr_t        rintw;
+typedef uintptr_t       ruintw;
 
 typedef uint8_t         rbyte;
 
@@ -49,11 +49,9 @@ typedef runichar const* rconstunistring;
 
 typedef int             rbool;
 typedef int             rtribool;
-typedef uintptr_t       rword;
-typedef off_t           roffset;
-typedef off64_t         roffset64;
+typedef intptr_t        rword;
+typedef uintptr_t       ruword;
 typedef size_t          rsize;
-typedef ssize_t         rssize;
 
 #define r_cast(to, from) ((to) (from))
 

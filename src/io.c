@@ -214,7 +214,7 @@ rsexp r_open_output_string (RState* r)
 {
     OStrCookie* cookie;
     FILE* stream;
-    rint errnum;
+    rintw errnum;
     rsexp res;
 
     cookie = r_new0 (r, OStrCookie);
@@ -385,7 +385,7 @@ rsexp r_printf (RState* r, rconstcstring format, ...)
     return res;
 }
 
-rcstring r_port_gets (RState* r, rsexp port, rcstring dest, rint size)
+rcstring r_port_gets (RState* r, rsexp port, rcstring dest, rintw size)
 {
     return fgets (dest, size, port_to_stream (port));
 }
@@ -406,7 +406,7 @@ exit:
 
 rsexp r_port_read_char (RState* r, rsexp port)
 {
-    rint ch = fgetc (port_to_stream (port));
+    rintw ch = fgetc (port_to_stream (port));
     return (EOF == ch) ? R_EOF : r_char_to_sexp (r_cast (rchar, ch));
 }
 

@@ -30,7 +30,7 @@ struct RTypeInfo {
     ops;
 };
 
-ruint      r_type_tag  (rsexp obj);
+ruintw     r_type_tag  (rsexp obj);
 RTypeInfo* r_type_info (RState* r,
                         rsexp obj);
 

@@ -198,7 +198,7 @@ void r_raise (RState* r)
         abort ();
 }
 
-rsexp r_inherit_errno_x (RState* r, rint errnum)
+rsexp r_inherit_errno_x (RState* r, rintw errnum)
 {
     rchar buffer [BUFSIZ];
     rsexp error;

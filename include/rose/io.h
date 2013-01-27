@@ -40,7 +40,7 @@ rsexp    r_printf                    (RState* r,
 rcstring r_port_gets                 (RState* r,
                                       rsexp port,
                                       rcstring dest,
-                                      rint size);
+                                      rintw size);
 rsexp    r_port_puts                 (RState* r,
                                       rsexp port,
                                       rconstcstring str);
