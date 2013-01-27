@@ -359,13 +359,13 @@ rbool r_one_p (rsexp n)
 rintw r_sign (rsexp n)
 {
     if (r_small_int_p (n))
-        return r_int_from_sexp (n) >= 0 ? 1 : -1;
+        return r_int_from_sexp (n) - 0;
 
     if (r_fixreal_p (n))
-        return mpq_cmp_si (fixreal_value (n), 0, 1) >= 0 ? 1 : -1;
+        return mpq_cmp_si (fixreal_value (n), 0, 1);
 
     assert (r_floreal_p (n));
-    return floreal_value (n) >= 0. ? 1 : -1;
+    return floreal_value (n) - 0.;
 }
 
 rsexp r_real_part (RState* r, rsexp n)

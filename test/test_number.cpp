@@ -168,12 +168,15 @@ TEST_F (test_number, r_zero_p)
 
 TEST_F (test_number, r_sign)
 {
-    EXPECT_EQ (1, r_sign (R_ZERO));
-    EXPECT_EQ (1, r_sign (r->flo_zero));
-    EXPECT_EQ (1, r_sign (R_ONE));
+    EXPECT_TRUE (0 == r_sign (R_ZERO));
+    EXPECT_TRUE (0 == r_sign (r->flo_zero));
+    EXPECT_TRUE (0 < r_sign (R_ONE));
 
-    EXPECT_EQ (-1, r_sign (r_fixreal_new_si (r, -1, 1)));
-    EXPECT_EQ (-1, r_sign (r_int_to_sexp (-1)));
+    EXPECT_TRUE (0 > r_sign (r_fixreal_new_si (r, -1, 1)));
+    EXPECT_TRUE (0 > r_sign (r_int_to_sexp (-1)));
+
+    EXPECT_TRUE (0 > r_sign (r_floreal_new (r, -1.)));
+    EXPECT_TRUE (0 < r_sign (r_floreal_new (r, 1.)));
 }
 
 TEST_F (test_number, r_real_p)

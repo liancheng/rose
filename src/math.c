@@ -417,37 +417,54 @@ rsexp r_divide (RState* r, rsexp lhs, rsexp rhs)
     return r_multiply (r, lhs, rhs);
 }
 
+static inline rsexp real_diff (RState* r, rsexp lhs, rsexp rhs)
+{
+    if (!r_real_p (lhs)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, lhs);
+        return R_FAILURE;
+    }
+
+    if (!r_real_p (rhs)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, rhs);
+        return R_FAILURE;
+    }
+
+    ensure (rhs = negate_real (r, rhs));
+
+    return add_real (r, lhs, rhs);
+}
+
 rsexp r_num_eq_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-    return r_bool_to_sexp (r_int_from_sexp (lhs) == r_int_from_sexp (rhs));
+    rsexp diff;
+    ensure (diff = real_diff (r, lhs, rhs));
+    return r_bool_to_sexp (r_zero_p (diff));
 }
 
 rsexp r_num_lt_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-    return r_bool_to_sexp (r_int_from_sexp (lhs) < r_int_from_sexp (rhs));
+    rsexp diff;
+    ensure (diff = real_diff (r, lhs, rhs));
+    return r_bool_to_sexp (r_sign (diff) < 0);
 }
 
 rsexp r_num_le_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-    return r_bool_to_sexp (r_int_from_sexp (lhs) <= r_int_from_sexp (rhs));
+    rsexp diff;
+    ensure (diff = real_diff (r, lhs, rhs));
+    return r_bool_to_sexp (r_sign (diff) <= 0);
 }
 
 rsexp r_num_gt_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-    return r_bool_to_sexp (r_int_from_sexp (lhs) > r_int_from_sexp (rhs));
+    rsexp diff;
+    ensure (diff = real_diff (r, lhs, rhs));
+    return r_bool_to_sexp (r_sign (diff) > 0);
 }
 
 rsexp r_num_ge_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    assert (r_small_int_p (lhs));
-    assert (r_small_int_p (rhs));
-    return r_bool_to_sexp (r_int_from_sexp (lhs) >= r_int_from_sexp (rhs));
+    rsexp diff;
+    ensure (diff = real_diff (r, lhs, rhs));
+    return r_bool_to_sexp (r_sign (diff) >= 0);
 }
