@@ -3,7 +3,8 @@ Import('env')
 
 env = env.Clone()
 
-env.Append(CPPDEFINES=['QUEX_OPTION_ASSERTS_DISABLED',
+env.Append(CPPFLAGS=' -Werror',
+           CPPDEFINES=['QUEX_OPTION_ASSERTS_DISABLED',
                        'QUEX_OPTION_ASSERTS_WARNING_MESSAGE_DISABLED'])
 
 lex_src = env.Quex(source='lexer.qx',
