@@ -324,8 +324,8 @@ static rsexp compile_conditional (RState* r, rsexp expr, rsexp next)
 
     r_gc_scope_open (r);
 
-    ensure_or_goto (then_code = compile (r, then_expr, next), exit);
-    ensure_or_goto (else_code = compile (r, else_expr, next), exit);
+    ensure_or_goto (code = then_code = compile (r, then_expr, next), exit);
+    ensure_or_goto (code = else_code = compile (r, else_expr, next), exit);
 
     ensure_or_goto (code = emit_branch (r, then_code, else_code), exit);
     ensure_or_goto (code = compile (r, test_expr, code), exit);
