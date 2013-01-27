@@ -130,20 +130,9 @@ rsexp r_string_vprintf (RState* r, rconstcstring format, va_list args)
     rsexp port;
     rsexp res;
 
-    port = r_open_output_string (r);
-
-    if (r_failure_p (port))
-        goto exit;
-
-    if (r_failure_p (r_port_vprintf (r, port, format, args))) {
-        res = R_FAILURE;
-        goto clean;
-    }
-
-    res = r_get_output_string (r, port);
-
-    if (r_failure_p (res))
-        goto clean;
+    ensure_or_goto (res = port = r_open_output_string (r), exit);
+    ensure_or_goto (res = r_port_vprintf (r, port, format, args), clean);
+    ensure_or_goto (res = r_get_output_string (r, port), clean);
 
 clean:
     r_close_port (port);
@@ -155,7 +144,7 @@ exit:
 rsexp r_string_printf (RState* r, rconstcstring format, ...)
 {
     va_list args;
-    rsexp   res;
+    rsexp res;
 
     va_start (args, format);
     res = r_string_vprintf (r, format, args);

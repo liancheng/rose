@@ -193,14 +193,14 @@ rsexp r_list_to_vector (RState* r, rsexp list)
     rsexp length, res;
     rsize i;
 
-    ensure_or_goto (length = r_length (r, list), exit);
+    ensure_or_goto (res = length = r_length (r, list), exit);
     ensure_or_goto (res = r_vector_new (r,
                                         r_uint_from_sexp (length),
                                         R_UNDEFINED),
                     exit);
 
     for (i = 0; !r_null_p (list); ++i) {
-        ensure_or_goto (r_vector_set_x (r, res, i, r_car (list)), exit);
+        ensure (r_vector_set_x (r, res, i, r_car (list)));
         list = r_cdr (list);
     }
 
@@ -217,7 +217,11 @@ rsexp r_vector_to_list (RState* r, rsexp vector)
     r_gc_scope_open (r);
 
     for (i = length, res = R_NULL; i > 0; --i) {
-        ensure_or_goto (datum = r_vector_ref (r, vector, i - 1), exit);
+        if (r_failure_p (datum = r_vector_ref (r, vector, i - 1))) {
+            res = R_FAILURE;
+            goto exit;
+        }
+
         ensure_or_goto (res = r_cons (r, datum, res), exit);
     }
 
