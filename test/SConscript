@@ -1,5 +1,6 @@
 from os import environ, path
 
+Import('coverage')
 Import('env')
 Import('rose_lib')
 
@@ -17,7 +18,7 @@ test = env.Program(target='test',
 
 run_source = [test[0]]
 
-if ARGUMENTS.get('coverage', 0):
+if coverage:
     lcov_reset = env.LCov(target='lcov-reset',
                           source=[test],
                           LCOVRESET=True,
@@ -30,7 +31,7 @@ run = env.Command(target='unit-test',
                   source=run_source,
                   action=test[0].abspath)
 
-if ARGUMENTS.get('coverage', 0):
+if coverage:
     env.GenHtml(target=Dir('html'),
                 source=env.LCov(target='coverage.info',
                                 source=[test, run, lcov_reset],
