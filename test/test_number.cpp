@@ -20,7 +20,7 @@ TEST_F (test_fixreal, r_fixreal_new)
     EXPECT_TRUE (r_fixreal_p (actual));
     EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
 
-    allocator_disruptor md;
+    allocator_disruptor ad;
     actual = r_fixreal_new (r, init);
     EXPECT_TRUE (r_failure_p (actual));
 
@@ -36,7 +36,7 @@ TEST_F (test_fixreal, r_fixreal_new_si)
     EXPECT_TRUE (r_fixreal_p (actual));
     EXPECT_EQ (0, mpq_cmp_si (fixreal_from_sexp (actual)->value, 3, 2));
 
-    allocator_disruptor md;
+    allocator_disruptor ad;
     actual = r_fixreal_new_si (r, 6, 4);
     EXPECT_TRUE (r_failure_p (actual));
 }
@@ -64,7 +64,7 @@ TEST_F (test_floreal, r_floreal_new)
     EXPECT_TRUE (r_floreal_p (actual));
     EXPECT_TRUE (floreal_from_sexp (actual)->value == 1.5);
 
-    allocator_disruptor md;
+    allocator_disruptor ad;
     actual = r_floreal_new (r, 1.5);
     EXPECT_TRUE (r_failure_p (actual));
 }
@@ -124,7 +124,7 @@ TEST_F (test_complex, r_complex_new)
         EXPECT_FALSE (r_failure_p (actual));
         EXPECT_TRUE (r_exact_p (actual));
 
-        allocator_disruptor md;
+        allocator_disruptor ad;
         actual = r_complex_new (r, real, imag);
         EXPECT_TRUE (r_failure_p (actual));
     }
