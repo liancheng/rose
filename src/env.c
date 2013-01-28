@@ -93,6 +93,7 @@ rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
     return env;
 }
 
+extern RPrimitiveDesc bytevector_primitives [];
 extern RPrimitiveDesc gc_primitives [];
 extern RPrimitiveDesc math_primitives [];
 extern RPrimitiveDesc number_primitives [];
@@ -105,6 +106,7 @@ rsexp default_env (RState* r)
 {
     rsexp env = r_empty_env (r);
 
+    env = init_primitives (r, env, bytevector_primitives);
     env = init_primitives (r, env, gc_primitives);
     env = init_primitives (r, env, io_primitives);
     env = init_primitives (r, env, math_primitives);
