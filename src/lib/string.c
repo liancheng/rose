@@ -21,7 +21,7 @@ static rsexp np_string_length (RState* r, rsexp args)
     return r_uint_to_sexp (r_string_length (obj));
 }
 
-RPrimitiveDesc string_primitives [] = {
+const RPrimitiveDesc string_primitives [] = {
     { "string?",       np_string_p,      1, 0, FALSE },
     { "string-length", np_string_length, 1, 0, FALSE },
     { NULL }

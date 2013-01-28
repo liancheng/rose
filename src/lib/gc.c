@@ -64,7 +64,7 @@ static rsexp np_gc_dump_arena (RState* r, rsexp args)
     return R_UNSPECIFIED;
 }
 
-RPrimitiveDesc gc_primitives [] = {
+const RPrimitiveDesc gc_primitives [] = {
     { "gc-enable",            np_gc_enable,            0, 0, FALSE },
     { "gc-disable",           np_gc_disable,           0, 0, FALSE },
     { "gc-enabled?",          np_gc_enabled_p,         0, 0, FALSE },

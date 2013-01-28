@@ -78,7 +78,7 @@ static rsexp np_imag_part (RState* r, rsexp args)
     return r_imag_part (r, r_car (args));
 }
 
-RPrimitiveDesc number_primitives [] = {
+const RPrimitiveDesc number_primitives [] = {
     { "number?",        np_number_p,         1, 0, FALSE },
     { "complex?",       np_number_p,         1, 0, FALSE },
     { "integer?",       np_integer_p,        1, 0, FALSE },

@@ -109,7 +109,7 @@ static rsexp np_list_ref (RState* r, rsexp args)
     return r_list_ref (r, list, r_uint_from_sexp (k));
 }
 
-RPrimitiveDesc pair_primitives [] = {
+const RPrimitiveDesc pair_primitives [] = {
     { "cons",     np_cons,      2, 0, FALSE },
     { "pair?",    np_pair_p,    1, 0, FALSE },
     { "null?",    np_null_p,    1, 0, FALSE },

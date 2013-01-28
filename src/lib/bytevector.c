@@ -87,7 +87,7 @@ static rsexp np_bytevector_u8_set_x (RState* r, rsexp args)
         (r, obj, r_uint_from_sexp (k), r_uint_from_sexp (byte));
 }
 
-RPrimitiveDesc bytevector_primitives [] = {
+const RPrimitiveDesc bytevector_primitives [] = {
     { "make-bytevector",    np_make_bytevector,     1, 1, FALSE },
     { "bytevector-length",  np_bytevector_length,   1, 0, FALSE },
     { "list->bytevector",   np_list_to_bytevector,  1, 0, FALSE },

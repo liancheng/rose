@@ -5,7 +5,7 @@
 #include "rose/primitive.h"
 #include "rose/symbol.h"
 
-static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc* desc)
+static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc const* desc)
 {
     rsexp name;
     rsexp prim;
@@ -93,14 +93,14 @@ rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
     return env;
 }
 
-extern RPrimitiveDesc bytevector_primitives [];
-extern RPrimitiveDesc gc_primitives [];
-extern RPrimitiveDesc math_primitives [];
-extern RPrimitiveDesc number_primitives [];
-extern RPrimitiveDesc pair_primitives [];
-extern RPrimitiveDesc io_primitives [];
-extern RPrimitiveDesc read_primitives [];
-extern RPrimitiveDesc string_primitives [];
+extern const RPrimitiveDesc bytevector_primitives [];
+extern const RPrimitiveDesc gc_primitives [];
+extern const RPrimitiveDesc math_primitives [];
+extern const RPrimitiveDesc number_primitives [];
+extern const RPrimitiveDesc pair_primitives [];
+extern const RPrimitiveDesc io_primitives [];
+extern const RPrimitiveDesc read_primitives [];
+extern const RPrimitiveDesc string_primitives [];
 
 rsexp default_env (RState* r)
 {

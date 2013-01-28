@@ -163,7 +163,7 @@ static rsexp np_close_port (RState* r, rsexp args)
     return R_UNSPECIFIED;
 }
 
-RPrimitiveDesc io_primitives [] = {
+const RPrimitiveDesc io_primitives [] = {
     { "current-input-port",       np_current_input_port,        0, 0, FALSE },
     { "current-output-port",      np_current_output_port,       0, 0, FALSE },
     { "current-error-port",       np_current_error_port,        0, 0, FALSE },

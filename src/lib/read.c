@@ -18,7 +18,7 @@ static rsexp np_read (RState* r, rsexp args)
     return r_read (reader);
 }
 
-RPrimitiveDesc read_primitives [] = {
+const RPrimitiveDesc read_primitives [] = {
     { "read", np_read, 0, 1, FALSE },
     { NULL }
 };

@@ -116,7 +116,7 @@ static rsexp np_num_ge_p (RState* r, rsexp args)
     return np_num_cmp_loop (r, args, r_num_ge_p);
 }
 
-RPrimitiveDesc math_primitives [] = {
+const RPrimitiveDesc math_primitives [] = {
     { "+",  np_add,      0, 0, TRUE },
     { "*",  np_multiply, 0, 0, TRUE },
     { "-",  np_minus,    1, 0, TRUE },
