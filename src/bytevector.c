@@ -114,7 +114,7 @@ rsexp r_bytevector_u8_ref (RState* r, rsexp obj, rsize k)
 {
     return check_index_overflow (r, obj, k)
            ? r_uint_to_sexp (bytevector_from_sexp (obj)->data [k])
-           : r_last_error (r);
+           : R_FAILURE;
 }
 
 rsexp r_bytevector_u8_set_x (RState* r, rsexp obj, rsize k, rbyte byte)
