@@ -6,4 +6,5 @@
       (+ (slow-fibonacci (- m 1))
          (slow-fibonacci (- m 2))))))
 
-(slow-fibonacci 20)
+(display (slow-fibonacci (read)))
+(newline)
