@@ -72,9 +72,6 @@ static rbool bytevector_equal_p (RState* r, rsexp lhs, rsexp rhs)
     rsize lhs_len;
     rsize rhs_len;
 
-    if (!r_bytevector_p (lhs) || !r_bytevector_p (rhs))
-        return FALSE;
-
     lhs_len = r_uint_from_sexp (r_bytevector_length (lhs));
     rhs_len = r_uint_from_sexp (r_bytevector_length (rhs));
 
