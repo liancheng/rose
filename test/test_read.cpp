@@ -105,3 +105,11 @@ TEST_F (test_reader, character)
     EXPECT_STREQ ("#\\return",    from ("#\\return "));
     EXPECT_STREQ ("#\\escape",    from ("#\\escape "));
 }
+
+TEST_F (test_reader, bytevector)
+{
+    EXPECT_STREQ ("#u8()",      from ("#u8()"));
+    EXPECT_STREQ ("#u8(0)",     from ("#u8(0)"));
+    EXPECT_STREQ ("#u8(0 255)", from ("#u8(0 255)"));
+    EXPECT_STREQ ("#<failure>", from ("#u8(256)"));
+}
