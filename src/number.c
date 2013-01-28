@@ -1,6 +1,5 @@
 #include "detail/gc.h"
 #include "detail/io.h"
-#include "detail/math_workaround.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
 #include "detail/state.h"
@@ -10,6 +9,7 @@
 #include "rose/string.h"
 
 #include <assert.h>
+#include <math.h>
 
 static rsexp fixreal_write (RState* r, rsexp port, rsexp obj)
 {
@@ -534,7 +534,7 @@ rbool r_integer_p (rsexp obj)
         return mpz_cmp_si (mpq_denref (fixreal_value (obj)), 1) == 0;
 
     if (r_floreal_p (obj))
-        return r_ceil (floreal_value (obj)) == floreal_value (obj);
+        return ceil (floreal_value (obj)) == floreal_value (obj);
 
     return FALSE;
 }

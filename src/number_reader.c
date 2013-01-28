@@ -1,10 +1,10 @@
-#include "detail/math_workaround.h"
 #include "detail/number.h"
 #include "detail/number_reader.h"
 #include "rose/error.h"
 #include "rose/gc.h"
 
 #include <ctype.h>
+#include <math.h>
 #include <string.h>
 
 static rbool xdigit_to_uint (char ch, ruintw* digit)
@@ -749,8 +749,8 @@ static rsexp read_number (RNumberReader* reader)
 
     if (read_polar_complex (reader, &rho, &theta)) {
         res = make_flocomplex (reader->r,
-                               rho * r_cos (theta),
-                               rho * r_sin (theta));
+                               rho * cos (theta),
+                               rho * sin (theta));
         goto clear;
     }
 
