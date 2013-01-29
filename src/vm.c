@@ -96,13 +96,15 @@ static inline rsexp exec_arg (RState* r, RVm* vm)
 static inline rsexp exec_assign (RState* r, RVm* vm)
 {
     rsexp var;
+    rsexp env;
 
     var = r_cadr (vm->next);
-    vm->env = r_env_assign_x (r, vm->env, var, vm->value);
+    env = r_env_assign_x (r, vm->env, var, vm->value);
 
-    if (r_failure_p (vm->env))
+    if (r_failure_p (env))
         return R_FAILURE;
 
+    vm->env = env;
     vm->next = r_caddr (vm->next);
 
     return vm->value;
