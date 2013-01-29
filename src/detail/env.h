@@ -6,10 +6,7 @@
 
 R_BEGIN_DECLS
 
-rsexp env_extend  (RState* r,
-                   rsexp env,
-                   rsexp formals,
-                   rsexp vals);
+rsexp env_extend  (RState* r, rsexp env, rsexp vars, rsexp vals);
 rsexp default_env (RState* r);
 
 R_END_DECLS

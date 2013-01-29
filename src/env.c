@@ -5,6 +5,8 @@
 #include "rose/primitive.h"
 #include "rose/symbol.h"
 
+#include <assert.h>
+
 static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc const* desc)
 {
     rsexp name;
@@ -20,10 +22,56 @@ static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc const* desc)
     return env;
 }
 
-rsexp env_extend (RState* r, rsexp env, rsexp formals, rsexp vals)
+static inline rsexp enclosing_env (rsexp env)
+{
+    return r_null_p (env) ? R_NULL : r_cdr (env);
+}
+
+static inline rsexp first_frame (rsexp env)
+{
+    return r_null_p (env) ? R_NULL : r_car (env);
+}
+
+static inline rsexp make_frame (RState* r, rsexp vars, rsexp vals)
+{
+    return r_cons (r, vars, vals);
+}
+
+static inline rsexp frame_vars (rsexp frame)
+{
+    return r_null_p (frame) ? R_NULL : r_car (frame);
+}
+
+static inline rsexp frame_vals (rsexp frame)
+{
+    return r_null_p (frame) ? R_NULL : r_cdr (frame);
+}
+
+static inline rsexp frame_bind_x (RState* r, rsexp frame, rsexp var, rsexp val)
+{
+    rsexp vars, vals;
+
+    ensure (vars = r_cons (r, var, frame_vars (frame)));
+    ensure (vals = r_cons (r, val, frame_vals (frame)));
+
+    r_set_car_x (frame, vars);
+    r_set_cdr_x (frame, vals);
+
+    return frame;
+}
+
+rsexp env_extend (RState* r, rsexp env, rsexp vars, rsexp vals)
 {
     rsexp frame;
-    ensure (frame = r_cons (r, formals, vals));
+    rsexp vars_len;
+    rsexp vals_len;
+
+    assert (!r_failure_p (vars_len = r_length (r, vars)));
+    assert (!r_failure_p (vals_len = r_length (r, vals)));
+    assert (vars_len == vals_len);
+
+    ensure (frame = r_cons (r, vars, vals));
+
     return r_cons (r, frame, env);
 }
 
@@ -32,9 +80,9 @@ rsexp r_env_lookup (RState* r, rsexp env, rsexp var)
     if (r_null_p (env))
         return R_UNDEFINED;
 
-    rsexp frame = r_car (env);
-    rsexp vars  = r_car (frame);
-    rsexp vals  = r_cdr (frame);
+    rsexp frame = first_frame (env);
+    rsexp vars = frame_vars (frame);
+    rsexp vals = frame_vals (frame);
 
     while (!r_null_p (vars)) {
         if (r_eq_p (r, r_car (vars), var))
@@ -44,7 +92,7 @@ rsexp r_env_lookup (RState* r, rsexp env, rsexp var)
         vals = r_cdr (vals);
     }
 
-    return r_env_lookup (r, r_cdr (env), var);
+    return r_env_lookup (r, enclosing_env (env), var);
 }
 
 rsexp r_empty_env (RState* r)
@@ -64,19 +112,25 @@ rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
         return env_extend (r, env, vars, vals);
     }
 
-    ensure (vars = r_cons (r, var, r_car (r_car (env))));
-    ensure (vals = r_cons (r, val, r_cdr (r_car (env))));
-    ensure (frame = r_cons (r, vars, vals));
-    r_set_car_x (env, frame);
+    frame = first_frame (env);
+    vars = frame_vars (frame);
+    vals = frame_vals (frame);
+
+    for (; !r_null_p (vars); vars = r_cdr (vars), vals = r_cdr (vals)) {
+        if (r_eq_p (r, var, r_car (vars))) {
+            r_set_car_x (vals, val);
+            return env;
+        }
+    }
+
+    frame_bind_x (r, frame, var, val);
 
     return env;
 }
 
 rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
 {
-    rsexp vars;
     rsexp vals;
-    rsexp frame;
 
     vals = r_env_lookup (r, env, var);
 
@@ -85,10 +139,7 @@ rsexp r_env_assign_x (RState* r, rsexp env, rsexp var, rsexp val)
         return R_FAILURE;
     }
 
-    ensure (vars = r_cons (r, var, r_car (r_car (env))));
-    ensure (vals = r_cons (r, val, r_cdr (r_car (env))));
-    ensure (frame = r_cons (r, vars, vals));
-    r_set_car_x (env, frame);
+    r_set_car_x (vals, val);
 
     return env;
 }
