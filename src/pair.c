@@ -115,7 +115,7 @@ rsexp r_cdr (rsexp obj)
 
 void r_set_car_x (rsexp pair, rsexp obj)
 {
-    assert (r_pair_p (obj));
+    assert (r_pair_p (pair));
     pair_from_sexp (pair)->car = obj;
 }
 
