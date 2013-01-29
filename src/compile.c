@@ -514,3 +514,13 @@ rsexp r_compile_from_port (RState* r, rsexp port)
 
     return r_compile (r, program);
 }
+
+rsexp r_compile_from_cstr (RState* r, rconstcstring input)
+{
+    rsexp str, port;
+
+    ensure (str = r_string_new (r, input));
+    ensure (port = r_open_input_string (r, str));
+
+    return r_compile_from_port (r, port);
+}

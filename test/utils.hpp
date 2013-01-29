@@ -32,6 +32,9 @@ protected:
         while (true) {
             rsexp datum = r_read (reader);
 
+            if (r_failure_p (datum))
+                return R_FAILURE;
+
             if (r_eof_object_p (datum))
                 break;
 
