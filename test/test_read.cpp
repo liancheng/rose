@@ -104,6 +104,8 @@ TEST_F (test_reader, character)
     EXPECT_STREQ ("#\\delete",    from ("#\\delete "));
     EXPECT_STREQ ("#\\return",    from ("#\\return "));
     EXPECT_STREQ ("#\\escape",    from ("#\\escape "));
+    EXPECT_STREQ ("#\\null",      from ("#\\null "));
+    EXPECT_STREQ ("#\\alarm",     from ("#\\alarm "));
 }
 
 TEST_F (test_reader, bytevector)
