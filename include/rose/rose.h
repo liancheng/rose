@@ -3,6 +3,7 @@
 
 #include "rose/bytevector.h"
 #include "rose/compile.h"
+#include "rose/env.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/gc.h"
