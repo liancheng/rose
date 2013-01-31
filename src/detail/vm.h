@@ -18,8 +18,6 @@ struct RVm {
     rsexp stack;
     rsexp value;
     rbool halt_p;
-
-    GHashTable* executors;
 };
 
 void vm_init   (RState* r);

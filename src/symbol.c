@@ -1,12 +1,8 @@
 #include "detail/state.h"
-#include "rose/gc.h"
+#include "detail/symbol.h"
 #include "rose/io.h"
-#include "rose/symbol.h"
 
 #include <glib.h>
-
-#define quark_to_sexp(q)    (r_cast (rsexp, r_set_tag_x ((q), R_TAG_SYMBOL)))
-#define quark_from_sexp(q)  (r_cast (GQuark, ((q) >> R_TAG_BITS)))
 
 static rsexp write_symbol (RState* r, rsexp port, rsexp obj)
 {

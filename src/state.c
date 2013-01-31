@@ -4,6 +4,7 @@
 #include "rose/gc.h"
 #include "rose/number.h"
 #include "rose/string.h"
+#include "rose/symbol.h"
 
 #include <assert.h>
 #include <string.h>
@@ -30,29 +31,29 @@ extern RTypeInfo complex_type;
 
 static void init_reserved_words (RState* r)
 {
-    r->kw.quote            = r_intern (r, "quote");
-    r->kw.lambda           = r_intern (r, "lambda");
-    r->kw.if_              = r_intern (r, "if");
-    r->kw.set_x            = r_intern (r, "set!");
-    r->kw.quasiquote       = r_intern (r, "quasiquote");
-    r->kw.define           = r_intern (r, "define");
-    r->kw.unquote          = r_intern (r, "unquote");
-    r->kw.unquote_splicing = r_intern (r, "unquote-splicing");
-    r->kw.call_cc          = r_intern (r, "call/cc");
+    r_intern (r, "quote");
+    r_intern (r, "lambda");
+    r_intern (r, "if");
+    r_intern (r, "set!");
+    r_intern (r, "quasiquote");
+    r_intern (r, "define");
+    r_intern (r, "unquote");
+    r_intern (r, "unquote-splicing");
+    r_intern (r, "call/cc");
 
-    r->i.apply             = r_intern (r, "apply");
-    r->i.arg               = r_intern (r, "arg");
-    r->i.assign            = r_intern (r, "assign");
-    r->i.branch            = r_intern (r, "branch");
-    r->i.capture_cc        = r_intern (r, "capture-cc");
-    r->i.close             = r_intern (r, "close");
-    r->i.constant          = r_intern (r, "constant");
-    r->i.bind              = r_intern (r, "bind");
-    r->i.frame             = r_intern (r, "frame");
-    r->i.halt              = r_intern (r, "halt");
-    r->i.refer             = r_intern (r, "refer");
-    r->i.restore_cc        = r_intern (r, "restore-cc");
-    r->i.return_           = r_intern (r, "return");
+    r_intern (r, "apply");
+    r_intern (r, "arg");
+    r_intern (r, "assign");
+    r_intern (r, "branch");
+    r_intern (r, "capture-cc");
+    r_intern (r, "close");
+    r_intern (r, "constant");
+    r_intern (r, "bind");
+    r_intern (r, "frame");
+    r_intern (r, "halt");
+    r_intern (r, "refer");
+    r_intern (r, "restore-cc");
+    r_intern (r, "return");
 }
 
 static void init_oom_error (RState* r)

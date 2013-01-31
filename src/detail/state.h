@@ -6,7 +6,6 @@
 #include "detail/vm.h"
 #include "rose/error.h"
 #include "rose/state.h"
-#include "rose/symbol.h"
 
 #include <glib.h>
 
@@ -37,38 +36,6 @@ struct RState {
     rsexp oom_error;
     rsexp flo_zero;
     rsexp flo_one;
-
-    /* Interned keyword symbols */
-    struct {
-        rsexp quote;
-        rsexp lambda;
-        rsexp if_;
-        rsexp set_x;
-        rsexp quasiquote;
-        rsexp define;
-        rsexp unquote;
-        rsexp unquote_splicing;
-        rsexp call_cc;
-    }
-    kw;
-
-    /* Interned instruction name symbols */
-    struct {
-        rsexp apply;
-        rsexp arg;
-        rsexp assign;
-        rsexp branch;
-        rsexp capture_cc;
-        rsexp close;
-        rsexp constant;
-        rsexp bind;
-        rsexp frame;
-        rsexp halt;
-        rsexp refer;
-        rsexp restore_cc;
-        rsexp return_;
-    }
-    i;
 
     /* Type information for builtin types */
     RTypeInfo builtin_types [R_TAG_MAX];

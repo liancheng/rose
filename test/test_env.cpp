@@ -1,4 +1,5 @@
 #include "rose/env.h"
+#include "rose/symbol.h"
 
 #include "utils.hpp"
 

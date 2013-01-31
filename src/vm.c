@@ -1,7 +1,8 @@
 #include "detail/compile.h"
 #include "detail/env.h"
-#include "detail/vm.h"
+#include "detail/symbol.h"
 #include "detail/state.h"
+#include "detail/vm.h"
 #include "rose/eq.h"
 #include "rose/error.h"
 #include "rose/pair.h"
@@ -10,9 +11,6 @@
 #include "rose/procedure.h"
 #include "rose/sexp.h"
 #include "rose/string.h"
-#include "rose/symbol.h"
-
-typedef rsexp (*RInstructionExecutor) (RState*, RVm*);
 
 static inline rsexp pop (RVm* vm)
 {
@@ -209,17 +207,29 @@ static rsexp single_step (RState* r)
     RVm* vm;
     rsexp ins;
     rsexp res;
-    RInstructionExecutor exec;
+    rsexp (*exec) (RState*, RVm*);
 
     vm = &r->vm;
     ins = r_car (vm->next);
-    exec = r_cast (RInstructionExecutor,
-                   g_hash_table_lookup (vm->executors,
-                                        r_cast (rconstpointer, ins)));
 
-    if (!exec) {
-        r_error_code (r, R_ERR_UNKNOWN_INSTR, vm->next);
-        return R_FAILURE;
+    switch (ins) {
+        case R_OP_APPLY:      exec = exec_apply;      break;
+        case R_OP_ARG:        exec = exec_arg;        break;
+        case R_OP_ASSIGN:     exec = exec_assign;     break;
+        case R_OP_CAPTURE_CC: exec = exec_capture_cc; break;
+        case R_OP_CONSTANT:   exec = exec_constant;   break;
+        case R_OP_CLOSE:      exec = exec_close;      break;
+        case R_OP_BIND:       exec = exec_bind;       break;
+        case R_OP_BRANCH:     exec = exec_branch;     break;
+        case R_OP_FRAME:      exec = exec_frame;      break;
+        case R_OP_HALT:       exec = exec_halt;       break;
+        case R_OP_REFER:      exec = exec_refer;      break;
+        case R_OP_RESTORE_CC: exec = exec_restore_cc; break;
+        case R_OP_RETURN:     exec = exec_return;     break;
+
+        default:
+            r_error_code (r, R_ERR_UNKNOWN_INSTR, vm->next);
+            return R_FAILURE;
     }
 
     r_gc_scope_open (r);
@@ -227,16 +237,6 @@ static rsexp single_step (RState* r)
     r_gc_scope_close (r);
 
     return res;
-}
-
-static void install_instruction_executor (RState* r,
-                                          RVm* vm,
-                                          rsexp ins,
-                                          RInstructionExecutor exec)
-{
-    g_hash_table_insert (vm->executors,
-                         r_cast (rpointer, ins),
-                         r_cast (rpointer, exec));
 }
 
 void vm_dump (RState* r)
@@ -263,22 +263,6 @@ void vm_init (RState* r)
     vm->next   = R_UNDEFINED;
     vm->halt_p = FALSE;
 
-    vm->executors = g_hash_table_new (g_direct_hash, g_direct_equal);
-
-    install_instruction_executor (r, vm, r->i.apply,      exec_apply);
-    install_instruction_executor (r, vm, r->i.arg,        exec_arg);
-    install_instruction_executor (r, vm, r->i.assign,     exec_assign);
-    install_instruction_executor (r, vm, r->i.capture_cc, exec_capture_cc);
-    install_instruction_executor (r, vm, r->i.constant,   exec_constant);
-    install_instruction_executor (r, vm, r->i.close,      exec_close);
-    install_instruction_executor (r, vm, r->i.bind,       exec_bind);
-    install_instruction_executor (r, vm, r->i.branch,     exec_branch);
-    install_instruction_executor (r, vm, r->i.frame,      exec_frame);
-    install_instruction_executor (r, vm, r->i.halt,       exec_halt);
-    install_instruction_executor (r, vm, r->i.refer,      exec_refer);
-    install_instruction_executor (r, vm, r->i.restore_cc, exec_restore_cc);
-    install_instruction_executor (r, vm, r->i.return_,    exec_return);
-
     r_gc_scope_close (r);
 }
 
@@ -289,8 +273,6 @@ void vm_finish (RState* r)
     r->vm.stack = R_UNDEFINED;
     r->vm.value = R_UNDEFINED;
     r->vm.next  = R_UNDEFINED;
-
-    g_hash_table_destroy (r->vm.executors);
 }
 
 rsexp r_eval (RState* r, rsexp code)

@@ -1,3 +1,5 @@
+#include "detail/symbol.h"
+
 #include "utils.hpp"
 
 class test_compile : public fixture_base {

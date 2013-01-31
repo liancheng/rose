@@ -1,4 +1,5 @@
 #include "detail/compile.h"
+#include "detail/symbol.h"
 #include "rose/bytevector.h"
 #include "rose/compile.h"
 #include "rose/eq.h"
@@ -7,7 +8,6 @@
 #include "rose/number.h"
 #include "rose/read.h"
 #include "rose/string.h"
-#include "rose/symbol.h"
 #include "rose/vector.h"
 
 static rsexp compile (RState* r, rsexp expr, rsexp next);
@@ -21,7 +21,7 @@ static rbool form_eq_p (RState* r, rsexp name, rsexp expr)
 
 static rbool tail_p (RState* r, rsexp next)
 {
-    return r_eq_p (r, r->i.return_, r_car (next));
+    return r_eq_p (r, R_OP_RETURN, r_car (next));
 }
 
 static rbool validate_quotation (RState* r, rsexp expr)
@@ -425,32 +425,32 @@ static rsexp compile (RState* r, rsexp expr, rsexp next)
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.quote, expr)) {
+    if (form_eq_p (r, R_QUOTE, expr)) {
         code = compile_quotation (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.define, expr)) {
+    if (form_eq_p (r, R_DEFINE, expr)) {
         code = compile_definition (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.set_x, expr)) {
+    if (form_eq_p (r, R_SET_X, expr)) {
         code = compile_assignment (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.if_, expr)) {
+    if (form_eq_p (r, R_IF, expr)) {
         code = compile_conditional (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.lambda, expr)) {
+    if (form_eq_p (r, R_LAMBDA, expr)) {
         code = compile_lambda (r, expr, next);
         goto exit;
     }
 
-    if (form_eq_p (r, r->kw.call_cc, expr)) {
+    if (form_eq_p (r, R_CALL_CC, expr)) {
         code = compile_call_cc (r, expr, next);
         goto exit;
     }

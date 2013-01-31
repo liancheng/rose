@@ -2,6 +2,7 @@
 #define __ROSE_SYMBOL_H__
 
 #include "rose/sexp.h"
+#include "rose/state.h"
 
 R_BEGIN_DECLS
 

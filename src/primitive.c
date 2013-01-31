@@ -3,6 +3,7 @@
 #include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/primitive.h"
+#include "rose/symbol.h"
 #include "rose/vm.h"
 
 #include <assert.h>

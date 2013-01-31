@@ -1,5 +1,6 @@
 #include "detail/read.h"
 #include "detail/state.h"
+#include "detail/symbol.h"
 #include "rose/bytevector.h"
 #include "rose/error.h"
 #include "rose/gc.h"
@@ -237,19 +238,19 @@ static rsexp read_abbreviation (Reader* reader)
 
     switch (lookahead (reader)->_id) {
         case TKN_QUOTE:
-            prefix = r->kw.quote;
+            prefix = R_QUOTE;
             break;
 
         case TKN_BACKTICK:
-            prefix = r->kw.quasiquote;
+            prefix = R_QUASIQUOTE;
             break;
 
         case TKN_COMMA:
-            prefix = r->kw.unquote;
+            prefix = R_UNQUOTE;
             break;
 
         case TKN_COMMA_AT:
-            prefix = r->kw.unquote_splicing;
+            prefix = R_UNQUOTE_SPLICING;
             break;
 
         default:
@@ -426,7 +427,7 @@ rsexp r_reader_new (RState* r, rsexp port)
     res = r_opaque_new (r, reader, reader_mark, reader_finalize);
 
     if (r_failure_p (res))
-        r_free (r, reader);
+        reader_finalize (r, reader);
 
 exit:
     return res;
