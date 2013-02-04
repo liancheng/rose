@@ -1,3 +1,10 @@
+~~~
+   _____   __    ____   ____
+  ( // )) // )) //     //
+   //~~  // //  ~~~~  //~~
+(_// || ((_//  ___// //___
+~~~
+
 [![Build Status](https://travis-ci.org/liancheng/rose.png)](https://travis-ci.org/liancheng/rose)
 
 # Overview
