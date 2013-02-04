@@ -36,8 +36,8 @@ static void string_finalize (RState* r, RObject* obj)
 
 static rcstring cstring_dup (RState* r, rconstcstring str)
 {
-    rsize    size = strlen (str);
-    rcstring res  = r_cast (rcstring, r_new0_array (r, rchar, size + 1));
+    rsize size = strlen (str);
+    rcstring res = r_cast (rcstring, r_new0_array (r, rchar, size + 1));
 
     if (res)
         memcpy (res, str, size + 1);
@@ -47,15 +47,39 @@ static rcstring cstring_dup (RState* r, rconstcstring str)
 
 rsexp r_string_new (RState* r, rconstcstring str)
 {
-    RString* res = r_object_new (r, RString, R_TAG_STRING);
+    RString* obj = r_object_new (r, RString, R_TAG_STRING);
 
-    if (!res)
+    if (!obj)
         return R_FAILURE;
 
-    res->length = strlen (str);
-    res->data = cstring_dup (r, str);
+    obj->length = strlen (str);
+    obj->data = cstring_dup (r, str);
 
-    return string_to_sexp (res);
+    if (!obj->data) {
+        r_free (r, obj);
+        return R_FAILURE;
+    }
+
+    return string_to_sexp (obj);
+}
+
+rsexp r_make_string (RState* r, rsize k, rchar ch)
+{
+    RString* obj;
+    rsize i;
+
+    obj = r_object_new (r, RString, R_TAG_STRING);
+
+    if (!obj)
+        return R_FAILURE;
+
+    obj->length = k;
+    obj->data = r_new0_array (r, rchar, k + 1);
+
+    for (i = 0; i < k; ++i)
+        obj->data [i] = ch;
+
+    return string_to_sexp (obj);
 }
 
 rbool r_string_p (rsexp obj)

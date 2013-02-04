@@ -10,6 +10,9 @@ R_BEGIN_DECLS
 
 rsexp         r_string_new            (RState* r,
                                        rconstcstring str);
+rsexp         r_make_string           (RState* r,
+                                       rsize k,
+                                       rchar ch);
 rbool         r_string_p              (rsexp obj);
 rconstcstring r_string_to_cstr        (rsexp obj);
 rbool         r_string_equal_p        (RState* r,
