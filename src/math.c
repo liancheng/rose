@@ -332,7 +332,8 @@ rsexp r_multiply (RState* r, rsexp lhs, rsexp rhs)
     ensure (ad = multiply_real (r, a, d));
     ensure (bc = multiply_real (r, b, c));
 
-    ensure (real = r_minus (r, ac, bd));
+    ensure (bd = negate_real (r, bd));
+    ensure (real = add_real (r, ac, bd));
     ensure (imag = add_real (r, ad, bc));
 
     return r_complex_new (r, real, imag);
