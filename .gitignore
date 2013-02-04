@@ -3,8 +3,9 @@ build/*
 .clang_complete
 doc/html/
 .exrc
+external/googletest/src/*.o
 lib/*
 *.pyc
 *.sconsign.dblite
 tags
-external/googletest/src/*.o
+TODO
