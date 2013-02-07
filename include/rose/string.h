@@ -14,12 +14,19 @@ rsexp         r_make_string           (RState* r,
                                        rsize k,
                                        rchar ch);
 rbool         r_string_p              (rsexp obj);
+rsexp         r_string_ref            (RState* r,
+                                       rsexp obj,
+                                       rsize k);
+rsexp         r_string_set_x          (RState* r,
+                                       rsexp obj,
+                                       rsize k,
+                                       rchar ch);
 rconstcstring r_string_to_cstr        (rsexp obj);
 rbool         r_string_equal_p        (RState* r,
                                        rsexp lhs,
                                        rsexp rhs);
-rsize         r_string_length_by_byte (rsexp obj);
-rsize         r_string_length         (rsexp obj);
+rsexp         r_string_length_by_byte (rsexp obj);
+rsexp         r_string_length         (rsexp obj);
 
 rsexp         r_string_format         (RState* r,
                                        rconstcstring format,

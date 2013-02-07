@@ -2,6 +2,7 @@
 #include "detail/state.h"
 #include "rose/error.h"
 #include "rose/gc.h"
+#include "rose/number.h"
 #include "rose/pair.h"
 #include "rose/string.h"
 
@@ -186,7 +187,7 @@ rsexp r_open_input_string (RState* r, rsexp string)
     FILE* stream;
 
     input = r_cast (rpointer, r_string_to_cstr (string));
-    size = r_string_length_by_byte (string);
+    size = r_uint_from_sexp (r_string_length_by_byte (string));
 
     if (size == 0)
         stream = fopen ("/dev/null", "r");

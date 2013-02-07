@@ -2,6 +2,7 @@
 #include "detail/state.h"
 #include "detail/string.h"
 #include "rose/io.h"
+#include "rose/number.h"
 
 #include <assert.h>
 #include <string.h>
@@ -43,6 +44,18 @@ static rcstring cstring_dup (RState* r, rconstcstring str)
         memcpy (res, str, size + 1);
 
     return res;
+}
+
+static rbool check_index_overflow (RState* r, rsexp obj, rsize k)
+{
+    rsize length = r_uint_from_sexp (r_string_length (obj));
+
+    if (k >= length) {
+        r_error_code (r, R_ERR_INDEX_OVERFLOW);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 rsexp r_string_new (RState* r, rconstcstring str)
@@ -87,6 +100,23 @@ rbool r_string_p (rsexp obj)
     return r_type_tag (obj) == R_TAG_STRING;
 }
 
+rsexp r_string_ref (RState* r, rsexp obj, rsize k)
+{
+    return check_index_overflow (r, obj, k)
+           ? r_char_to_sexp (string_from_sexp (obj)->data [k])
+           : R_FAILURE;
+}
+
+rsexp r_string_set_x (RState* r, rsexp obj, rsize k, rchar ch)
+{
+    if (!check_index_overflow (r, obj, k))
+        return R_FAILURE;
+
+    string_from_sexp (obj)->data [k] = ch;
+
+    return R_TRUE;
+}
+
 rconstcstring r_string_to_cstr (rsexp obj)
 {
     return string_from_sexp (obj)->data;
@@ -109,16 +139,16 @@ rbool r_string_equal_p (RState* r, rsexp lhs, rsexp rhs)
                         lhs_str->length * sizeof (char));
 }
 
-rsize r_string_length_by_byte (rsexp obj)
+rsexp r_string_length_by_byte (rsexp obj)
 {
     assert (r_string_p (obj));
-    return string_from_sexp (obj)->length;
+    return r_uint_to_sexp (string_from_sexp (obj)->length);
 }
 
-rsize r_string_length (rsexp obj)
+rsexp r_string_length (rsexp obj)
 {
     assert (r_string_p (obj));
-    return string_from_sexp (obj)->length;
+    return r_uint_to_sexp (string_from_sexp (obj)->length);
 }
 
 rsexp r_string_vformat (RState* r, rconstcstring format, va_list args)
