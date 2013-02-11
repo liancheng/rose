@@ -131,11 +131,6 @@ static rbool validate_lambda_formals (RState* r,
     if (r_null_p (formals))
         return TRUE;
 
-    if (!r_pair_p (formals)) {
-        r_error_code (r, R_ERR_BAD_FORMALS, formals, expr);
-        return FALSE;
-    }
-
     while (r_pair_p (formals)) {
         formal = r_car (formals);
 
