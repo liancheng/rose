@@ -45,6 +45,10 @@ rsexp r_fold         (RState* r,
                       RBinaryFunc proc,
                       rsexp nil,
                       rsexp list);
+rsexp r_list_copy    (RState* r,
+                      rsexp list);
+rsexp r_last_pair    (RState* r,
+                      rsexp list);
 
 #define r_caar(o)   r_car (r_car   ((o)))
 #define r_cadr(o)   r_car (r_cdr   ((o)))

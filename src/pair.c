@@ -310,6 +310,26 @@ exit:
     return res;
 }
 
+rsexp r_list_copy (RState* r, rsexp list)
+{
+    rsexp copy;
+
+    for (copy = R_NULL; !r_null_p (list); list = r_cdr (list))
+        ensure (copy = r_cons (r, r_car (list), copy));
+
+    return r_reverse_x (r, copy);
+}
+
+rsexp r_last_pair (RState* r, rsexp list)
+{
+    assert (r_pair_p (list));
+
+    while (r_pair_p (r_cdr (list)))
+        list = r_cdr (list);
+
+    return list;
+}
+
 RTypeInfo pair_type = {
     .size = sizeof (RPair),
     .name = "pair",
