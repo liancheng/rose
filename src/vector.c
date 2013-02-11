@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <stdarg.h>
+#include <string.h>
 
 typedef struct RVector RVector;
 
@@ -229,6 +230,21 @@ exit:
     r_gc_scope_close_and_protect (r, res);
 
     return res;
+}
+
+rsexp r_vector_copy (RState* r, rsexp obj)
+{
+    rsexp copy;
+    rsize length;
+
+    length = r_uint_from_sexp (r_vector_length (obj));
+    ensure (copy = r_vector_new (r, length, R_UNSPECIFIED));
+
+    memcpy (vector_from_sexp (copy)->data,
+            vector_from_sexp (obj)->data,
+            length * sizeof (rsexp));
+
+    return copy;
 }
 
 RTypeInfo vector_type = {

@@ -24,6 +24,8 @@ rsexp r_list_to_vector (RState* r,
                         rsexp list);
 rsexp r_vector_to_list (RState* r,
                         rsexp vector);
+rsexp r_vector_copy    (RState* r,
+                        rsexp obj);
 
 R_END_DECLS
 
