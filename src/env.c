@@ -13,10 +13,11 @@ static rsexp init_primitives (RState* r, rsexp env, RPrimitiveDesc const* desc)
     rsexp prim;
 
     for (; desc->name; ++desc) {
-        name = r_intern (r, desc->name);
-        prim = r_primitive_new (r, desc->name, desc->func, desc->required,
-                                desc->optional, desc->rest_p);
-        env = r_env_bind_x (r, env, name, prim);
+        ensure (name = r_intern (r, desc->name));
+        ensure (prim = r_primitive_new (r, desc->name, desc->func,
+                                        desc->required, desc->optional,
+                                        desc->rest_p));
+        ensure (env = r_env_bind_x (r, env, name, prim));
     }
 
     return env;
@@ -97,7 +98,12 @@ rsexp r_env_lookup (RState* r, rsexp env, rsexp var)
 
 rsexp r_empty_env (RState* r)
 {
-    return R_NULL;
+    rsexp env;
+
+    env = R_NULL;
+    ensure (env = env_extend (r, env, R_NULL, R_NULL));
+
+    return env;
 }
 
 rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
@@ -106,21 +112,18 @@ rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
     rsexp vals;
     rsexp frame;
 
-    if (r_null_p (env)) {
-        vars = r_list (r, 1, var);
-        vals = r_list (r, 1, val);
-        return env_extend (r, env, vars, vals);
-    }
-
     frame = first_frame (env);
     vars = frame_vars (frame);
     vals = frame_vals (frame);
 
-    for (; !r_null_p (vars); vars = r_cdr (vars), vals = r_cdr (vals)) {
+    while (!r_null_p (vars)) {
         if (r_eq_p (r, var, r_car (vars))) {
             r_set_car_x (vals, val);
             return env;
         }
+
+        vars = r_cdr (vars);
+        vals = r_cdr (vals);
     }
 
     frame_bind_x (r, frame, var, val);
@@ -155,16 +158,18 @@ extern const RPrimitiveDesc string_primitives [];
 
 rsexp default_env (RState* r)
 {
-    rsexp env = r_empty_env (r);
+    rsexp env;
 
-    env = init_primitives (r, env, bytevector_primitives);
-    env = init_primitives (r, env, gc_primitives);
-    env = init_primitives (r, env, io_primitives);
-    env = init_primitives (r, env, math_primitives);
-    env = init_primitives (r, env, number_primitives);
-    env = init_primitives (r, env, pair_primitives);
-    env = init_primitives (r, env, read_primitives);
-    env = init_primitives (r, env, string_primitives);
+    ensure (env = r_empty_env (r));
+
+    ensure (env = init_primitives (r, env, bytevector_primitives));
+    ensure (env = init_primitives (r, env, gc_primitives));
+    ensure (env = init_primitives (r, env, io_primitives));
+    ensure (env = init_primitives (r, env, math_primitives));
+    ensure (env = init_primitives (r, env, number_primitives));
+    ensure (env = init_primitives (r, env, pair_primitives));
+    ensure (env = init_primitives (r, env, read_primitives));
+    ensure (env = init_primitives (r, env, string_primitives));
 
     return env;
 }
