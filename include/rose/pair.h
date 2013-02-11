@@ -45,7 +45,7 @@ rsexp r_fold         (RState* r,
                       RBinaryFunc proc,
                       rsexp nil,
                       rsexp list);
-rsexp r_list_copy    (RState* r,
+rsexp r_proper_part  (RState* r,
                       rsexp list);
 rsexp r_last_pair    (RState* r,
                       rsexp list);

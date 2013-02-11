@@ -310,24 +310,35 @@ exit:
     return res;
 }
 
-rsexp r_list_copy (RState* r, rsexp list)
+rsexp r_proper_part (RState* r, rsexp obj)
 {
     rsexp copy;
 
-    for (copy = R_NULL; !r_null_p (list); list = r_cdr (list))
-        ensure (copy = r_cons (r, r_car (list), copy));
+    if (r_null_p (obj))
+        return R_NULL;
 
-    return r_reverse_x (r, copy);
+    if (!r_pair_p (obj)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
+        return R_FAILURE;
+    }
+
+    for (copy = R_NULL; r_pair_p (obj); obj = r_cdr (obj))
+        ensure (copy = r_cons (r, r_car (obj), copy));
+
+    return (r_reverse_x (r, copy));
 }
 
-rsexp r_last_pair (RState* r, rsexp list)
+rsexp r_last_pair (RState* r, rsexp obj)
 {
-    assert (r_pair_p (list));
+    if (!r_pair_p (obj)) {
+        r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
+        return R_FAILURE;
+    }
 
-    while (r_pair_p (r_cdr (list)))
-        list = r_cdr (list);
+    while (r_pair_p (r_cdr (obj)))
+        obj = r_cdr (obj);
 
-    return list;
+    return obj;
 }
 
 RTypeInfo pair_type = {
