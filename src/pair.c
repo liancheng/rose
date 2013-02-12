@@ -310,12 +310,12 @@ exit:
     return res;
 }
 
-rsexp r_proper_part (RState* r, rsexp obj)
+rsexp r_properfy (RState* r, rsexp obj)
 {
     rsexp copy;
 
     if (r_null_p (obj))
-        return R_NULL;
+        return r_cons (r, R_NULL, R_NULL);
 
     if (!r_pair_p (obj)) {
         r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
@@ -325,7 +325,9 @@ rsexp r_proper_part (RState* r, rsexp obj)
     for (copy = R_NULL; r_pair_p (obj); obj = r_cdr (obj))
         ensure (copy = r_cons (r, r_car (obj), copy));
 
-    return (r_reverse_x (r, copy));
+    ensure (copy = r_reverse_x (r, copy));
+
+    return r_cons (r, copy, obj);
 }
 
 rsexp r_last_pair (RState* r, rsexp obj)
