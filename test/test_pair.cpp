@@ -29,3 +29,24 @@ TEST_F (test_pair, r_reverse_multiple_elements)
 
     EXPECT_TRUE (equal_p (expected, actual));
 }
+
+TEST_F (test_pair, r_properfy)
+{
+    {
+        rsexp input = read ("(1 2 3)");
+        rsexp actual = r_properfy (r, input);
+
+        EXPECT_FALSE (r_failure_p (actual));
+        EXPECT_STREQ ("(1 2 3)", to_cstr (r_car (actual)));
+        EXPECT_STREQ ("()", to_cstr (r_cdr (actual)));
+    }
+
+    {
+        rsexp input = read ("(1 2 . 3)");
+        rsexp actual = r_properfy (r, input);
+
+        EXPECT_FALSE (r_failure_p (actual));
+        EXPECT_STREQ ("(1 2)", to_cstr (r_car (actual)));
+        EXPECT_STREQ ("3", to_cstr (r_cdr (actual)));
+    }
+}
