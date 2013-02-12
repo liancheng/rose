@@ -7,6 +7,7 @@
 #include "rose/error.h"
 #include "rose/pair.h"
 #include "rose/io.h"
+#include "rose/number.h"
 #include "rose/primitive.h"
 #include "rose/procedure.h"
 #include "rose/sexp.h"
@@ -40,17 +41,52 @@ static inline rsexp apply_primitive (RState* r, RVm* vm)
     return vm->value;
 }
 
+static inline rsexp extend_env (RState* r, rsexp env, rsexp formals, rsexp args)
+{
+    rsexp n_req;
+    rsexp req_formals;
+    rsexp req_args;
+    rsexp rest_formal;
+    rsexp rest_arg;
+
+    if (r_null_p (formals))
+        return env_extend (r, env, R_NULL, args);
+
+    if (r_symbol_p (formals)) {
+        ensure (formals = r_list (r, 1, formals));
+        ensure (args = r_list (r, 1, args));
+        return env_extend (r, env, formals, args);
+    }
+
+    ensure (formals = r_properfy (r, formals));
+
+    if (r_null_p (r_cdr (formals))) {
+        ensure (env = env_extend (r, env, r_car (formals), args));
+        return env;
+    }
+
+    req_formals = r_car (formals);
+    rest_formal = r_cdr (formals);
+
+    ensure (n_req = r_length (r, req_formals));
+    ensure (req_args = r_take (r, args, r_uint_from_sexp (n_req)));
+    ensure (rest_arg = r_drop (r, args, r_uint_from_sexp (n_req)));
+    ensure (env = env_extend (r, env, req_formals, req_args));
+    ensure (env = r_env_bind_x (r, env, rest_formal, rest_arg));
+
+    return env;
+}
+
 static inline rsexp apply (RState* r, RVm* vm)
 {
-    rsexp proc, body, env, formals;
+    rsexp env;
+    rsexp formals;
 
-    proc = vm->value;
-    body = r_procedure_body (proc);
-    env = r_procedure_env (proc);
-    formals = r_procedure_formals (proc);
+    env = r_procedure_env (vm->value);
+    formals = r_procedure_formals (vm->value);
+    ensure (vm->env = extend_env (r, env, formals, vm->args));
 
-    vm->next = body;
-    vm->env = env_extend (r, env, formals, vm->args);
+    vm->next = r_procedure_body (vm->value);
     vm->args = R_NULL;
 
     return vm->value;
@@ -283,8 +319,7 @@ rsexp r_eval (RState* r, rsexp code)
     vm->halt_p = FALSE;
 
     while (!vm->halt_p)
-        if (r_failure_p (single_step (r)))
-            return R_FAILURE;
+        ensure (single_step (r));
 
     return vm->value;
 }
