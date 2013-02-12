@@ -49,6 +49,12 @@ rsexp r_properfy     (RState* r,
                       rsexp list);
 rsexp r_last_pair    (RState* r,
                       rsexp list);
+rsexp r_take         (RState* r,
+                      rsexp obj,
+                      rsize k);
+rsexp r_drop         (RState* r,
+                      rsexp obj,
+                      rsize k);
 
 #define r_caar(o)   r_car (r_car   ((o)))
 #define r_cadr(o)   r_car (r_cdr   ((o)))

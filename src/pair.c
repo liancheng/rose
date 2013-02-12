@@ -343,6 +343,26 @@ rsexp r_last_pair (RState* r, rsexp obj)
     return obj;
 }
 
+rsexp r_take (RState* r, rsexp obj, rsize k)
+{
+    rsexp list = R_NULL;
+
+    while (k--) {
+        ensure (list = r_cons (r, r_car (obj), list));
+        obj = r_cdr (obj);
+    }
+
+    return r_reverse_x (r, list);
+}
+
+rsexp r_drop (RState* r, rsexp obj, rsize k)
+{
+    while (k--)
+        obj = r_cdr (obj);
+
+    return obj;
+}
+
 RTypeInfo pair_type = {
     .size = sizeof (RPair),
     .name = "pair",
