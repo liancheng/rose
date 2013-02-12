@@ -43,14 +43,6 @@
     0
     (+ 1 (length (cdr list)))))
 
-; (define (append list . args)
-;   (define (append* list args)
-;     (if (null? list)
-;       args
-;       (cons (car list)
-;             (append* (cdr list) args))))
-;   (append* list args))
-
 (define (list-tail list k)
   (if (zero? k)
     list
