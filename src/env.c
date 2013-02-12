@@ -69,7 +69,11 @@ rsexp env_extend (RState* r, rsexp env, rsexp vars, rsexp vals)
 
     assert (!r_failure_p (vars_len = r_length (r, vars)));
     assert (!r_failure_p (vals_len = r_length (r, vals)));
-    assert (vars_len == vals_len);
+
+    if (vars_len != vals_len) {
+        r_error_code (r, R_ERR_WRONG_ARG_NUM);
+        return R_FAILURE;
+    }
 
     ensure (frame = r_cons (r, vars, vals));
 
@@ -126,7 +130,7 @@ rsexp r_env_bind_x (RState* r, rsexp env, rsexp var, rsexp val)
         vals = r_cdr (vals);
     }
 
-    frame_bind_x (r, frame, var, val);
+    ensure (frame_bind_x (r, frame, var, val));
 
     return env;
 }
