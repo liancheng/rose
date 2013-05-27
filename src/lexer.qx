@@ -48,8 +48,8 @@ define
     character                   #\\{character_name}|#\\.
 
     /* Boolean */
-    true                        #t
-    false                       #f
+    true                        #t|#true
+    false                       #f|#false
 
     /* Number */
     exactness                   #[ei]
