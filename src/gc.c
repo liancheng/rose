@@ -23,18 +23,11 @@
 
 #ifndef NDEBUG
 
-static inline rbool valid_boxed_type_p (RTypeTag tag)
-{
-    return tag > R_TAG_BOXED && tag < R_TAG_MAX;
-}
-
 #endif
 
 static inline void gc_scope_protect (RState* r, RObject* obj)
 {
     RGc* gc = &r->gc;
-
-    assert (valid_boxed_type_p (obj->type_tag));
 
     if (gc->arena_index == gc->arena_size) {
         gc->arena_size += GC_ARENA_CHUNK_SIZE;
@@ -134,7 +127,6 @@ static inline void gc_sweep_phase (RState* r)
 
     for (head = &gc->chrono_list; *head; ) {
         obj = *head;
-        assert (valid_boxed_type_p (obj->type_tag));
 
         if (gc_white_p (obj)) {
             *head = obj->chrono_next;
