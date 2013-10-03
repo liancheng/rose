@@ -140,7 +140,7 @@ rsexp r_open_input_file (RState* r, rconstcstring filename)
     FILE* stream;
     rsexp res;
 
-    stream= fopen (filename, "r");
+    stream = fopen (filename, "r");
 
     if (!stream) {
         res = R_FAILURE;

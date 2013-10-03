@@ -21,10 +21,6 @@
 #define gc_paint_gray(obj)  ((obj)->gc_color = GC_COLOR_GRAY)
 #define gc_paint_black(obj) ((obj)->gc_color = GC_COLOR_BLACK)
 
-#ifndef NDEBUG
-
-#endif
-
 static inline void gc_scope_protect (RState* r, RObject* obj)
 {
     RGc* gc = &r->gc;
