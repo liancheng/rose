@@ -33,7 +33,7 @@ static void apply_exponent (mpq_t real, rintw exponent)
     mpz_t pow_z;
     mpq_t pow_q;
 
-    exponent = abs (exponent);
+    exponent = labs (exponent);
 
     mpz_init (pow_z);
     mpq_init (pow_q);

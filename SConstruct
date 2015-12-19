@@ -4,8 +4,8 @@ environ['QUEX_PATH'] = Dir('#external/quex-0.63.2').abspath
 environ['PATH'] = ':'.join([environ['PATH'],
                             environ['QUEX_PATH']])
 
-cc = environ.get('CC', 'gcc')
-cxx = environ.get('CXX', 'g++')
+cc = environ.get('CC', 'clang')
+cxx = environ.get('CXX', 'clang++')
 coverage = ARGUMENTS.get('coverage', 0)
 
 if coverage:

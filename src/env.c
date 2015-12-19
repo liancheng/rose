@@ -33,11 +33,6 @@ static inline rsexp first_frame (rsexp env)
     return r_null_p (env) ? R_NULL : r_car (env);
 }
 
-static inline rsexp make_frame (RState* r, rsexp vars, rsexp vals)
-{
-    return r_cons (r, vars, vals);
-}
-
 static inline rsexp frame_vars (rsexp frame)
 {
     return r_null_p (frame) ? R_NULL : r_car (frame);
