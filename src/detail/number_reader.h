@@ -21,10 +21,9 @@ struct RNumberReader {
     ruintw        radix;
 };
 
-void  r_number_reader_init (RState* r,
-                            RNumberReader* reader);
-rsexp r_number_read        (RNumberReader* reader,
-                            rconstcstring text);
+void r_number_reader_init (RState* r, RNumberReader* reader);
+
+rsexp r_number_read (RNumberReader* reader, rconstcstring text);
 
 R_END_DECLS
 

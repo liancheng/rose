@@ -20,7 +20,8 @@ struct RVm {
     rbool halt_p;
 };
 
-void vm_init   (RState* r);
+void vm_init (RState* r);
+
 void vm_finish (RState* r);
 
 R_END_DECLS

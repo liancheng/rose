@@ -5,16 +5,13 @@
 
 R_BEGIN_DECLS
 
-rpointer r_alloc   (RState* r,
-                    rsize size);
-rpointer r_realloc (RState* r,
-                    rpointer ptr,
-                    rsize size);
-rpointer r_calloc  (RState* r,
-                    rsize element_size,
-                    rsize count);
-void     r_free    (RState* r,
-                    rpointer ptr);
+rpointer r_alloc (RState* r, rsize size);
+
+rpointer r_realloc (RState* r, rpointer ptr, rsize size);
+
+rpointer r_calloc (RState* r, rsize element_size, rsize count);
+
+void r_free (RState* r, rpointer ptr);
 
 #define r_new(r, type)\
         ((type*) r_alloc (r, sizeof (type)))
@@ -28,14 +25,15 @@ void     r_free    (RState* r,
 #define r_new0_array(r, type, n)\
         ((type*) r_calloc (r, sizeof (type), (n)))
 
-void r_gc_scope_open    (RState* r);
-void r_gc_scope_close   (RState* r);
-void r_gc_scope_protect (RState* r,
-                         rsexp obj);
+void r_gc_scope_open (RState* r);
 
-void r_full_gc          (RState* r);
-void r_gc_mark          (RState* r,
-                         rsexp obj);
+void r_gc_scope_close (RState* r);
+
+void r_gc_scope_protect (RState* r, rsexp obj);
+
+void r_full_gc (RState* r);
+
+void r_gc_mark (RState* r, rsexp obj);
 
 #define r_gc_scope_close_and_protect(r, obj)\
         do {\

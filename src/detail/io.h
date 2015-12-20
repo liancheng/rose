@@ -22,7 +22,8 @@ typedef enum RPortMode {
 RPortMode;
 
 typedef void (*RPortClearCookie) (RState*, rpointer);
-typedef void (*RPortMarkCookie)  (RState*, rpointer);
+
+typedef void (*RPortMarkCookie) (RState*, rpointer);
 
 FILE* port_to_stream (rsexp port);
 

@@ -42,9 +42,9 @@ struct RComplex {
 #define complex_real(n)         (complex_from_sexp (n)->real)
 #define complex_imag(n)         (complex_from_sexp (n)->imag)
 
-rsexp try_small_int     (mpq_t);
-rsexp try_small_int_si  (rintw num, rintw den);
-rsexp try_small_int_ui  (ruintw num, ruintw den);
+rsexp try_small_int (mpq_t);
+rsexp try_small_int_si (rintw num, rintw den);
+rsexp try_small_int_ui (ruintw num, ruintw den);
 rsexp fixreal_normalize (rsexp n);
 
 rsexp smi_to_fixreal (RState* r, rsexp n);

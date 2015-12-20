@@ -9,52 +9,45 @@ R_BEGIN_DECLS
 
 typedef rsexp (*RBinaryFunc) (RState*, rsexp, rsexp);
 
-rbool r_pair_p       (rsexp obj);
-rsexp r_cons         (RState* r,
-                      rsexp car,
-                      rsexp cdr);
-rsexp r_car          (rsexp obj);
-rsexp r_cdr          (rsexp obj);
-void  r_set_car_x    (rsexp pair,
-                      rsexp obj);
-void  r_set_cdr_x    (rsexp pair,
-                      rsexp obj);
-rbool r_pair_equal_p (RState* r,
-                      rsexp lhs,
-                      rsexp rhs);
-rsexp r_reverse      (RState* r,
-                      rsexp list);
-rsexp r_reverse_x    (RState* r,
-                      rsexp list);
-rsexp r_append_x     (RState* r,
-                      rsexp list,
-                      rsexp value);
-rbool r_list_p       (rsexp obj);
-rsexp r_vlist        (RState* r,
-                      rsize k,
-                      va_list args);
-rsexp r_list         (RState* r,
-                      rsize k,
-                      ...);
-rsexp r_length       (RState* r,
-                      rsexp list);
-rsexp r_list_ref     (RState* r,
-                      rsexp list,
-                      rsize k);
-rsexp r_fold         (RState* r,
-                      RBinaryFunc proc,
-                      rsexp nil,
-                      rsexp list);
-rsexp r_properfy     (RState* r,
-                      rsexp list);
-rsexp r_last_pair    (RState* r,
-                      rsexp list);
-rsexp r_take         (RState* r,
-                      rsexp obj,
-                      rsize k);
-rsexp r_drop         (RState* r,
-                      rsexp obj,
-                      rsize k);
+rbool r_pair_p (rsexp obj);
+
+rsexp r_cons (RState* r, rsexp car, rsexp cdr);
+
+rsexp r_car (rsexp obj);
+
+rsexp r_cdr (rsexp obj);
+
+void r_set_car_x (rsexp pair, rsexp obj);
+
+void r_set_cdr_x (rsexp pair, rsexp obj);
+
+rbool r_pair_equal_p (RState* r, rsexp lhs, rsexp rhs);
+
+rsexp r_reverse (RState* r, rsexp list);
+
+rsexp r_reverse_x (RState* r, rsexp list);
+
+rsexp r_append_x (RState* r, rsexp list, rsexp value);
+
+rbool r_list_p (rsexp obj);
+
+rsexp r_vlist (RState* r, rsize k, va_list args);
+
+rsexp r_list (RState* r, rsize k, ...);
+
+rsexp r_length (RState* r, rsexp list);
+
+rsexp r_list_ref (RState* r, rsexp list, rsize k);
+
+rsexp r_fold (RState* r, RBinaryFunc proc, rsexp nil, rsexp list);
+
+rsexp r_properfy (RState* r, rsexp list);
+
+rsexp r_last_pair (RState* r, rsexp list);
+
+rsexp r_take (RState* r, rsexp obj, rsize k);
+
+rsexp r_drop (RState* r, rsexp obj, rsize k);
 
 #define r_caar(o)   r_car (r_car   ((o)))
 #define r_cadr(o)   r_car (r_cdr   ((o)))

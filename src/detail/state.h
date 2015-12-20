@@ -41,9 +41,7 @@ struct RState {
     RTypeInfo builtin_types [R_TAG_MAX];
 };
 
-void  init_builtin_type (RState* r,
-                         RTypeTag tag,
-                         RTypeInfo* type);
+void init_builtin_type (RState* r, RTypeTag tag, RTypeInfo* type);
 
 R_END_DECLS
 

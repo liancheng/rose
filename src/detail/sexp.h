@@ -30,9 +30,9 @@ struct RTypeInfo {
     ops;
 };
 
-ruintw     r_type_tag  (rsexp obj);
-RTypeInfo* r_type_info (RState* r,
-                        rsexp obj);
+ruintw r_type_tag  (rsexp obj);
+
+RTypeInfo* r_type_info (RState* r, rsexp obj);
 
 #define STATIC_OBJECT_HEADER(tag)\
         .type_tag = (tag),\

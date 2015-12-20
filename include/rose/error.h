@@ -31,30 +31,31 @@ struct RErrorDesc {
     rconstcstring desc;
 };
 
-rsexp r_error_new              (RState* r,
-                                rsexp message,
-                                rsexp irritants);
-rbool r_error_p                (rsexp obj);
-rsexp r_error_object_message   (rsexp error);
+rsexp r_error_new (RState* r, rsexp message, rsexp irritants);
+
+rbool r_error_p (rsexp obj);
+
+rsexp r_error_object_message (rsexp error);
+
 rsexp r_error_object_irritants (rsexp error);
-rsexp r_error_printf           (RState* r,
-                                rconstcstring format,
-                                ...);
-rsexp r_error_format           (RState* r,
-                                rconstcstring format,
-                                ...);
-rsexp r_error                  (RState* r,
-                                rconstcstring message);
-rsexp r_error_code             (RState* r,
-                                RErrorCode error_code,
-                                ...);
-rsexp r_last_error             (RState* r);
-rsexp r_set_last_error_x       (RState* r,
-                                rsexp error);
-rsexp r_clear_last_error_x     (RState* r);
-rsexp r_inherit_errno_x        (RState* r,
-                                rintw errnum);
-void r_error_no_memory         (RState* r);
+
+rsexp r_error_printf (RState* r, rconstcstring format, ...);
+
+rsexp r_error_format (RState* r, rconstcstring format, ...);
+
+rsexp r_error (RState* r, rconstcstring message);
+
+rsexp r_error_code (RState* r, RErrorCode error_code, ...);
+
+rsexp r_last_error (RState* r);
+
+rsexp r_set_last_error_x (RState* r, rsexp error);
+
+rsexp r_clear_last_error_x (RState* r);
+
+rsexp r_inherit_errno_x (RState* r, rintw errnum);
+
+void r_error_no_memory (RState* r);
 
 typedef struct RNestedJump RNestedJump;
 
