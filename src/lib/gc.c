@@ -7,38 +7,45 @@
 static rsexp np_gc_enable (RState* r, rsexp args)
 {
     gc_enable (r);
+    r_match_args (r, args, 0, 0, FALSE);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_gc_disable (RState* r, rsexp args)
 {
     gc_disable (r);
+    r_match_args (r, args, 0, 0, FALSE);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_gc_enabled_p (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_bool_to_sexp (gc_enabled_p (r));
 }
 
 static rsexp np_full_gc (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     r_full_gc (r);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_gc_live_object_count (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_int_to_sexp (r->gc.n_live);
 }
 
 static rsexp np_gc_arena_size (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_int_to_sexp (r->gc.arena_size);
 }
 
 static rsexp np_gc_arena_index (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_int_to_sexp (r->gc.arena_index);
 }
 
@@ -47,6 +54,7 @@ static rsexp np_gc_dump_live_objects (RState* r, rsexp args)
     RGc* gc;
     RObject* obj;
 
+    r_match_args (r, args, 0, 0, FALSE);
     for (gc = &r->gc, obj = gc->chrono_list; obj; obj = obj->chrono_next)
         r_format (r, "~s~%", object_to_sexp (obj));
 
@@ -58,6 +66,7 @@ static rsexp np_gc_dump_arena (RState* r, rsexp args)
     RGc* gc;
     rsize i;
 
+    r_match_args (r, args, 0, 0, FALSE);
     for (gc = &r->gc, i = 0; i < gc->arena_index; ++i)
         r_format (r, "~s~%", gc->arena [i]);
 

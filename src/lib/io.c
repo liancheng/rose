@@ -2,6 +2,7 @@
 #include "rose/io.h"
 #include "rose/pair.h"
 #include "rose/primitive.h"
+#include "rose/string.h"
 
 static rsexp np_write (RState* r, rsexp args)
 {
@@ -26,10 +27,7 @@ static rsexp np_display (RState* r, rsexp args)
     if (r_undefined_p (port))
         port = r_current_output_port (r);
 
-    if (!r_output_port_p (port)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, port);
-        return R_FAILURE;
-    }
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_port_display (r, port, datum);
 }
@@ -44,10 +42,7 @@ static rsexp np_write_char (RState* r, rsexp args)
     if (r_undefined_p (port))
         port = r_current_output_port (r);
 
-    if (!r_output_port_p (port)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, port);
-        return R_FAILURE;
-    }
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_port_write_char (r, port, r_char_from_sexp (ch));
 }
@@ -61,10 +56,7 @@ static rsexp np_newline (RState* r, rsexp args)
     if (r_undefined_p (port))
         port = r_current_output_port (r);
 
-    if (!r_output_port_p (port)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, port);
-        return R_FAILURE;
-    }
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_port_write_char (r, port, '\n');
 }
@@ -78,86 +70,104 @@ static rsexp np_read_char (RState* r, rsexp args)
     if (r_undefined_p (port))
         port = r_current_input_port (r);
 
-    if (!r_input_port_p (port)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, port);
-        return R_FAILURE;
-    }
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_port_read_char (r, port);
 }
 
 static rsexp np_current_input_port (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_current_input_port (r);
 }
 
 static rsexp np_current_output_port (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_current_output_port (r);
 }
 
 static rsexp np_current_error_port (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_current_error_port (r);
 }
 
 static rsexp np_set_current_input_port_x (RState* r, rsexp args)
 {
-    r_set_current_input_port_x (r, r_car (args));
+    rsexp port;
+    r_match_args (r, args, 1, 0, FALSE, &port);
+    r_check_arg (r, port, r_input_port_p, R_ERR_WRONG_TYPE_ARG);
+    r_set_current_input_port_x (r, port);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_set_current_output_port_x (RState* r, rsexp args)
 {
-    r_set_current_output_port_x (r, r_car (args));
+    rsexp port;
+    r_match_args (r, args, 1, 0, FALSE, &port);
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
+    r_set_current_output_port_x (r, port);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_set_current_error_port_x (RState* r, rsexp args)
 {
-    r_set_current_error_port_x (r, r_car (args));
+    rsexp port;
+    r_match_args (r, args, 1, 0, FALSE, &port);
+    r_check_arg (r, port, r_output_port_p, R_ERR_WRONG_TYPE_ARG);
+    r_set_current_error_port_x (r, port);
     return R_UNSPECIFIED;
 }
 
 static rsexp np_open_input_string (RState* r, rsexp args)
 {
-    return r_open_input_string (r, r_car (args));
+    rsexp string;
+    r_match_args (r, args, 1, 0, FALSE, &string);
+    r_check_arg (r, string, r_string_p, R_ERR_WRONG_TYPE_ARG);
+    return r_open_input_string (r, string);
 }
 
 static rsexp np_open_output_string (RState* r, rsexp args)
 {
+    r_match_args (r, args, 0, 0, FALSE);
     return r_open_output_string (r);
 }
 
 static rsexp np_get_output_string (RState* r, rsexp args)
 {
-    return r_get_output_string (r, r_car (args));
+    rsexp obj;
+    r_match_args (r, args, 1, 0, FALSE, &obj);
+    return r_get_output_string (r, obj);
 }
 
 static rsexp np_port_p (RState* r, rsexp args)
 {
-    return r_bool_to_sexp (r_port_p (r_car (args)));
+    rsexp obj;
+    r_match_args (r, args, 1, 0, FALSE, &obj);
+    return r_bool_to_sexp (r_port_p (obj));
 }
 
 static rsexp np_input_port_p (RState* r, rsexp args)
 {
-    return r_bool_to_sexp (r_input_port_p (r_car (args)));
+    rsexp obj;
+    r_match_args (r, args, 1, 0, FALSE, &obj);
+    return r_bool_to_sexp (r_input_port_p (obj));
 }
 
 static rsexp np_output_port_p (RState* r, rsexp args)
 {
-    return r_bool_to_sexp (r_output_port_p (r_car (args)));
+    rsexp obj;
+    r_match_args (r, args, 1, 0, FALSE, &obj);
+    return r_bool_to_sexp (r_output_port_p (obj));
 }
 
 static rsexp np_close_port (RState* r, rsexp args)
 {
-    rsexp port = r_car (args);
+    rsexp port;
+    r_match_args (r, args, 1, 0, FALSE, &port);
 
-    if (!r_port_p (port)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, port);
-        return R_FAILURE;
-    }
-
+    r_check_arg (r, port, r_port_p, R_ERR_WRONG_TYPE_ARG);
     r_close_port (port);
 
     return R_UNSPECIFIED;

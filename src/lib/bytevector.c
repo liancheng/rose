@@ -13,34 +13,30 @@ static rsexp np_make_bytevector (RState* r, rsexp args)
     if (r_undefined_p (fill))
         fill = R_UNSPECIFIED;
 
-    if (!r_small_int_p (k)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, k);
-        return R_FAILURE;
-    }
-
-    if (!r_byte_p (fill)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, fill);
-        return R_FAILURE;
-    }
+    r_check_arg (r, k, r_small_int_p, R_ERR_WRONG_TYPE_ARG)
+    r_check_arg (r, fill, r_byte_p, R_ERR_WRONG_TYPE_ARG)
 
     return r_bytevector_new (r, r_uint_from_sexp (k), r_uint_from_sexp (fill));
 }
 
 static rsexp np_bytevector_length (RState* r, rsexp args)
 {
-    rsexp obj = r_car (args);
+    rsexp obj;
 
-    if (!r_bytevector_p (obj)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
-        return R_FAILURE;
-    }
+    r_match_args (r, args, 1, 0, FALSE, &obj);
+    r_check_arg (r, obj, r_bytevector_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_bytevector_length (obj);
 }
 
 static rsexp np_list_to_bytevector (RState* r, rsexp args)
 {
-    return r_list_to_bytevector (r, r_car (args));
+    rsexp list;
+
+    r_match_args (r, args, 1, 0, FALSE, &list);
+    r_check_arg (r, list, r_list_p, R_ERR_WRONG_TYPE_ARG);
+
+    return r_list_to_bytevector (r, list);
 }
 
 static rsexp np_bytevector_u8_ref (RState* r, rsexp args)
@@ -48,16 +44,8 @@ static rsexp np_bytevector_u8_ref (RState* r, rsexp args)
     rsexp obj, k;
 
     r_match_args (r, args, 2, 0, FALSE, &obj, &k);
-
-    if (!r_bytevector_p (obj)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
-        return R_FAILURE;
-    }
-
-    if (!r_small_int_p (k)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, k);
-        return R_FAILURE;
-    }
+    r_check_arg (r, obj, r_bytevector_p, R_ERR_WRONG_TYPE_ARG);
+    r_check_arg (r, k, r_small_int_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_bytevector_u8_ref (r, obj, r_uint_from_sexp (k));
 }
@@ -67,21 +55,9 @@ static rsexp np_bytevector_u8_set_x (RState* r, rsexp args)
     rsexp obj, k, byte;
 
     r_match_args (r, args, 3, 0, FALSE, &obj, &k, &byte);
-
-    if (!r_bytevector_p (obj)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, obj);
-        return R_FAILURE;
-    }
-
-    if (!r_small_int_p (k)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, k);
-        return R_FAILURE;
-    }
-
-    if (!r_small_int_p (byte)) {
-        r_error_code (r, R_ERR_WRONG_TYPE_ARG, byte);
-        return R_FAILURE;
-    }
+    r_check_arg (r, obj, r_bytevector_p, R_ERR_WRONG_TYPE_ARG);
+    r_check_arg (r, k, r_small_int_p, R_ERR_WRONG_TYPE_ARG);
+    r_check_arg (r, byte, r_small_int_p, R_ERR_WRONG_TYPE_ARG);
 
     return r_bytevector_u8_set_x
         (r, obj, r_uint_from_sexp (k), r_uint_from_sexp (byte));

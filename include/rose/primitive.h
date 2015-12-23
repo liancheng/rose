@@ -37,6 +37,12 @@ void r_match_args (
     RState* r, rsexp args, rsize required, rsize optional, rbool rest_p, ...
 );
 
+#define r_check_arg(r, arg, assertion, error_code)\
+        if (!(assertion (arg))) {\
+            r_error_code ((r), (error_code), (arg));\
+            return R_FAILURE;\
+        }
+
 R_END_DECLS
 
 #endif /* __ROSE_PRIMITIVE_H__ */

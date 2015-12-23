@@ -25,12 +25,31 @@ void r_free (RState* r, rpointer ptr);
 #define r_new0_array(r, type, n)\
         ((type*) r_calloc (r, sizeof (type), (n)))
 
+/**
+ * Opens a GC scope.  All objects allocated within the scope are protected and
+ * won't be collected by the garbage collector.
+ *
+ * \see r_gc_scope_close
+ * \see r_gc_scope_close_and_protect
+ */
 void r_gc_scope_open (RState* r);
 
+/**
+ * Closes an opened GC scope.  Objects allocated within the scope are no longer
+ * protected and can be collected during next GC.
+ */
 void r_gc_scope_close (RState* r);
 
+/**
+ * Prevents a single `rsexp` object from being garbage collected.
+ *
+ * \note This function must be called outside any GC scope.
+ */
 void r_gc_scope_protect (RState* r, rsexp obj);
 
+/**
+ * Triggers a round of full GC.
+ */
 void r_full_gc (RState* r);
 
 void r_gc_mark (RState* r, rsexp obj);

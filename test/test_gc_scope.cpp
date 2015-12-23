@@ -11,5 +11,6 @@ TEST_F (test_gc_scope, empty_gc_scope) {
     r_gc_scope_open (r);
     EXPECT_EQ (i, r->gc.arena_index);
     r_gc_scope_close (r);
+
     EXPECT_EQ (i, r->gc.arena_index);
 }

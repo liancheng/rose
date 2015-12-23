@@ -80,8 +80,9 @@ exit:
 
 static rsexp port_write (RState* r, rsexp port, rsexp obj)
 {
-    return r_port_format (r, port,
-            "#<port ~a>", port_from_sexp (obj)->name);
+    return r_port_format (
+        r, port, "#<port ~a>", port_from_sexp (obj)->name
+    );
 }
 
 static void port_finalize (RState* r, RObject* obj)
@@ -235,9 +236,11 @@ rsexp r_open_output_string (RState* r)
         goto clean;
     }
 
-    res = make_port (r, stream, "(output-string-port)",
-                     MODE_OUTPUT | MODE_STRING_IO, r_cast (rpointer, cookie),
-                     output_string_port_clear, NULL);
+    res = make_port (
+        r, stream, "(output-string-port)",
+        MODE_OUTPUT | MODE_STRING_IO, r_cast (rpointer, cookie),
+        output_string_port_clear, NULL
+    );
 
     if (r_failure_p (res)) {
         fclose (stream);
@@ -284,20 +287,26 @@ exit:
 
 rsexp r_stdin_port (RState* r)
 {
-    return make_port (r, stdin, "(standard-input)",
-                      MODE_INPUT | MODE_DONT_CLOSE, NULL, NULL, NULL);
+    return make_port (
+        r, stdin, "(standard-input)",
+        MODE_INPUT | MODE_DONT_CLOSE, NULL, NULL, NULL
+    );
 }
 
 rsexp r_stdout_port (RState* r)
 {
-    return make_port (r, stdout, "(standard-output)",
-                      MODE_OUTPUT | MODE_DONT_CLOSE, NULL, NULL, NULL);
+    return make_port (
+        r, stdout, "(standard-output)",
+        MODE_OUTPUT | MODE_DONT_CLOSE, NULL, NULL, NULL
+    );
 }
 
 rsexp r_stderr_port (RState* r)
 {
-    return make_port (r, stderr, "(standard-error)",
-                      MODE_OUTPUT | MODE_DONT_CLOSE, NULL, NULL, NULL);
+    return make_port (
+        r, stderr, "(standard-error)",
+        MODE_OUTPUT | MODE_DONT_CLOSE, NULL, NULL, NULL
+    );
 }
 
 rsexp r_port_get_name (rsexp port)
