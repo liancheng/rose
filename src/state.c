@@ -140,7 +140,6 @@ RState* r_state_new (RAllocFunc alloc_fn, rpointer aux)
     r->alloc_aux = aux;
 
     /* Initialize error handling facilities */
-    r->error_jmp = NULL;
     r->last_error = R_UNDEFINED;
 
     gc_init (r);

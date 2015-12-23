@@ -21,7 +21,6 @@ struct RState {
 
     /* Error handling */
     rsexp last_error;
-    RNestedJump* error_jmp;
 
     /* Memory allocation function */
     RAllocFunc alloc_fn;

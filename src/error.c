@@ -190,14 +190,6 @@ rsexp r_clear_last_error_x (RState* r)
     return old;
 }
 
-void r_raise (RState* r)
-{
-    if (r->error_jmp)
-        longjmp (r->error_jmp->buf, 1);
-    else
-        abort ();
-}
-
 rsexp r_inherit_errno_x (RState* r, rintw errnum)
 {
     rchar buffer [BUFSIZ];

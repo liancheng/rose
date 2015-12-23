@@ -57,15 +57,6 @@ rsexp r_inherit_errno_x (RState* r, rintw errnum);
 
 void r_error_no_memory (RState* r);
 
-typedef struct RNestedJump RNestedJump;
-
-struct RNestedJump {
-    RNestedJump* previous;
-    jmp_buf      buf;
-};
-
-void r_raise (RState* r);
-
 #define ensure(stmt)\
         do {\
             if (r_failure_p (stmt))\
