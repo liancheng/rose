@@ -5,10 +5,19 @@
 
 R_BEGIN_DECLS
 
-rbool r_eqv_p (RState* r, rsexp lhs, rsexp rhs);
-
+/**
+ * Equivalent to scheme `eq?`.
+ */
 rbool r_eq_p (RState* r, rsexp lhs, rsexp rhs);
 
+/**
+ * Equivalent to scheme `eqv?`.
+ */
+rbool r_eqv_p (RState* r, rsexp lhs, rsexp rhs);
+
+/**
+ * Equivalent to scheme `equal?`.
+ */
 rbool r_equal_p (RState* r, rsexp lhs, rsexp rhs);
 
 R_END_DECLS

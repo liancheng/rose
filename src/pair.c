@@ -77,10 +77,10 @@ static void pair_mark (RState* r, rsexp obj)
 
 static rbool pair_equal_p (RState* r, rsexp lhs, rsexp rhs)
 {
-    return r_pair_p (lhs) &&
-           r_pair_p (rhs) &&
-           r_equal_p (r, r_car (lhs), r_car (rhs)) &&
-           r_equal_p (r, r_cdr (lhs), r_cdr (rhs));
+    return r_pair_p (lhs)
+        && r_pair_p (rhs)
+        && r_equal_p (r, r_car (lhs), r_car (rhs))
+        && r_equal_p (r, r_cdr (lhs), r_cdr (rhs));
 }
 
 rbool r_pair_p (rsexp obj)
