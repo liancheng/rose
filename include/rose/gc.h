@@ -3,7 +3,9 @@
 
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rpointer r_alloc (RState* r, rsize size);
 
@@ -61,6 +63,8 @@ void r_gc_mark (RState* r, rsexp obj);
         }\
         while (0)
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_MEMORY_H__ */

@@ -3,7 +3,9 @@
 
 #include "rose/types.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef rword rsexp;
 
@@ -130,6 +132,8 @@ struct RObject {
 
 /** \} */
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_SEXP_H__ */

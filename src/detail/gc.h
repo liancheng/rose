@@ -4,7 +4,9 @@
 #include "rose/gc.h"
 #include "rose/sexp.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef enum {
     GC_COLOR_WHITE,
@@ -50,6 +52,8 @@ void gc_init (RState* r);
 
 void gc_finish (RState* r);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_GC_H__ */

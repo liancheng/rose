@@ -3,7 +3,9 @@
 
 #include "rose/sexp.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_vector_new (RState* r, rsize k, rsexp fill);
 
@@ -23,6 +25,8 @@ rsexp r_vector_to_list (RState* r, rsexp vector);
 
 rsexp r_vector_copy (RState* r, rsexp obj);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_VECTOR_H__ */

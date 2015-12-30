@@ -5,7 +5,9 @@
 #include "rose/compile.h"
 #include "rose/pair.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 #define emit_apply(r)\
         r_list ((r), 1, R_OP_APPLY)
@@ -46,6 +48,8 @@ R_BEGIN_DECLS
 #define emit_return(r)\
         r_list ((r), 1, R_OP_RETURN)
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_COMPILE_H__ */

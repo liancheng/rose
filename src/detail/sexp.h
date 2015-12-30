@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef struct RTypeInfo RTypeInfo;
 
@@ -43,6 +45,8 @@ RTypeInfo* r_type_info (RState* r, rsexp obj);
 #define object_from_sexp(obj)   (r_cast (RObject*, (obj)))
 #define object_to_sexp(obj)     (r_cast (rsexp, (obj)))
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_SEXP_H__ */

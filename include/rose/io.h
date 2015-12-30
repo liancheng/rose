@@ -6,7 +6,9 @@
 
 #include <stdarg.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_open_input_file (RState* r, rconstcstring filename);
 
@@ -83,6 +85,8 @@ rsexp r_port_display (RState* r, rsexp port, rsexp obj);
 
 rsexp r_display (RState* r, rsexp obj);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_IO_H__ */

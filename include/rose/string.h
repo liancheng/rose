@@ -6,7 +6,9 @@
 
 #include <stdarg.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_string_new (RState* r, rconstcstring str);
 
@@ -34,6 +36,8 @@ rsexp r_string_printf (RState* r, rconstcstring format, ...);
 
 rsexp r_string_vprintf (RState* r, rconstcstring format, va_list args);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_STRING_H__ */

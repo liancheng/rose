@@ -7,7 +7,9 @@
 #include <stdarg.h>
 #include <setjmp.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef enum {
     R_ERR_GRP_COMPILE,
@@ -78,6 +80,8 @@ void r_error_no_memory (RState* r);
         }\
         while (0)
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_ERROR_H__ */

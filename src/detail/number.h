@@ -5,7 +5,9 @@
 #include "rose/gmp.h"
 #include "rose/number.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef struct RFixreal RFixreal;
 
@@ -50,6 +52,8 @@ rsexp fixreal_normalize (rsexp n);
 rsexp smi_to_fixreal (RState* r, rsexp n);
 rsexp smi_to_floreal (RState* r, rsexp n);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_FINER_NUMBER_H__ */

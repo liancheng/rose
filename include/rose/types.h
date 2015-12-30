@@ -12,49 +12,96 @@
 #   define R_END_DECLS
 #endif
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
-#define FALSE   0
-#define TRUE    (!FALSE)
+/// Boolean false value
+#define FALSE 0
+
+/// Boolean true value
+#define TRUE (!FALSE)
+
+/// Tri-boolean unknown value
 #define UNKNOWN (-1)
 
-typedef intptr_t        rintw;
-typedef uintptr_t       ruintw;
+/// Signed integer type as wide as a machine word.
+typedef intptr_t rintw;
 
-typedef uint8_t         rbyte;
+/// Unsigned integer type as wide as a machine word.
+typedef uintptr_t ruintw;
 
-typedef int8_t          rint8;
-typedef uint8_t         ruint8;
+/// Unsigned byte type.
+typedef uint8_t rbyte;
 
-typedef int16_t         rint16;
-typedef uint16_t        ruint16;
+/// Signed 8-bit integer type.
+typedef int8_t rint8;
 
-typedef int32_t         rint32;
-typedef uint32_t        ruint32;
+/// Unsigned 8-bit integer type.
+typedef uint8_t ruint8;
 
-typedef int64_t         rint64;
-typedef uint64_t        ruint64;
+/// Signed 16-bit integer type.
+typedef int16_t rint16;
 
-typedef void const*     rconstpointer;
-typedef void*           rpointer;
+/// Unsigned 16-bit integer type.
+typedef uint16_t ruint16;
 
-typedef char            rchar;
-typedef uint32_t        runichar;
+/// Signed 32-bit integer type.
+typedef int32_t rint32;
 
-typedef rchar*          rcstring;
-typedef rchar const*    rconstcstring;
+/// Unsigned 32-bit integer type.
+typedef uint32_t ruint32;
 
-typedef runichar*       runistring;
+/// Signed 64-bit integer type.
+typedef int64_t rint64;
+
+/// Unsigned 64-bit integer type.
+typedef uint64_t ruint64;
+
+/// Const raw pointer type.
+typedef void const* rconstpointer;
+
+/// Raw pointer type.
+typedef void* rpointer;
+
+/// Signed char type.
+typedef char rchar;
+
+/// 32-bit unicode char type.
+typedef uint32_t runichar;
+
+/// Null-terminated C-string type.
+typedef rchar* rcstring;
+
+/// Const null-terminated C-string type.
+typedef rchar const* rconstcstring;
+
+/// Null-terminated unicode string type.
+typedef runichar* runistring;
+
+/// Const null-terminated unicode string type.
 typedef runichar const* rconstunistring;
 
-typedef int             rbool;
-typedef int             rtribool;
-typedef intptr_t        rword;
-typedef uintptr_t       ruword;
-typedef size_t          rsize;
+/// Boolean type.
+typedef int rbool;
 
+/// Tri-boolean type (`TRUE`, `FALSE`, or `UNKNOWN`)
+typedef int rtribool;
+
+/// Singed word type.
+typedef intptr_t rword;
+
+/// Unsinged word type.
+typedef uintptr_t ruword;
+
+/// Singed size type
+typedef size_t rsize;
+
+/// Casts expression `from` to type `to`.
 #define r_cast(to, from) ((to) (from))
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_TYPES_H__ */

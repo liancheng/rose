@@ -5,7 +5,9 @@
 
 #include <stdarg.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef rsexp (*RBinaryFunc) (RState*, rsexp, rsexp);
 
@@ -78,6 +80,8 @@ rsexp r_drop (RState* r, rsexp obj, rsize k);
 #define r_cdddar(o) r_cdr (r_cddar ((o)))
 #define r_cddddr(o) r_cdr (r_cdddr ((o)))
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_PAIR_H__ */

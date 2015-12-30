@@ -9,7 +9,9 @@
 
 #include <glib.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 /* Records various execution state of the ROSE interpreter. */
 struct RState {
@@ -42,6 +44,8 @@ struct RState {
 
 void init_builtin_type (RState* r, RTypeTag tag, RTypeInfo* type);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_STATE_H__ */

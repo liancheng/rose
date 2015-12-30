@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/symbol.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 #define quark_to_sexp(q)    (r_cast (rsexp, r_set_tag_x ((q), R_TAG_SYMBOL)))
 #define quark_from_sexp(q)  (r_cast (GQuark, ((q) >> R_TAG_BITS)))
@@ -33,6 +35,8 @@ R_BEGIN_DECLS
 #define R_OP_RESTORE_CC     quark_to_sexp (21)
 #define R_OP_RETURN         quark_to_sexp (22)
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_SYMBOL_H__ */

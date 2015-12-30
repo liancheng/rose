@@ -77,6 +77,17 @@ static inline rsexp extend_env (RState* r, rsexp env, rsexp formals, rsexp args)
     return env;
 }
 
+/**
+ * Applies a (non-primitive) procedure.
+ *
+ * \pre
+ *  - `vm->value` points to the procedure to be applied
+ *  - `vm->args` points to the actual arguments list
+ *
+ * \post
+ *  - A new frame is added to the current environment for the procedure call
+ *  - `vm->next` points to the first instruction of the body of the  procedure
+ */
 static inline rsexp apply (RState* r, RVm* vm)
 {
     rsexp env;

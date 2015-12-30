@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_add (RState* r, rsexp lhs, rsexp rhs);
 
@@ -30,6 +32,8 @@ rsexp r_num_gt_p (RState* r, rsexp lhs, rsexp rhs);
 
 rsexp r_num_ge_p (RState* r, rsexp lhs, rsexp rhs);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_MATH_H__ */

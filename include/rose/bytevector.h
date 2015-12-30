@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 /**
  * Creates a new bytevector with length `k` and filled with `fill`.
@@ -48,6 +50,8 @@ rsexp r_bytevector_u8_set_x (RState* r, rsexp obj, rsize k, rbyte byte);
  */
 rsexp r_list_to_bytevector (RState* r, rsexp list);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_BYTEVECTOR_H__ */

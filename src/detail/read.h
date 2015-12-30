@@ -5,7 +5,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef struct Reader Reader;
 
@@ -19,6 +21,8 @@ struct Reader {
     rsize   current_column;
 };
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_READER_H__ */

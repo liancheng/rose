@@ -7,7 +7,9 @@
 
 #include <limits.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_fixreal_new (RState* r, mpq_t value);
 rsexp r_fixreal_new_si (RState* r, rintw num, rintw den);
@@ -64,6 +66,8 @@ rintw r_int_from_sexp (rsexp obj);
 #define r_uint_to_sexp(obj)     (r_int_to_sexp (r_cast (rintw, (obj))))
 #define r_uint_from_sexp(obj)   (r_cast (ruintw, r_int_from_sexp ((obj))))
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_FINER_NUMBER_H__ */

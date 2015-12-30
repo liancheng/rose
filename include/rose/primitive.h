@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef rsexp (*RPrimitiveFunc) (RState*, rsexp);
 
@@ -43,6 +45,8 @@ void r_match_args (
             return R_FAILURE;\
         }
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_PRIMITIVE_H__ */

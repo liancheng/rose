@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 typedef enum RPortMode {
     MODE_INPUT      = 0x01,
@@ -27,6 +29,8 @@ typedef void (*RPortMarkCookie) (RState*, rpointer);
 
 FILE* port_to_stream (rsexp port);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_DETAIL_IO_H__ */

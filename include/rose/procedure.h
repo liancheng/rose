@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 rsexp r_procedure_new (RState* r, rsexp body, rsexp env, rsexp formals);
 
@@ -16,6 +18,8 @@ rsexp r_procedure_env (rsexp obj);
 
 rsexp r_procedure_formals (rsexp obj);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_PROCEDURE_H__ */

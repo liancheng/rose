@@ -4,7 +4,9 @@
 #include "rose/sexp.h"
 #include "rose/state.h"
 
+/// \cond
 R_BEGIN_DECLS
+/// \endcond
 
 /**
  * Compiles a `program` represented as a standard list to executable VM code.
@@ -21,6 +23,8 @@ rsexp r_compile_from_port (RState* r, rsexp port);
  */
 rsexp r_compile_from_cstr (RState* r, rconstcstring input);
 
+/// \cond
 R_END_DECLS
+/// \endcond
 
 #endif /* __ROSE_COMPILE_H__ */
