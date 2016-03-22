@@ -93,22 +93,26 @@ static void feed_input (RNumberReader* reader, rconstcstring text)
     reader->pos   = text;
 }
 
+/// Peeks the next input character without consuming it.
 static char lookahead (RNumberReader* reader)
 {
     return (reader->pos < reader->end) ? *(reader->pos) : '\0';
 }
 
+/// Consumes and returns the next input character.
 static char next_char (RNumberReader* reader)
 {
     return (reader->pos < reader->end) ? *(reader->pos++) : '\0';
 }
 
+/// Consumes the next input character.
 static void consume (RNumberReader* reader)
 {
     if (++reader->pos > reader->end)
         reader->pos = reader->end;
 }
 
+/// Whether end-of-input is reached.
 static rbool eoi_p (RNumberReader* reader)
 {
     return reader->pos == reader->end;

@@ -11,16 +11,30 @@ R_BEGIN_DECLS
 
 typedef struct RNumberReader RNumberReader;
 
+/**
+ * An LL(*) backtracking parser for reading Scheme numbers.
+ */
 struct RNumberReader {
-    RState*       r;
+    /// Interpreter state.
+    RState* r;
 
+    /// Pointer to the beginning of the input text.
     rconstcstring begin;
+
+    /// Pointer to the end of the input text.
     rconstcstring end;
+
+    /// Pointer to the next character to be read.
     rconstcstring pos;
 
-    rtribool      exact;
-    rtribool      decimal;
-    ruintw        radix;
+    /// Whether the number is exact.
+    rtribool exact;
+
+    /// Whether the number is decimal.
+    rtribool decimal;
+
+    /// Radix of the number.
+    ruintw radix;
 };
 
 void r_number_reader_init (RState* r, RNumberReader* reader);

@@ -27,6 +27,7 @@ rsexp r_stdout_port (RState* r);
 rsexp r_stderr_port (RState* r);
 
 rsexp r_port_get_name (rsexp port);
+
 void r_close_port (rsexp port);
 
 rbool r_eof_p (rsexp port);
