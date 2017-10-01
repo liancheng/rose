@@ -6,7 +6,7 @@ Import('rose_lib')
 
 env = env.Clone()
 
-GTEST_DIR = '#external/googletest'
+GTEST_DIR = '#external/googletest-1.8.0'
 
 env.Prepend(LIBS=[rose_lib],
             CPPPATH=[Dir(GTEST_DIR),
