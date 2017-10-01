@@ -1,3 +1,13 @@
+dist: trusty
+sudo: required
+
+addons:
+  apt:
+    packages:
+      - lcov
+      - libgmp3-dev
+      - libglib2.0-dev
+
 language: cpp
 
 compiler:
@@ -5,8 +15,3 @@ compiler:
   - clang
 
 script: scons
-
-before_script:
-  - sudo apt-get install lcov
-  - sudo apt-get install libgmp3-dev
-  - sudo apt-get install libglib2.0-dev
